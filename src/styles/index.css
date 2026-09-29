@@ -1,0 +1,120 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    color-scheme: dark;
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-ink-900 font-sans text-fg antialiased;
+    min-height: 100dvh;
+    /* Grade discreta de "planta técnica" + brilho no azul da marca */
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0, 72, 152, 0.55), transparent 70%),
+      radial-gradient(ellipse 50% 40% at 100% 0%, rgba(232, 112, 0, 0.1), transparent 70%),
+      linear-gradient(rgba(174, 187, 216, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(174, 187, 216, 0.045) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+    background-attachment: fixed;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display tracking-tight;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    @apply bg-brand-orange text-ink-950;
+  }
+
+  /* Foco sempre visível para teclado, com a cor de destaque da marca */
+  :focus-visible {
+    outline: 3px solid theme('colors.brand.orange-light');
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  [tabindex='-1']:focus {
+    outline: none;
+  }
+}
+
+@layer components {
+  .panel {
+    @apply rounded-2xl border border-ink-600/60 bg-ink-850/85 shadow-card backdrop-blur-sm;
+  }
+
+  .eyebrow {
+    @apply font-mono text-xs font-medium uppercase tracking-[0.18em] text-brand-orange-light;
+  }
+
+  /* Trecho censurado: o texto existe, mas só aparece quando é selecionado */
+  .redacted {
+    @apply rounded-[3px] bg-paper-ink px-1 text-paper-ink;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+
+  .redacted::selection {
+    @apply bg-brand-orange text-ink-950;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.ink.600') transparent;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Usada via style inline pelo componente Confetti */
+@keyframes confetti-fall {
+  0% {
+    transform: translate3d(0, -10vh, 0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(0, 110vh, 0) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* Movimento reduzido: remove animações e transições sem perder o estado final */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  body {
+    background: #fff !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}

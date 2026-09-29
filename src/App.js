@@ -1,21 +1,21 @@
-import React from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import Home from './Home'
-import LvlOne from './LvlOne'
-import Second from './Second'
-import Final from './Final'
-import Win from './Win'
+import { Route, Routes } from 'react-router-dom';
+import AppLayout from './components/layout/AppLayout';
+import ChallengePage from './pages/ChallengePage';
+import CompletionPage from './pages/CompletionPage';
+import LandingPage from './pages/LandingPage';
+import MissionPage from './pages/MissionPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/LvlOne" element={<LvlOne />} />
-        <Route path="/Second" element={<Second />} />
-        <Route path="/Final" element={<Final />} />
-        <Route path="/Win" element={<Win />} />
-      </Routes>
-    </Router>
-  )
+    <Routes>
+      <Route element={<AppLayout />}>
+        <Route index element={<LandingPage />} />
+        <Route path="missao" element={<MissionPage />} />
+        <Route path="missao/:slug" element={<ChallengePage />} />
+        <Route path="conclusao" element={<CompletionPage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
+    </Routes>
+  );
 }
