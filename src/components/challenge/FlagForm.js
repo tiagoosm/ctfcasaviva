@@ -5,7 +5,7 @@ import Button from '../ui/Button';
 import FeedbackMessage from '../ui/FeedbackMessage';
 import { incorrectFeedback, systemErrorFeedback } from './feedback';
 
-// Pequena pausa de "verificação": dá peso ao envio e evita cliques duplos
+// Short "verification" pause: gives the submission weight and prevents double clicks
 const VERIFY_DELAY = 350;
 
 export default function FlagForm({ onSubmit }) {

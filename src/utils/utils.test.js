@@ -6,7 +6,7 @@ import { sha256 } from './sha256';
 
 describe('sha256', () => {
   it.each(['', 'abc', 'começar', 'x'.repeat(55), 'y'.repeat(64), 'z'.repeat(1000), '🚩 flag'])(
-    'coincide com o crypto do Node para %p',
+    'matches Node crypto for %p',
     (input) => {
       expect(sha256(input)).toBe(createHash('sha256').update(input, 'utf8').digest('hex'));
     },
@@ -34,30 +34,30 @@ describe('evaluateAnswer', () => {
     nearMisses: [{ hashes: [hashAnswer('teste', 'quase')], message: 'Quase!' }],
   };
 
-  it('reconhece a resposta correta com variações de formato', () => {
+  it('recognizes the correct answer across format variations', () => {
     expect(evaluateAnswer(challenge, 'casaviva{SEGREDO}').status).toBe('correct');
   });
 
-  it('retorna mensagem contextual para quase-acertos', () => {
+  it('returns a contextual message for near misses', () => {
     expect(evaluateAnswer(challenge, 'Quase')).toEqual({ status: 'incorrect', message: 'Quase!' });
   });
 
-  it('trata resposta vazia separadamente', () => {
+  it('handles an empty answer separately', () => {
     expect(evaluateAnswer(challenge, '   ').status).toBe('empty');
   });
 
-  it('usa o id do desafio como sal', () => {
+  it('uses the challenge id as salt', () => {
     expect(hashAnswer('a', 'x')).not.toBe(hashAnswer('b', 'x'));
   });
 });
 
-describe('cifras', () => {
-  it('César com deslocamento 3 é reversível e preserva maiúsculas', () => {
+describe('ciphers', () => {
+  it('Caesar with shift 3 is reversible and preserves uppercase', () => {
     expect(caesar('Ultimato', 3)).toBe('Xowlpdwr');
     expect(caesar('xowlpdwr', -3)).toBe('ultimato');
   });
 
-  it('Vigenère cifra e decifra com a mesma chave', () => {
+  it('Vigenère encrypts and decrypts with the same key', () => {
     const encrypted = vigenere('CONQUISTA', 'GOGH');
     expect(vigenere(encrypted, 'GOGH', -1)).toBe('CONQUISTA');
   });

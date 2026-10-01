@@ -9,7 +9,7 @@ export default function HintPanel({ challenge, revealed, solved, onReveal }) {
   const lastHintRef = useRef(null);
   const previousRevealed = useRef(revealed);
 
-  // Leva o foco à dica recém-revelada para que ela seja lida imediatamente
+  // Moves focus to the newly revealed hint so it is read right away
   useEffect(() => {
     if (revealed > previousRevealed.current) lastHintRef.current?.focus();
     previousRevealed.current = revealed;

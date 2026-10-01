@@ -1,5 +1,5 @@
-// Texto original do CTF (sem a duplicação que existia na versão anterior).
-// A palavra cifrada continua escondida no mesmo trecho do relato.
+// Original CTF text (without the duplication present in the previous version).
+// The encrypted word is still hidden in the same passage of the report.
 const transmission = [
   'Durante a era das Guerras Gálicas, a comunicação era vital para as operações militares. Para manter a segurança de suas mensagens, os generais precisavam de um método seguro e confiável. Foi nesse período que se desenvolveu um método de comunicação secreta, que permitia transmitir mensagens sem que fossem compreendidas pelos inimigos. A técnica envolvia a substituição de caracteres: cada letra da mensagem original era trocada por outra, seguindo uma regra pré-definida. Assim, apenas as pessoas autorizadas tinham acesso ao conteúdo.',
   'A técnica de substituição foi amplamente utilizada pelos militares romanos, que trocavam informações importantes sem o risco de serem descobertos. Os mensageiros, muitas vezes montados a cavalo, percorriam grandes distâncias carregando pergaminhos codificados. Caso fossem capturados, o conteúdo das mensagens permaneceria incompreensível para quem não conhecesse o código.',

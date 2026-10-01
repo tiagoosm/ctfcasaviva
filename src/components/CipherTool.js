@@ -10,8 +10,8 @@ const MODES = [
 
 const mod26 = (n) => ((n % 26) + 26) % 26;
 
-// Ferramenta de apoio: aplica UM deslocamento por vez. Para cifras com vários
-// deslocamentos (Vigenère), o raciocínio letra a letra continua com o jogador.
+// Support tool: applies ONE shift at a time. For ciphers with several
+// shifts (Vigenère), the letter-by-letter reasoning is still up to the player.
 export default function CipherTool({ title = 'Disco de deslocamento' }) {
   const [shift, setShift] = useState(0);
   const [mode, setMode] = useState('decode');

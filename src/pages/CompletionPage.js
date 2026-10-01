@@ -20,8 +20,8 @@ export default function CompletionPage() {
   const [confirmReset, setConfirmReset] = useState(false);
   const resetting = useRef(false);
 
-  // Durante o "jogar novamente" o estado zera antes da navegação terminar:
-  // não queremos que a guarda abaixo redirecione para o mapa nesse intervalo.
+  // During "play again" the state resets before navigation finishes:
+  // we do not want the guard below to redirect to the map in the meantime.
   if (resetting.current) return null;
 
   if (!summary.isComplete) {

@@ -12,7 +12,7 @@ export default function ConfirmDialog({
   onConfirm,
   onCancel,
 }) {
-  // O foco inicial vai para "Cancelar": a ação segura quando a confirmação é destrutiva
+  // Initial focus goes to "Cancelar" (cancel): the safe action when confirming is destructive
   const cancelRef = useRef(null);
 
   return (

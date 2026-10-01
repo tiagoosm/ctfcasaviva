@@ -10,7 +10,7 @@ function solve(state, challenge, now = 1000) {
 }
 
 describe('gameReducer + selectors', () => {
-  it('libera os desafios em sequência', () => {
+  it('unlocks challenges in sequence', () => {
     let state = createInitialState();
     expect(getStatus(state, first)).toBe('available');
     expect(getStatus(state, second)).toBe('locked');
@@ -21,14 +21,14 @@ describe('gameReducer + selectors', () => {
     expect(getCurrentChallenge(state)).toBe(second);
   });
 
-  it('desconta as dicas reveladas da pontuação do desafio', () => {
+  it('deducts revealed hints from the challenge score', () => {
     let state = createInitialState();
     state = gameReducer(state, { type: 'REVEAL_HINT', id: first.id, max: first.hints.length });
     state = solve(state, first);
     expect(getChallengeScore(state, first)).toBe(first.points - first.hints[0].cost);
   });
 
-  it('não revela mais dicas do que existem nem após resolver', () => {
+  it('does not reveal more hints than exist, nor any after solving', () => {
     let state = createInitialState();
     for (let i = 0; i < 5; i++) {
       state = gameReducer(state, { type: 'REVEAL_HINT', id: first.id, max: first.hints.length });
@@ -40,27 +40,27 @@ describe('gameReducer + selectors', () => {
     expect(solved.progress[first.id].hintsRevealed).toBe(0);
   });
 
-  it('resolver duas vezes não altera o horário original', () => {
+  it('keeps the original timestamp when solved twice', () => {
     let state = solve(createInitialState(), first, 1000);
     state = solve(state, first, 5000);
     expect(state.progress[first.id].solvedAt).toBe(1000);
   });
 
-  it('registra início, fim e duração da missão', () => {
+  it('records mission start, end and duration', () => {
     let state = gameReducer(createInitialState(), { type: 'START', codename: '  Agente   X ', now: 100 });
     expect(state.codename).toBe('Agente X');
     state = gameReducer(state, { type: 'SOLVE', id: first.id, now: 700, completesMission: true });
     expect(getSummary(state).duration).toBe(600);
   });
 
-  it('reiniciar apaga o progresso mas mantém o codinome', () => {
+  it('clears progress but keeps the codename on restart', () => {
     let state = gameReducer(createInitialState(), { type: 'START', codename: 'Coruja', now: 1 });
     state = solve(state, first);
     state = gameReducer(state, { type: 'RESET' });
     expect(state).toEqual(createInitialState('Coruja'));
   });
 
-  it('atribui o título de acordo com o aproveitamento', () => {
+  it('assigns the title according to performance', () => {
     expect(getRank(800).title).toBe('Mestre do CTF');
     expect(getRank(600).title).toBe('Especialista');
     expect(getRank(100).title).toBe('Recruta de elite');
@@ -68,12 +68,12 @@ describe('gameReducer + selectors', () => {
 });
 
 describe('parseState', () => {
-  it('descarta dados corrompidos ou de outra versão', () => {
+  it('discards corrupted data or data from another version', () => {
     expect(parseState('{nao é json')).toBeNull();
     expect(parseState(JSON.stringify({ version: 1, progress: {} }))).toBeNull();
   });
 
-  it('higieniza valores inválidos', () => {
+  it('sanitizes invalid values', () => {
     const parsed = parseState(
       JSON.stringify({
         version: 2,

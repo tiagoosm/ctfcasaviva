@@ -28,7 +28,7 @@ export default function ChallengePage() {
 
   const status = getStatus(state, challenge);
 
-  // Não é possível pular etapas digitando a URL: voltamos ao mapa com o motivo
+  // Stages cannot be skipped by typing the URL: we go back to the map with the reason
   if (status === 'locked') {
     const current = getCurrentChallenge(state) ?? challenges[0];
     return (

@@ -1,7 +1,7 @@
-// SHA-256 síncrono e sem dependências.
-// Usamos uma implementação própria em vez de crypto.subtle porque a Web Crypto
-// só existe em contexto seguro (HTTPS/localhost) — o CTF também precisa rodar
-// quando aberto pela rede local (ex.: celulares acessando http://192.168.x.x).
+// Synchronous, dependency-free SHA-256.
+// We use our own implementation instead of crypto.subtle because Web Crypto
+// only exists in a secure context (HTTPS/localhost) — the CTF must also run
+// when opened over the local network (e.g. phones accessing http://192.168.x.x).
 
 const K = [
   0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,

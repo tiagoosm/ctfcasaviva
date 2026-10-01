@@ -3,7 +3,7 @@ import { cn } from '../../utils/format';
 export const MARK_SRC = `${process.env.PUBLIC_URL}/assets/brand/casaviva-mark.png`;
 export const LOGO_SRC = `${process.env.PUBLIC_URL}/assets/brand/logo-casaviva.png`;
 
-// "cas@viva" com o @ no laranja da marca, como na logo oficial
+// "cas@viva" with the @ in the brand orange, as in the official logo
 export function Wordmark({ className }) {
   return (
     <span className={cn('font-display font-bold tracking-tight', className)}>

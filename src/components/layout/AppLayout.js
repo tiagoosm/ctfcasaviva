@@ -9,8 +9,8 @@ export default function AppLayout() {
   const mainRef = useRef(null);
   const isFirstRender = useRef(true);
 
-  // Em uma SPA o navegador não reposiciona o foco ao trocar de página:
-  // levamos o foco ao conteúdo para teclado e leitores de tela acompanharem.
+  // In an SPA the browser does not reposition focus when the page changes:
+  // we move focus to the content so keyboard and screen reader users can follow.
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;

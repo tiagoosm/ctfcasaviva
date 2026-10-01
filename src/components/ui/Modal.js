@@ -38,7 +38,7 @@ export default function Modal({
       }
       if (event.key !== 'Tab' || !dialogRef.current) return;
 
-      // Mantém o foco dentro do diálogo enquanto ele estiver aberto
+      // Keeps focus inside the dialog while it is open
       const focusable = [...dialogRef.current.querySelectorAll(FOCUSABLE)];
       if (focusable.length === 0) {
         event.preventDefault();

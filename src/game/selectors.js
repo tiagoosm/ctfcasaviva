@@ -5,7 +5,7 @@ export const getProgress = (state, id) => state.progress[id] ?? emptyProgress;
 
 export const isSolved = (state, id) => Boolean(getProgress(state, id).solvedAt);
 
-// Um desafio só abre quando todos os anteriores foram resolvidos
+// A challenge only unlocks once all the previous ones are solved
 export function getStatus(state, challenge) {
   if (isSolved(state, challenge.id)) return 'solved';
   const index = challenges.indexOf(challenge);
@@ -41,7 +41,7 @@ export function getSummary(state) {
   };
 }
 
-// Títulos de conclusão — "mestre do CTF" vem da proposta original do projeto
+// Completion titles — "mestre do CTF" (CTF master) comes from the original project proposal
 const RANKS = [
   { min: 0.9, title: 'Mestre do CTF', description: 'Precisão de especialista, quase sem ajuda.' },
   { min: 0.7, title: 'Especialista', description: 'Raciocínio afiado e bom uso das pistas.' },

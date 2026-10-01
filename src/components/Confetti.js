@@ -4,7 +4,7 @@ import useReducedMotion from '../hooks/useReducedMotion';
 const COLORS = ['#E87000', '#FF9A3D', '#5B9BF0', '#004898', '#3DD68C', '#F5F2EA'];
 const PIECES = 48;
 
-// Celebração curta (uma única queda) — não fica em loop distraindo o jogador
+// Short celebration (a single fall) — it does not loop and distract the player
 export default function Confetti() {
   const reducedMotion = useReducedMotion();
 

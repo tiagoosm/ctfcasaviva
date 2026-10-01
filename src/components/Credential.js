@@ -4,7 +4,7 @@ import { getRank, getStatus, getSummary } from '../game/selectors';
 import { cn } from '../utils/format';
 import { LOGO_SRC } from './layout/BrandMark';
 
-// Crachá de investigação: aproxima a missão da identidade visual real da cas@viva
+// Investigation badge: ties the mission to cas@viva's real visual identity
 export default function Credential({ codename }) {
   const { state } = useGame();
   const summary = getSummary(state);

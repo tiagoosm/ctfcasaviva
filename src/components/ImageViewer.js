@@ -22,7 +22,7 @@ const rectOf = (element) => element?.getBoundingClientRect() ?? EMPTY_RECT;
 
 const clampNumber = (value, min, max) => Math.min(max, Math.max(min, value));
 
-// Mantém a imagem sempre cobrindo a área visível (sem "fugir" para fora)
+// Keeps the image always covering the visible area (never "escaping" outside it)
 function clampView(view, rect) {
   const scale = clampNumber(view.scale, MIN_SCALE, MAX_SCALE);
   const maxX = (rect.width * (scale - 1)) / 2;
@@ -30,7 +30,7 @@ function clampView(view, rect) {
   return { scale, x: clampNumber(view.x, -maxX, maxX), y: clampNumber(view.y, -maxY, maxY) };
 }
 
-// Amplia mantendo fixo o ponto sob o cursor/dedos (coordenadas relativas ao centro)
+// Zooms while keeping the point under the cursor/fingers fixed (coordinates relative to the center)
 function zoomAround(view, nextScale, point, rect) {
   const scale = clampNumber(nextScale, MIN_SCALE, MAX_SCALE);
   const ratio = scale / view.scale;
@@ -76,7 +76,7 @@ export default function ImageViewer({ images, index, onIndexChange, onClose }) {
 
   const goTo = (delta) => onIndexChange((index + delta + images.length) % images.length);
 
-  // A roda do mouse precisa de listener não-passivo para impedir o scroll da página
+  // The mouse wheel needs a non-passive listener to prevent the page from scrolling
   useEffect(() => {
     const element = viewportRef.current;
     if (!element) return undefined;

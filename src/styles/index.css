@@ -12,7 +12,7 @@
   body {
     @apply bg-ink-900 font-sans text-fg antialiased;
     min-height: 100dvh;
-    /* Grade discreta de "planta técnica" + brilho no azul da marca */
+    /* Subtle "blueprint" grid + glow in the brand blue */
     background-image:
       radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0, 72, 152, 0.55), transparent 70%),
       radial-gradient(ellipse 50% 40% at 100% 0%, rgba(232, 112, 0, 0.1), transparent 70%),
@@ -37,7 +37,7 @@
     @apply bg-brand-orange text-ink-950;
   }
 
-  /* Foco sempre visível para teclado, com a cor de destaque da marca */
+  /* Always-visible keyboard focus, in the brand accent color */
   :focus-visible {
     outline: 3px solid theme('colors.brand.orange-light');
     outline-offset: 3px;
@@ -58,7 +58,7 @@
     @apply font-mono text-xs font-medium uppercase tracking-[0.18em] text-brand-orange-light;
   }
 
-  /* Trecho censurado: o texto existe, mas só aparece quando é selecionado */
+  /* Redacted passage: the text is there, but only shows when selected */
   .redacted {
     @apply rounded-[3px] bg-paper-ink px-1 text-paper-ink;
     -webkit-box-decoration-break: clone;
@@ -81,7 +81,7 @@
   }
 }
 
-/* Usada via style inline pelo componente Confetti */
+/* Used through inline style by the Confetti component */
 @keyframes confetti-fall {
   0% {
     transform: translate3d(0, -10vh, 0) rotate(0deg);
@@ -93,7 +93,7 @@
   }
 }
 
-/* Movimento reduzido: remove animações e transições sem perder o estado final */
+/* Reduced motion: removes animations and transitions without losing the final state */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

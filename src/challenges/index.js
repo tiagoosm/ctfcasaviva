@@ -4,8 +4,8 @@ import sequence from './sequence';
 import interception from './interception';
 import vault from './vault';
 
-// Ordem da missão. Para adicionar um desafio: crie a pasta com config + Stage
-// e inclua-o aqui. Progresso, mapa, pontuação e rotas se ajustam sozinhos.
+// Mission order. To add a challenge: create its folder with config + Stage
+// and include it here. Progress, map, scoring and routes adapt on their own.
 export const challenges = [briefing, gallery, sequence, interception, vault];
 
 export const TOTAL_POINTS = challenges.reduce((sum, challenge) => sum + challenge.points, 0);

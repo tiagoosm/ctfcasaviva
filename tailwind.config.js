@@ -4,14 +4,14 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Cores oficiais extraídas da logo Inatel cas@viva
+        // Official colors extracted from the Inatel cas@viva logo
         brand: {
           orange: '#E87000',
           'orange-light': '#FF9A3D',
           blue: '#004898',
           'blue-light': '#5B9BF0',
         },
-        // Superfícies do console de investigação: derivadas do azul da marca
+        // Investigation console surfaces: derived from the brand blue
         ink: {
           950: '#050D22',
           900: '#081631',

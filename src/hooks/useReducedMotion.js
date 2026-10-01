@@ -8,8 +8,8 @@ function getInitial() {
     : false;
 }
 
-// Para efeitos controlados por JS (confete, zoom animado). O CSS global já
-// neutraliza animações/transições declarativas com a mesma media query.
+// For JS-driven effects (confetti, animated zoom). The global CSS already
+// neutralizes declarative animations/transitions with the same media query.
 export default function useReducedMotion() {
   const [reduced, setReduced] = useState(getInitial);
 

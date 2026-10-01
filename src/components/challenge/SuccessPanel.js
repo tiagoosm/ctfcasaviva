@@ -10,7 +10,7 @@ export default function SuccessPanel({ challenge, earned, nextChallenge, justSol
   const headingRef = useRef(null);
   const reducedMotion = useReducedMotion();
 
-  // Ao acertar, o painel entra em foco: o jogador vê e ouve a conquista na hora
+  // On a correct answer the panel takes focus: the player sees and hears the win right away
   useEffect(() => {
     if (!justSolved) return;
     sectionRef.current?.scrollIntoView?.({

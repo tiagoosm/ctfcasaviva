@@ -2,8 +2,8 @@ import { sha256 } from './sha256.js';
 
 export const FLAG_PREFIX = 'casaviva';
 
-// Deixa a validação tolerante a variações que não mudam a resposta:
-// maiúsculas, acentos, espaços e o invólucro opcional casaviva{...}.
+// Makes validation tolerant of variations that do not change the answer:
+// casing, accents, spaces and the optional casaviva{...} wrapper.
 export function normalizeAnswer(raw) {
   let value = String(raw ?? '')
     .trim()
@@ -17,8 +17,8 @@ export function normalizeAnswer(raw) {
   return value.replace(/\s+/g, '');
 }
 
-// O id do desafio funciona como "sal": a mesma palavra gera hashes diferentes
-// em desafios diferentes, e as respostas não ficam em texto puro no bundle.
+// The challenge id acts as a "salt": the same word yields different hashes
+// in different challenges, and answers are not stored in plain text in the bundle.
 export function hashAnswer(challengeId, normalizedAnswer) {
   return sha256(`${challengeId}:${normalizedAnswer}`);
 }
@@ -30,7 +30,7 @@ export function evaluateAnswer(challenge, rawAnswer) {
   const hash = hashAnswer(challenge.id, answer);
   if (hash === challenge.answerHash) return { status: 'correct' };
 
-  // Quase-acertos também ficam em hash, para não vazar respostas de outras fases
+  // Near misses are hashed too, so answers from other stages do not leak
   const nearMiss = challenge.nearMisses?.find((rule) => rule.hashes.includes(hash));
   return { status: 'incorrect', message: nearMiss?.message };
 }

@@ -3,7 +3,7 @@ import { LuKeyRound, LuLock, LuLockOpen } from 'react-icons/lu';
 import CipherTool from '../../components/CipherTool';
 import { cn } from '../../utils/format';
 
-// Cores + número: a cor ajuda, mas nunca é a única forma de identificar a letra da chave
+// Colors + number: color helps, but is never the only way to identify the key letter
 const KEY_COLORS = [
   'border-brand-orange text-brand-orange-light',
   'border-brand-blue-light text-brand-blue-light',

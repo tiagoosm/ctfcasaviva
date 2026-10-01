@@ -1,11 +1,11 @@
 import '@testing-library/jest-dom';
 import { TextDecoder, TextEncoder } from 'util';
 
-// O react-router v7 usa TextEncoder, ausente no jsdom do Jest 27
+// react-router v7 uses TextEncoder, which is missing from Jest 27's jsdom
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
 
-// APIs de layout que o jsdom não implementa
+// Layout APIs that jsdom does not implement
 window.scrollTo = () => {};
 Element.prototype.scrollIntoView = function scrollIntoView() {};
 

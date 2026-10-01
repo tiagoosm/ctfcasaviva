@@ -4,7 +4,7 @@ import ImageViewer from '../../components/ImageViewer';
 
 const base = `${process.env.PUBLIC_URL}/assets/gallery`;
 
-// A resolução original é preservada nos arquivos grandes: as marcas são pequenas
+// The original resolution is kept in the large files: the marks are small
 const EVIDENCE = [
   {
     alt: 'Pintura de uma igreja de pedra sob um céu azul-escuro agitado, com uma mulher caminhando por uma trilha de terra',

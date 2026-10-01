@@ -18,7 +18,7 @@ export function letterToShift(letter) {
   return ALPHABET.indexOf(letter.toUpperCase());
 }
 
-// Cifra de Vigenère: cada letra usa o deslocamento da letra correspondente da chave
+// Vigenère cipher: each letter uses the shift of the matching key letter
 export function vigenere(text, key, direction = 1) {
   const shifts = Array.from(key, letterToShift);
   let position = 0;

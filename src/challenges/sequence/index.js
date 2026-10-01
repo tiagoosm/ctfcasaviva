@@ -12,7 +12,7 @@ const sequence = {
   summary: 'Seis arquivos, uma única ordem de ativação.',
   objective:
     'Um sistema legado protege a próxima porta. Ele só aceita os seis arquivos na ordem em que foram indexados. A ordem não é aleatória — repare em como o painel de ativação foi organizado.',
-  // A resposta é produzida pela interação (ordem dos arquivos), não digitada
+  // The answer is produced by interaction (file order), not typed
   answerMode: 'interactive',
   answerHash: 'c98a6251170b6960afa7cf5dead713a1d2042d6c557b2c3a581bccd35ea2c4ea',
   hints: [

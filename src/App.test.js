@@ -26,14 +26,14 @@ async function solveFlag(value, successTitle) {
 
 const pageTitle = (name) => screen.findByRole('heading', { name, level: 1 });
 
-describe('fluxo completo do CTF', () => {
-  it('permite jogar do briefing até o certificado', async () => {
+describe('full CTF flow', () => {
+  it('can be played from the briefing to the certificate', async () => {
     renderApp('/');
 
     fireEvent.change(screen.getByLabelText(/seu codinome/i), { target: { value: 'Agente Teste' } });
     fireEvent.click(screen.getByRole('button', { name: /iniciar missão/i }));
 
-    // 00 · Briefing — erro, quase-acerto, dica e acerto
+    // 00 · Briefing — wrong answer, near miss, hint and correct answer
     await pageTitle('Briefing');
     await submitFlag('errado');
     expect(await screen.findByText('Resposta incorreta')).toBeInTheDocument();
@@ -51,7 +51,7 @@ describe('fluxo completo do CTF', () => {
     );
     fireEvent.click(screen.getByRole('link', { name: /próximo: galeria/i }));
 
-    // 01 · Galeria — o visualizador abre e fecha com Esc
+    // 01 · Gallery — the viewer opens and closes with Esc
     await pageTitle('Galeria');
     fireEvent.click(screen.getByRole('button', { name: /examinar evidência 01/i }));
     const dialog = screen.getByRole('dialog', { name: /evidência 01 de 04/i });
@@ -66,7 +66,7 @@ describe('fluxo completo do CTF', () => {
     await solveFlag('GOGH', 'Marcas identificadas');
     fireEvent.click(screen.getByRole('link', { name: /próximo: sequência/i }));
 
-    // 02 · Sequência — ordem errada é recusada, a certa é aceita
+    // 02 · Sequence — the wrong order is rejected, the right one is accepted
     await pageTitle('Sequência');
     const send = screen.getByRole('button', { name: /enviar sequência/i });
     expect(send).toBeDisabled();
@@ -85,21 +85,21 @@ describe('fluxo completo do CTF', () => {
     await screen.findByRole('heading', { name: 'Sequência aceita', level: 2 });
     fireEvent.click(screen.getByRole('link', { name: /próximo: interceptação/i }));
 
-    // 03 · Interceptação
+    // 03 · Interception
     await pageTitle('Interceptação');
     await submitFlag('xowlpdwr');
     expect(await screen.findByText(/agora ela precisa ser decifrada/i)).toBeInTheDocument();
     await solveFlag('ultimato', 'Transmissão decifrada');
     fireEvent.click(screen.getByRole('link', { name: /próximo: o cofre/i }));
 
-    // Final · O Cofre
+    // Final · The Vault
     await pageTitle('O Cofre');
     await submitFlag('gogh');
     expect(await screen.findByText(/essa é a chave!/i)).toBeInTheDocument();
     await solveFlag('conquista', 'Cofre aberto');
     fireEvent.click(screen.getByRole('link', { name: /ver resultado da missão/i }));
 
-    // Certificado
+    // Certificate
     await pageTitle('Missão cumprida');
     const certificate = screen.getByRole('article', { name: 'Agente Teste' });
     expect(within(certificate).getByText('Mestre do CTF')).toBeInTheDocument();
@@ -107,25 +107,25 @@ describe('fluxo completo do CTF', () => {
   }, 30000);
 });
 
-describe('proteção do fluxo', () => {
-  it('não permite pular etapas pela URL', async () => {
+describe('flow protection', () => {
+  it('does not allow skipping stages through the URL', async () => {
     renderApp('/missao/cofre');
     await pageTitle('Mapa da missão');
     expect(screen.getByText('O Cofre ainda está bloqueado')).toBeInTheDocument();
   });
 
-  it('não libera o certificado antes de concluir a missão', async () => {
+  it('does not unlock the certificate before the mission is complete', async () => {
     renderApp('/conclusao');
     await pageTitle('Mapa da missão');
     expect(screen.getByText(/o certificado ainda está trancado/i)).toBeInTheDocument();
   });
 
-  it('mostra uma página amigável para rotas inexistentes', async () => {
+  it('shows a friendly page for unknown routes', async () => {
     renderApp('/rota/que/nao/existe');
     expect(await pageTitle('Esta rota não faz parte da missão')).toBeInTheDocument();
   });
 
-  it('retoma o progresso salvo e permite reiniciar a missão', async () => {
+  it('resumes saved progress and allows restarting the mission', async () => {
     window.localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({
@@ -148,7 +148,7 @@ describe('proteção do fluxo', () => {
     expect(screen.getByRole('link', { name: /jogar briefing/i })).toBeInTheDocument();
   });
 
-  it('continua funcionando com dados corrompidos no armazenamento', async () => {
+  it('keeps working with corrupted data in storage', async () => {
     window.localStorage.setItem(STORAGE_KEY, '{corrompido');
     renderApp('/');
     expect(await screen.findByRole('button', { name: /iniciar missão/i })).toBeInTheDocument();

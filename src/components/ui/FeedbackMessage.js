@@ -7,8 +7,8 @@ const tones = {
   info: { icon: LuInfo, classes: 'border-brand-blue-light/40 bg-brand-blue/20 text-brand-blue-light' },
 };
 
-// A região viva fica sempre montada: leitores de tela só anunciam mudanças
-// em regiões que já existiam no DOM antes do conteúdo aparecer.
+// The live region is always mounted: screen readers only announce changes
+// in regions that already existed in the DOM before the content appeared.
 export default function FeedbackMessage({ id, feedback, className }) {
   const tone = feedback ? tones[feedback.tone] : null;
   const Icon = tone?.icon;

@@ -1,5 +1,5 @@
-// Mensagens de erro variam a cada tentativa para o jogador perceber que o
-// sistema reagiu ao novo envio, sem nunca entregar a resposta.
+// Error messages vary on each attempt so the player notices that the
+// system reacted to the new submission, without ever giving the answer away.
 const INCORRECT_MESSAGES = [
   'Essa não parece ser a solução. Analise novamente as pistas.',
   'Ainda não. Revise o que você já observou e teste outra hipótese.',

@@ -1,6 +1,6 @@
 import { LOGO_SRC } from '../../components/layout/BrandMark';
 
-// Tarjas "falsas": blocos sólidos que não escondem nada, só para despistar
+// "Fake" redaction bars: solid blocks that hide nothing, there only as decoys
 function SolidRedaction({ length }) {
   return (
     <span className="redacted" role="img" aria-label="trecho censurado">

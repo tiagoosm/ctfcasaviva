@@ -6,7 +6,7 @@ import { cn } from '../../utils/format';
 
 const base = `${process.env.PUBLIC_URL}/assets/sequence`;
 
-// Os ids e nomes de arquivo são neutros para não entregar a ordem pelo código-fonte
+// Ids and file names are neutral so the source code does not give the order away
 const FILES = [
   { id: 'k', alt: 'Chamas de fogo azul e laranja sobre uma superfície escura' },
   { id: 'r', alt: 'Dois cachorros sentados na grama olhando para cima' },

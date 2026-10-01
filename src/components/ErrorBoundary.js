@@ -2,8 +2,8 @@ import { Component } from 'react';
 import { LuTriangleAlert } from 'react-icons/lu';
 import Button from './ui/Button';
 
-// Captura erros de renderização para o jogador nunca cair em uma tela branca.
-// O progresso fica salvo, então recarregar ou voltar ao mapa é sempre seguro.
+// Catches rendering errors so the player never lands on a blank screen.
+// Progress is saved, so reloading or going back to the map is always safe.
 export default class ErrorBoundary extends Component {
   state = { error: null };
 

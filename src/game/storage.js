@@ -5,8 +5,8 @@ export const STORAGE_KEY = 'casaviva-ctf/progress';
 const isTimestamp = (value) => (Number.isFinite(value) && value > 0 ? value : null);
 const isCount = (value) => (Number.isInteger(value) && value >= 0 ? value : 0);
 
-// Dados do localStorage podem estar corrompidos, editados à mão ou em formato
-// antigo: aceitamos só o que tem a forma esperada e descartamos o resto.
+// localStorage data may be corrupted, hand-edited or in an old
+// format: we accept only what has the expected shape and discard the rest.
 export function parseState(raw) {
   try {
     const data = JSON.parse(raw);
@@ -33,8 +33,8 @@ export function parseState(raw) {
   }
 }
 
-// Em aba anônima, modo de economia ou com cookies bloqueados o acesso ao
-// storage pode lançar erro — o jogo continua funcionando, só não persiste.
+// In a private tab, in data-saver mode or with cookies blocked, accessing
+// storage may throw — the game keeps working, it just does not persist.
 export function loadState() {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -48,6 +48,6 @@ export function saveState(state) {
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch {
-    // Sem persistência disponível: o progresso fica apenas nesta sessão
+    // No persistence available: progress lives only in this session
   }
 }

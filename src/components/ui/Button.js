@@ -5,7 +5,7 @@ const base =
   'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl font-display font-semibold transition-[background-color,border-color,color,box-shadow,transform] duration-150 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-45 select-none';
 
 const variants = {
-  // Texto azul-escuro sobre laranja: 6:1 de contraste (branco sobre laranja não passa no AA)
+  // Dark blue text on orange: 6:1 contrast (white on orange fails AA)
   primary: 'bg-brand-orange text-ink-950 hover:bg-brand-orange-light hover:shadow-glow',
   secondary: 'border border-ink-600 bg-ink-800/70 text-fg hover:border-fg-subtle hover:bg-ink-700',
   ghost: 'text-fg-muted hover:bg-ink-800 hover:text-fg',
