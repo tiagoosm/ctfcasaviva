@@ -5,7 +5,10 @@ const briefing = {
   slug: 'briefing',
   code: '00',
   title: 'Briefing',
-  points: 50,
+  points: 100,
+  // Speed bonus: full up to fastSeconds, gone at slowSeconds
+  fastSeconds: 60,
+  slowSeconds: 300,
   objective:
     'A senha do primeiro acesso foi censurada no dossiê. Encontre-a.',
   answerMode: 'flag',
@@ -20,7 +23,6 @@ const briefing = {
     },
   ],
   hint: {
-    cost: 10,
     text: 'Em documentos digitais, uma tarja preta nem sempre apaga o que está por baixo. Às vezes ela só esconde.',
   },
   success: {

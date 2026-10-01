@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { LuLightbulb } from 'react-icons/lu';
+import { SCORING } from '../../game/scoring';
 import Button from '../ui/Button';
 
 export default function HintPanel({ challenge, revealed, solved, onReveal }) {
@@ -44,7 +45,7 @@ export default function HintPanel({ challenge, revealed, solved, onReveal }) {
                   onReveal();
                 }}
               >
-                Revelar (−{hint.cost})
+                Revelar (−{SCORING.hintPenalty})
               </Button>
               <Button size="sm" variant="secondary" onClick={() => setConfirming(false)}>
                 Cancelar
@@ -53,7 +54,7 @@ export default function HintPanel({ challenge, revealed, solved, onReveal }) {
           ) : (
             <Button variant="secondary" className="w-full" onClick={() => setConfirming(true)}>
               Ver dica
-              <span className="font-mono text-sm text-warning">−{hint.cost} pts</span>
+              <span className="font-mono text-sm text-warning">−{SCORING.hintPenalty} pts</span>
             </Button>
           )}
         </div>

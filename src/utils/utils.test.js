@@ -1,7 +1,7 @@
 import { createHash } from 'crypto';
 import { evaluateAnswer, hashAnswer, normalizeAnswer } from './answers';
 import { caesar, vigenere } from './cipher';
-import { formatDuration } from './format';
+import { formatClock, formatDuration } from './format';
 import { sha256 } from './sha256';
 
 describe('sha256', () => {
@@ -59,6 +59,17 @@ describe('ciphers', () => {
   it('Vigenère encrypts and decrypts with the same key', () => {
     const encrypted = vigenere('CONQUISTA', 'GOGH');
     expect(vigenere(encrypted, 'GOGH', -1)).toBe('CONQUISTA');
+  });
+});
+
+describe('formatClock', () => {
+  it.each([
+    [0, '00:00'],
+    [75, '01:15'],
+    [3725, '1:02:05'],
+    [-4, '00:00'],
+  ])('%p → %p', (seconds, expected) => {
+    expect(formatClock(seconds)).toBe(expected);
   });
 });
 

@@ -2,11 +2,27 @@ import { createInitialState, sanitizeCodename, sanitizeGroup, STATE_VERSION } fr
 
 export const STORAGE_KEY = 'casaviva-ctf/progress';
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 const isTimestamp = (value) => (Number.isFinite(value) && value > 0 ? value : null);
 const isCount = (value) => (Number.isInteger(value) && value >= 0 ? value : 0);
+const isCountOrNull = (value) => (Number.isInteger(value) && value >= 0 ? value : null);
+
+function parseResult(result) {
+  if (!result || typeof result !== 'object') return null;
+  return {
+    place: isCountOrNull(result.place),
+    score: isCount(result.score),
+    totalSeconds: isCount(result.totalSeconds),
+    errors: isCount(result.errors),
+    hints: isCount(result.hints),
+  };
+}
 
 // localStorage data may be corrupted, hand-edited or in an old
 // format: we accept only what has the expected shape and discard the rest.
+// Editing it only changes what this browser shows: the ranking is computed
+// by the server from its own records.
 export function parseState(raw) {
   try {
     const data = JSON.parse(raw);
@@ -16,9 +32,12 @@ export function parseState(raw) {
     for (const [id, entry] of Object.entries(data.progress ?? {})) {
       if (!entry || typeof entry !== 'object') continue;
       progress[id] = {
-        attempts: isCount(entry.attempts),
-        hintsRevealed: isCount(entry.hintsRevealed),
+        enteredAt: isTimestamp(entry.enteredAt),
         solvedAt: isTimestamp(entry.solvedAt),
+        wrong: isCount(entry.wrong),
+        hintUsed: entry.hintUsed === true,
+        seconds: isCountOrNull(entry.seconds),
+        score: isCountOrNull(entry.score),
       };
     }
 
@@ -26,6 +45,8 @@ export function parseState(raw) {
       ...createInitialState(sanitizeCodename(data.codename), sanitizeGroup(data.group)),
       startedAt: isTimestamp(data.startedAt),
       finishedAt: isTimestamp(data.finishedAt),
+      runId: typeof data.runId === 'string' && UUID.test(data.runId) ? data.runId : null,
+      result: parseResult(data.result),
       progress,
     };
   } catch {

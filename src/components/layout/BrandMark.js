@@ -22,7 +22,7 @@ export default function BrandMark({ compact = false }) {
         height="40"
         className="h-10 w-10 rounded-lg shadow-glow"
       />
-      <span className="flex flex-col leading-none">
+      <span className={cn('flex-col leading-none', compact ? 'hidden sm:flex' : 'flex')}>
         <span className="font-display text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-fg-subtle">
           Inatel
         </span>

@@ -1,4 +1,5 @@
 import { evaluateAnswer } from '../utils/answers';
+import { SCORING } from '../game/scoring';
 import { vigenere } from '../utils/cipher';
 import { challenges, getChallengeBySlug, TOTAL_POINTS } from '.';
 import transmission from './interception/transmission';
@@ -25,8 +26,8 @@ describe('challenge registry', () => {
     // A single hint per challenge, which must never be worth the whole challenge
     expect(challenge.hints).toBeUndefined();
     expect(challenge.hint.text).toBeTruthy();
-    expect(challenge.hint.cost).toBeGreaterThan(0);
-    expect(challenge.hint.cost).toBeLessThan(challenge.points);
+    expect(challenge.hint.cost).toBeUndefined();
+    expect(challenge.points).toBeGreaterThan(SCORING.hintPenalty);
     expect(getChallengeBySlug(challenge.slug)).toBe(challenge);
   });
 
@@ -46,7 +47,7 @@ describe('challenge registry', () => {
   });
 
   it('adds up the maximum score correctly', () => {
-    expect(TOTAL_POINTS).toBe(800);
+    expect(TOTAL_POINTS).toBe(1000);
   });
 
   it('has the vault hold the final flag encrypted with the Gallery key', () => {

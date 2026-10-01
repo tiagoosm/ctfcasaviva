@@ -1,20 +1,23 @@
-import { challenges } from '../challenges';
+import { challenges, TOTAL_POINTS } from '../challenges';
 import { CODENAME_MAX_LENGTH, createInitialState, gameReducer } from './gameReducer';
+import { SCORING } from './scoring';
 import {
   getChallengeScore,
   getCurrentChallenge,
+  getProgress,
   getRank,
   getStatus,
   getSummary,
+  hasProgress,
   isRegistered,
 } from './selectors';
 import { parseState } from './storage';
 
 const [first, second] = challenges;
 
-function solve(state, challenge, now = 1000) {
-  return gameReducer(state, { type: 'SOLVE', id: challenge.id, now });
-}
+const enter = (state, challenge, now) => gameReducer(state, { type: 'ENTER', id: challenge.id, now });
+const solve = (state, challenge, now = 1000, completesMission = false) =>
+  gameReducer(state, { type: 'SOLVE', challenge, now, completesMission });
 
 describe('gameReducer + selectors', () => {
   it('unlocks challenges in sequence', () => {
@@ -28,12 +31,34 @@ describe('gameReducer + selectors', () => {
     expect(getCurrentChallenge(state)).toBe(second);
   });
 
-  it('deducts the revealed hint from the challenge score', () => {
-    let state = createInitialState();
+  it('gives the full score for a fast, clean solve', () => {
+    let state = enter(createInitialState(), first, 1000);
+    state = solve(state, first, 1000 + first.fastSeconds * 1000);
+    expect(getChallengeScore(state, first)).toBe(first.points);
+    expect(getProgress(state, first.id).seconds).toBe(first.fastSeconds);
+  });
+
+  it('charges wrong answers and the hint', () => {
+    let state = enter(createInitialState(), first, 1000);
+    state = gameReducer(state, { type: 'WRONG', id: first.id });
+    state = gameReducer(state, { type: 'WRONG', id: first.id });
     state = gameReducer(state, { type: 'REVEAL_HINT', id: first.id });
-    state = solve(state, first);
-    expect(getChallengeScore(state, first)).toBe(first.points - first.hint.cost);
+    state = solve(state, first, 2000);
+
+    expect(getChallengeScore(state, first)).toBe(
+      first.points - 2 * SCORING.wrongPenalty - SCORING.hintPenalty,
+    );
+    expect(getSummary(state).errors).toBe(2);
     expect(getSummary(state).hintsUsed).toBe(1);
+  });
+
+  it('starts the clock on the first visit only', () => {
+    let state = enter(createInitialState(), first, 1000);
+    // Reloading or coming back later must not restart it
+    state = enter(state, first, 500000);
+    state = solve(state, first, 1000 + first.slowSeconds * 1000);
+    expect(getProgress(state, first.id).seconds).toBe(first.slowSeconds);
+    expect(getChallengeScore(state, first)).toBe(Math.round(first.points * SCORING.baseShare));
   });
 
   it('reveals a single hint per challenge, and none after solving', () => {
@@ -41,21 +66,51 @@ describe('gameReducer + selectors', () => {
     for (let i = 0; i < 5; i++) {
       state = gameReducer(state, { type: 'REVEAL_HINT', id: first.id });
     }
-    expect(state.progress[first.id].hintsRevealed).toBe(1);
+    expect(getSummary(state).hintsUsed).toBe(1);
 
     let solved = solve(createInitialState(), first);
     solved = gameReducer(solved, { type: 'REVEAL_HINT', id: first.id });
-    expect(solved.progress[first.id].hintsRevealed).toBe(0);
+    solved = gameReducer(solved, { type: 'WRONG', id: first.id });
+    expect(getProgress(solved, first.id).hintUsed).toBe(false);
+    expect(getProgress(solved, first.id).wrong).toBe(0);
   });
 
-  it('keeps the original timestamp when solved twice', () => {
+  it('keeps the original result when solved twice', () => {
     let state = solve(createInitialState(), first, 1000);
     state = solve(state, first, 5000);
-    expect(state.progress[first.id].solvedAt).toBe(1000);
+    expect(getProgress(state, first.id).solvedAt).toBe(1000);
   });
 
-  it('records mission start, end and duration', () => {
-    let state = gameReducer(createInitialState(), {
+  it('replaces the local estimate with the score confirmed by the server', () => {
+    let state = solve(createInitialState(), first);
+    state = gameReducer(state, { type: 'SERVER_SCORE', id: first.id, score: 42, seconds: 77 });
+    expect(getChallengeScore(state, first)).toBe(42);
+    expect(getProgress(state, first.id).seconds).toBe(77);
+
+    // A challenge that was not solved locally cannot receive a score
+    state = gameReducer(state, { type: 'SERVER_SCORE', id: second.id, score: 999, seconds: 1 });
+    expect(getChallengeScore(state, second)).toBe(0);
+  });
+
+  it('adds up the time spent inside each challenge', () => {
+    let state = createInitialState();
+    let clock = 0;
+    challenges.forEach((challenge, index) => {
+      state = enter(state, challenge, clock);
+      clock += 10000;
+      state = solve(state, challenge, clock, index === challenges.length - 1);
+      // Time between challenges does not count
+      clock += 60000;
+    });
+    const summary = getSummary(state);
+    expect(summary.isComplete).toBe(true);
+    expect(summary.totalSeconds).toBe(10 * challenges.length);
+    expect(summary.score).toBe(TOTAL_POINTS);
+    expect(state.finishedAt).toBeTruthy();
+  });
+
+  it('records name and class when the mission starts', () => {
+    const state = gameReducer(createInitialState(), {
       type: 'START',
       codename: '  Agente   X ',
       group: ' 2º  A ',
@@ -63,12 +118,12 @@ describe('gameReducer + selectors', () => {
     });
     expect(state.codename).toBe('Agente X');
     expect(state.group).toBe('2º A');
-    state = gameReducer(state, { type: 'SOLVE', id: first.id, now: 700, completesMission: true });
-    expect(getSummary(state).duration).toBe(600);
+    expect(state.startedAt).toBe(100);
   });
 
-  it('clears progress but keeps name and class on restart', () => {
+  it('clears progress and the server run but keeps name and class on restart', () => {
     let state = gameReducer(createInitialState(), { type: 'START', codename: 'Coruja', group: 'T1', now: 1 });
+    state = gameReducer(state, { type: 'SET_RUN', runId: 'abc' });
     state = solve(state, first);
     state = gameReducer(state, { type: 'RESET' });
     expect(state).toEqual(createInitialState('Coruja', 'T1'));
@@ -80,9 +135,16 @@ describe('gameReducer + selectors', () => {
     expect(isRegistered(createInitialState('Coruja', 'T1'))).toBe(true);
   });
 
+  it('does not treat a visit as progress', () => {
+    let state = enter(createInitialState(), first, 1);
+    expect(hasProgress(state)).toBe(false);
+    state = gameReducer(state, { type: 'WRONG', id: first.id });
+    expect(hasProgress(state)).toBe(true);
+  });
+
   it('assigns the title according to performance', () => {
-    expect(getRank(800).title).toBe('Mestre do CTF');
-    expect(getRank(600).title).toBe('Especialista');
+    expect(getRank(1000).title).toBe('Mestre do CTF');
+    expect(getRank(750).title).toBe('Especialista');
     expect(getRank(100).title).toBe('Recruta de elite');
   });
 });
@@ -90,21 +152,30 @@ describe('gameReducer + selectors', () => {
 describe('parseState', () => {
   it('discards corrupted data or data from another version', () => {
     expect(parseState('{nao é json')).toBeNull();
-    expect(parseState(JSON.stringify({ version: 1, progress: {} }))).toBeNull();
+    expect(parseState(JSON.stringify({ version: 2, progress: {} }))).toBeNull();
   });
 
   it('sanitizes invalid values', () => {
     const parsed = parseState(
       JSON.stringify({
-        version: 2,
+        version: 3,
         codename: 'x'.repeat(100),
         startedAt: 'ontem',
-        progress: { briefing: { attempts: -3, hintsRevealed: 1.5, solvedAt: 10 }, lixo: null },
+        runId: 'not-a-uuid',
+        result: { place: -1, score: 'muito' },
+        progress: {
+          briefing: { enteredAt: 5, solvedAt: 10, wrong: -3, hintUsed: 'sim', seconds: 1.5, score: 80 },
+          lixo: null,
+        },
       }),
     );
     expect(parsed.codename).toHaveLength(CODENAME_MAX_LENGTH);
     expect(parsed.group).toBe('');
     expect(parsed.startedAt).toBeNull();
-    expect(parsed.progress).toEqual({ briefing: { attempts: 0, hintsRevealed: 0, solvedAt: 10 } });
+    expect(parsed.runId).toBeNull();
+    expect(parsed.result).toEqual({ place: null, score: 0, totalSeconds: 0, errors: 0, hints: 0 });
+    expect(parsed.progress).toEqual({
+      briefing: { enteredAt: 5, solvedAt: 10, wrong: 0, hintUsed: false, seconds: null, score: 80 },
+    });
   });
 });

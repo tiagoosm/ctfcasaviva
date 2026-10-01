@@ -5,14 +5,16 @@ const sequence = {
   slug: 'sequencia',
   code: '02',
   title: 'Sequência',
-  points: 150,
+  points: 200,
+  // Speed bonus: full up to fastSeconds, gone at slowSeconds
+  fastSeconds: 120,
+  slowSeconds: 600,
   objective:
     'O sistema só aceita os seis arquivos na ordem certa. Repare em como o painel está organizado.',
   // The answer is produced by interaction (file order), not typed
   answerMode: 'interactive',
   answerHash: 'c98a6251170b6960afa7cf5dead713a1d2042d6c557b2c3a581bccd35ea2c4ea',
   hint: {
-    cost: 30,
     text: 'Os espaços do painel usam letras, não números. O que cada imagem pode ter a ver com uma letra?',
   },
   success: {

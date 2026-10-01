@@ -6,6 +6,9 @@ const vault = {
   code: 'FINAL',
   title: 'O Cofre',
   points: 300,
+  // Speed bonus: full up to fastSeconds, gone at slowSeconds
+  fastSeconds: 240,
+  slowSeconds: 900,
   objective:
     'Cada letra usa um deslocamento diferente, definido por uma chave de 4 letras que se repete. Você já encontrou essa chave.',
   answerMode: 'flag',
@@ -33,7 +36,6 @@ const vault = {
     },
   ],
   hint: {
-    cost: 60,
     text: 'A chave é uma palavra que você já descobriu nesta missão. Cada letra dela indica um deslocamento: A = 0, B = 1, C = 2…',
   },
   success: {

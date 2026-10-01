@@ -30,7 +30,7 @@ function seedState(progress = {}) {
   window.localStorage.setItem(
     STORAGE_KEY,
     JSON.stringify({
-      version: 2,
+      version: 3,
       codename: 'Coruja',
       group: 'T1',
       startedAt: 1,
@@ -61,12 +61,14 @@ describe('full CTF flow', () => {
     await pageTitle('Briefing');
     await submitFlag('errado');
     expect(await screen.findByText('Resposta incorreta')).toBeInTheDocument();
+    expect(screen.getByText(/−10 pontos/)).toBeInTheDocument();
+    expect(screen.getByRole('timer')).toBeInTheDocument();
 
     await submitFlag('senha');
     expect(await screen.findByText(/não do nome do campo/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /ver dica/i }));
-    fireEvent.click(screen.getByRole('button', { name: /revelar \(−10\)/i }));
+    fireEvent.click(screen.getByRole('button', { name: /revelar \(−25\)/i }));
     expect(screen.getByText(/uma tarja preta nem sempre apaga/i)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /ver dica/i })).not.toBeInTheDocument();
 
@@ -129,7 +131,11 @@ describe('full CTF flow', () => {
     const certificate = screen.getByRole('article', { name: 'Agente Teste' });
     expect(within(certificate).getByText('Mestre do CTF')).toBeInTheDocument();
     expect(certificate).toHaveTextContent('Turma T1');
-    expect(certificate).toHaveTextContent('790/800');
+    // 1000 − 6 wrong answers (10 each) − 1 hint (25)
+    expect(certificate).toHaveTextContent('915 / 1000 pts');
+    expect(within(certificate).getByText('Erros').nextSibling).toHaveTextContent('6');
+    expect(within(certificate).getByText('Dicas').nextSibling).toHaveTextContent('1');
+    expect(screen.getByRole('link', { name: /ver ranking/i })).toBeInTheDocument();
   }, 30000);
 });
 
@@ -153,13 +159,20 @@ describe('flow protection', () => {
     expect(screen.getByText(/o certificado ainda está trancado/i)).toBeInTheDocument();
   });
 
+  it('opens the ranking without starting the mission', async () => {
+    renderApp('/ranking');
+    await pageTitle('Ranking');
+  });
+
   it('shows a friendly page for unknown routes', async () => {
     renderApp('/rota/que/nao/existe');
     expect(await pageTitle('Esta rota não faz parte da missão')).toBeInTheDocument();
   });
 
   it('resumes saved progress and allows restarting the mission', async () => {
-    seedState({ briefing: { attempts: 1, hintsRevealed: 0, solvedAt: 2 } });
+    seedState({
+      briefing: { enteredAt: 1, solvedAt: 2, wrong: 0, hintUsed: false, seconds: 1, score: 100 },
+    });
     renderApp('/missao');
     await pageTitle('Mapa da missão');
     expect(screen.getByRole('link', { name: /jogar galeria/i })).toBeInTheDocument();

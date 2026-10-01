@@ -5,6 +5,7 @@ import CompletionPage from './pages/CompletionPage';
 import LandingPage from './pages/LandingPage';
 import MissionPage from './pages/MissionPage';
 import NotFoundPage from './pages/NotFoundPage';
+import RankingPage from './pages/RankingPage';
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
         <Route path="missao" element={<MissionPage />} />
         <Route path="missao/:slug" element={<ChallengePage />} />
         <Route path="conclusao" element={<CompletionPage />} />
+        <Route path="ranking" element={<RankingPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
 import { challenges, getChallengeBySlug, getNextChallenge } from '../challenges';
 import ChallengeHeader, { challengeLabel } from '../components/challenge/ChallengeHeader';
@@ -10,9 +10,9 @@ import { useGame } from '../game/GameProvider';
 import {
   getChallengeScore,
   getCurrentChallenge,
+  getProgress,
   getStatus,
   isRegistered,
-  usedHint,
 } from '../game/selectors';
 import useDocumentTitle from '../hooks/useDocumentTitle';
 import NotFoundPage from './NotFoundPage';
@@ -20,17 +20,23 @@ import NotFoundPage from './NotFoundPage';
 export default function ChallengePage() {
   const { slug } = useParams();
   const challenge = getChallengeBySlug(slug);
-  const { state, submitAnswer, revealHint } = useGame();
+  const { state, submitAnswer, revealHint, enterChallenge } = useGame();
   const [justSolved, setJustSolved] = useState(false);
 
   useDocumentTitle(challenge ? `${challengeLabel(challenge)}: ${challenge.title}` : 'Página não encontrada');
 
+  const registered = isRegistered(state);
+  const status = challenge ? getStatus(state, challenge) : null;
+
+  // Entering an open challenge starts its clock (only the first time)
+  useEffect(() => {
+    if (challenge && registered && status === 'available') enterChallenge(challenge);
+  }, [challenge, registered, status, enterChallenge]);
+
   if (!challenge) return <NotFoundPage />;
 
   // The mission cannot be played before the participant gives name and class
-  if (!isRegistered(state)) return <Navigate to="/" replace />;
-
-  const status = getStatus(state, challenge);
+  if (!registered) return <Navigate to="/" replace />;
 
   // Stages cannot be skipped by typing the URL: we go back to the map with the reason
   if (status === 'locked') {
@@ -50,6 +56,7 @@ export default function ChallengePage() {
   }
 
   const solved = status === 'solved';
+  const progress = getProgress(state, challenge.id);
   const { Stage } = challenge;
 
   function handleSubmit(answer) {
@@ -63,7 +70,7 @@ export default function ChallengePage() {
       <ProgressTrack currentId={challenge.id} />
 
       <div className="mt-8 sm:mt-10">
-        <ChallengeHeader challenge={challenge} />
+        <ChallengeHeader challenge={challenge} progress={progress} />
       </div>
 
       {solved && (
@@ -91,7 +98,7 @@ export default function ChallengePage() {
 
           <HintPanel
             challenge={challenge}
-            revealed={usedHint(state, challenge.id)}
+            revealed={progress.hintUsed}
             solved={solved}
             onReveal={() => revealHint(challenge)}
           />

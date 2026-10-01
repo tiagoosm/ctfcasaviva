@@ -91,7 +91,7 @@ export default function MissionPage() {
                 <p className={cn('font-mono text-xs', status === 'solved' ? 'text-success' : 'text-fg-subtle')}>
                   {status === 'solved'
                     ? `+${getChallengeScore(state, challenge)} pts`
-                    : `${challenge.points} pts`}
+                    : `até ${challenge.points} pts`}
                 </p>
               </div>
               <ChallengeAction challenge={challenge} status={status} />

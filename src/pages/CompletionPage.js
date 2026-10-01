@@ -1,6 +1,6 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { LuAward, LuPrinter, LuRotateCcw } from 'react-icons/lu';
+import { LuAward, LuListOrdered, LuPrinter, LuRotateCcw } from 'react-icons/lu';
 import Confetti from '../components/Confetti';
 import { LOGO_SRC } from '../components/layout/BrandMark';
 import Button from '../components/ui/Button';
@@ -10,13 +10,27 @@ import { getRank, getSummary } from '../game/selectors';
 import useDocumentTitle from '../hooks/useDocumentTitle';
 import { formatDate, formatDuration } from '../utils/format';
 
+function Stat({ label, children }) {
+  return (
+    <div>
+      <dt className="text-xs text-paper-ink/70">{label}</dt>
+      <dd className="font-mono text-lg font-semibold">{children}</dd>
+    </div>
+  );
+}
+
 export default function CompletionPage() {
   useDocumentTitle('Missão cumprida');
-  const { state, resetMission } = useGame();
+  const { state, resetMission, refreshResult } = useGame();
   const summary = getSummary(state);
   const navigate = useNavigate();
   const [confirmReset, setConfirmReset] = useState(false);
   const resetting = useRef(false);
+
+  // The ranking place comes from the server, once it has confirmed the last answer
+  useEffect(() => {
+    if (summary.isComplete) refreshResult();
+  }, [summary.isComplete, refreshResult]);
 
   // During "play again" the state resets before navigation finishes:
   // we do not want the guard below to redirect to the map in the meantime.
@@ -37,8 +51,13 @@ export default function CompletionPage() {
     );
   }
 
-  const rank = getRank(summary.score, summary.maxScore);
-  const name = state.codename || 'Investigador(a)';
+  // Server-confirmed numbers win over the local estimate
+  const { result } = state;
+  const score = result?.score ?? summary.score;
+  const totalSeconds = result?.totalSeconds ?? summary.totalSeconds;
+  const errors = result?.errors ?? summary.errors;
+  const hints = result?.hints ?? summary.hintsUsed;
+  const rank = getRank(score, summary.maxScore);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
@@ -56,19 +75,17 @@ export default function CompletionPage() {
         <div className="px-6 py-8 sm:px-12 sm:py-10">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <img src={LOGO_SRC} alt="Inatel cas@viva" width="150" height="50" className="h-11 w-auto" />
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-brand-blue">
-              Certificado · CTF
-            </p>
+            {result?.place && (
+              <p className="rounded-full bg-brand-blue px-4 py-1.5 font-mono text-sm font-semibold text-white">
+                {result.place}º no ranking
+              </p>
+            )}
           </div>
 
-          <p className="mt-8 text-sm uppercase tracking-widest text-paper-ink/70">Concedido a</p>
-          <h2 id="certificado-titulo" className="mt-1 break-words text-3xl font-bold sm:text-4xl">
-            {name}
+          <h2 id="certificado-titulo" className="mt-8 break-words text-3xl font-bold sm:text-4xl">
+            {state.codename}
           </h2>
-          {state.group && <p className="mt-1 font-mono text-sm text-paper-ink/70">Turma {state.group}</p>}
-          <p className="mt-3 max-w-xl leading-relaxed text-paper-ink/80">
-            por concluir todas as etapas do Capture The Flag do Inatel cas@viva.
-          </p>
+          <p className="mt-1 font-mono text-sm text-paper-ink/70">Turma {state.group}</p>
 
           <div className="mt-8 flex flex-col gap-6 border-t-2 border-dashed border-paper-line pt-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
@@ -76,26 +93,17 @@ export default function CompletionPage() {
                 <LuAward className="h-9 w-9" aria-hidden="true" />
               </span>
               <div>
-                <p className="text-xs uppercase tracking-widest text-paper-ink/70">Título</p>
-                <p className="font-display text-2xl font-bold text-brand-blue">{rank.title}</p>
+                <p className="font-mono text-3xl font-bold text-brand-blue">
+                  {score}
+                  <span className="text-base font-medium text-paper-ink/60"> / {summary.maxScore} pts</span>
+                </p>
+                <p className="font-display font-semibold">{rank.title}</p>
               </div>
             </div>
-            <dl className="grid grid-cols-3 gap-4 text-center sm:text-right">
-              <div>
-                <dt className="text-xs text-paper-ink/70">Pontos</dt>
-                <dd className="font-mono text-lg font-semibold">
-                  {summary.score}
-                  <span className="text-sm text-paper-ink/60">/{summary.maxScore}</span>
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs text-paper-ink/70">Tempo</dt>
-                <dd className="font-mono text-lg font-semibold">{formatDuration(summary.duration)}</dd>
-              </div>
-              <div>
-                <dt className="text-xs text-paper-ink/70">Dicas</dt>
-                <dd className="font-mono text-lg font-semibold">{summary.hintsUsed}</dd>
-              </div>
+            <dl className="grid grid-cols-3 gap-5 text-center sm:text-right">
+              <Stat label="Tempo">{formatDuration(totalSeconds * 1000)}</Stat>
+              <Stat label="Erros">{errors}</Stat>
+              <Stat label="Dicas">{hints}</Stat>
             </dl>
           </div>
           {state.finishedAt && (
@@ -105,8 +113,11 @@ export default function CompletionPage() {
       </article>
 
       <div className="no-print mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-        <Button onClick={() => window.print()} size="lg">
-          <LuPrinter className="h-5 w-5" aria-hidden="true" /> Imprimir certificado
+        <Button to="/ranking" size="lg">
+          <LuListOrdered className="h-5 w-5" aria-hidden="true" /> Ver ranking
+        </Button>
+        <Button variant="secondary" size="lg" onClick={() => window.print()}>
+          <LuPrinter className="h-5 w-5" aria-hidden="true" /> Imprimir
         </Button>
         <Button variant="secondary" size="lg" onClick={() => setConfirmReset(true)}>
           <LuRotateCcw className="h-5 w-5" aria-hidden="true" /> Jogar novamente
@@ -116,7 +127,7 @@ export default function CompletionPage() {
       <ConfirmDialog
         open={confirmReset}
         title="Jogar novamente?"
-        description="O certificado e a pontuação atual serão apagados."
+        description="Você recomeça do zero. No ranking, vale o seu melhor resultado."
         confirmLabel="Recomeçar"
         onCancel={() => setConfirmReset(false)}
         onConfirm={() => {

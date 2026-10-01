@@ -5,7 +5,10 @@ const gallery = {
   slug: 'galeria',
   code: '01',
   title: 'Galeria',
-  points: 100,
+  points: 200,
+  // Speed bonus: full up to fastSeconds, gone at slowSeconds
+  fastSeconds: 120,
+  slowSeconds: 600,
   objective:
     'Cada imagem carrega uma marca discreta. Junte as marcas na ordem das evidências.',
   answerMode: 'flag',
@@ -23,7 +26,6 @@ const gallery = {
     },
   ],
   hint: {
-    cost: 20,
     text: 'As marcas são pequenas e se camuflam nas cores da pintura. Percorra cada evidência com calma, dos prédios aos pontos de luz.',
   },
   success: {

@@ -19,6 +19,8 @@ An educational Capture The Flag (CTF) built for the students of **Inatel cas@viv
 - [Available scripts](#available-scripts)
 - [Project structure](#project-structure)
 - [How answers are validated](#how-answers-are-validated)
+- [Scoring](#scoring)
+- [Ranking backend](#ranking-backend)
 - [Adding a challenge](#adding-a-challenge)
 - [Deployment](#deployment)
 - [Tech stack](#tech-stack)
@@ -41,8 +43,9 @@ An educational Capture The Flag (CTF) built for the students of **Inatel cas@viv
 - Progressive unlocking: stages cannot be skipped through the URL.
 - Progress is saved in `localStorage` and survives reloads; corrupted or outdated data is discarded safely.
 - Name and class are required before the mission starts.
-- One optional hint per challenge, which costs points and guides without giving the answer away.
-- A running score and a final rank.
+- One optional hint per challenge, which guides without giving the answer away.
+- Scoring that rewards speed and accuracy, with a stopwatch per challenge.
+- A shared Top 20 ranking, computed by the server.
 - Contextual feedback for near misses, such as submitting the key instead of the message.
 - Printable completion certificate.
 
@@ -92,13 +95,16 @@ src/
 │   ├── ui/              # Button, Badge, Modal, ConfirmDialog, FeedbackMessage…
 │   ├── ImageViewer.js
 │   └── CipherTool.js
-├── game/                # reducer, selectors (status, score, rank), persistence, provider
+├── api/                 # ranking backend client
+├── game/                # reducer, scoring, selectors, persistence, provider
 ├── hooks/
-├── pages/               # Landing, Mission map, Challenge, Completion, 404
+├── pages/               # Landing, Mission map, Challenge, Completion, Ranking, 404
 ├── styles/              # Tailwind base layer and global styles
 └── utils/               # sha256, answer normalization/validation, ciphers, formatting
 scripts/
 └── hash-flag.mjs        # answer hash generator
+supabase/
+└── migrations/          # ranking schema and server-side functions
 ```
 
 Design tokens (cas@viva orange `#E87000`, blue `#004898`, surfaces, fonts and animations) live in [`tailwind.config.js`](tailwind.config.js).
@@ -115,16 +121,54 @@ Solutions exist in readable form only in the test files, which are not part of t
 
 As with any client-side CTF, this raises the effort needed to read answers from the source; it is not a substitute for server-side validation.
 
+## Scoring
+
+The mission is worth 1000 points: 100 for the Briefing, 200 each for the Gallery, Sequence and Interception, and 300 for the Vault. For each challenge:
+
+| Component | Rule |
+|-----------|------|
+| Base | 70% of the challenge, earned by solving it |
+| Speed bonus | Up to 30%. Full up to the challenge's fast time, then decaying linearly to zero at its slow time |
+| Wrong answers | −10 each, charged for at most five |
+| Hint | −25 |
+| Floor | A challenge never scores below zero |
+
+The clock of a challenge starts when the player first opens it and stops when it is solved. Time spent between challenges does not count, and reloading the page does not restart it. The total time is the sum of the challenge times and breaks ties in the ranking.
+
+The formula lives in [`src/game/scoring.js`](src/game/scoring.js) and is mirrored by `ctf_score` on the server.
+
+## Ranking backend
+
+The ranking is stored in [Supabase](https://supabase.com/) (Postgres). The schema and all server logic are in [`supabase/migrations`](supabase/migrations).
+
+The browser cannot read or write the tables: row level security is enabled with no policies. It can only call a few database functions, and the server is the one that checks each answer against its own hashes, measures time with its own clock, counts errors and computes the score. A client therefore cannot submit a score, a time or an error count.
+
+| Function | Purpose |
+|----------|---------|
+| `ctf_start` | Opens a run for a name and class |
+| `ctf_enter` | Starts the clock of a challenge (only once) |
+| `ctf_hint` | Records that the hint was used |
+| `ctf_submit` | Validates an answer; on success stores time and score |
+| `ctf_ranking` | Returns the top players, one row per participant (their best run) |
+| `ctf_result` | Returns the final result and ranking place of a run |
+
+The game stays playable if the backend is unreachable: answers are also validated locally and the score is estimated with the same formula, but that run does not enter the ranking.
+
+Known limits of a client-side CTF: the challenge content ships with the site, so someone who already knows the answers can replay the mission quickly. The server bounds every score to what the rules allow, but it cannot tell a fast solver from a returning one.
+
+To point the app at another Supabase project, apply the migration there and set `REACT_APP_SUPABASE_URL` and `REACT_APP_SUPABASE_KEY` (the publishable key) at build time.
+
 ## Adding a challenge
 
-1. Create `src/challenges/<name>/index.js` with the config (`id`, `slug`, `code`, `title`, `points`, `objective`, `answerMode`, `hint`, `success`, `Stage`) and a `Stage` component.
+1. Create `src/challenges/<name>/index.js` with the config (`id`, `slug`, `code`, `title`, `points`, `fastSeconds`, `slowSeconds`, `objective`, `answerMode`, `hint`, `success`, `Stage`) and a `Stage` component.
 2. Generate the answer hash and paste it into `answerHash`. Use the same command for `nearMisses[].hashes`.
 
    ```bash
    npm run hash-flag -- <challenge-id> <answer>
    ```
 
-3. Add the challenge to the array in [`src/challenges/index.js`](src/challenges/index.js). Routing, progress, mission map and scoring adapt automatically.
+3. Add a row for it to the `ctf_challenges` table (same id, points, time window and hash) so the server can score it.
+4. Add the challenge to the array in [`src/challenges/index.js`](src/challenges/index.js). Routing, progress, mission map and scoring adapt automatically.
 
 ## Deployment
 
@@ -135,6 +179,7 @@ The app is a static single-page application hosted on [Vercel](https://vercel.co
 - [React 19](https://react.dev/) with [React Router 7](https://reactrouter.com/)
 - [Tailwind CSS 3](https://tailwindcss.com/)
 - [Create React App](https://create-react-app.dev/) (build tooling) with Jest and Testing Library
+- [Supabase](https://supabase.com/) (ranking backend)
 - [Vercel](https://vercel.com/) (hosting)
 
 ## Author

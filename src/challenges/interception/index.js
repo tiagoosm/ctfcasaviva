@@ -6,6 +6,9 @@ const interception = {
   code: '03',
   title: 'Interceptação',
   points: 200,
+  // Speed bonus: full up to fastSeconds, gone at slowSeconds
+  fastSeconds: 180,
+  slowSeconds: 720,
   objective:
     'Há uma palavra cifrada infiltrada neste relato, com o mesmo método que ele descreve. Encontre-a e decifre-a.',
   answerMode: 'flag',
@@ -28,7 +31,6 @@ const interception = {
     },
   ],
   hint: {
-    cost: 40,
     text: 'Uma das palavras do relato não pertence a nenhum idioma. Quem comandou as Guerras Gálicas dá nome à cifra usada nela.',
   },
   success: {
