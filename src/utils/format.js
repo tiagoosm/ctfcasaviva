@@ -23,6 +23,11 @@ export function formatDate(timestamp) {
   return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'long' }).format(new Date(timestamp));
 }
 
+export function formatDateTime(value) {
+  if (!value) return '';
+  return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value));
+}
+
 export function cn(...classes) {
   return classes.filter(Boolean).join(' ');
 }

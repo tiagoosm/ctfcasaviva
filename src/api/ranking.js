@@ -3,8 +3,8 @@
 // so nothing sent from here can set a score directly.
 // The publishable key is meant to be public; it only grants access to the
 // ctf_* functions exposed in supabase/migrations.
-const API_URL = process.env.REACT_APP_SUPABASE_URL || 'https://zssdxfbsnsjcqqoxgckp.supabase.co';
-const API_KEY =
+export const API_URL = process.env.REACT_APP_SUPABASE_URL || 'https://zssdxfbsnsjcqqoxgckp.supabase.co';
+export const API_KEY =
   process.env.REACT_APP_SUPABASE_KEY || 'sb_publishable_6uzYyeNkU7l7ZSWrECcV8g_dkdnoVtg';
 
 const TIMEOUT = 8000;

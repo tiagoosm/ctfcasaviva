@@ -21,6 +21,7 @@ An educational Capture The Flag (CTF) built for the students of **Inatel cas@viv
 - [How answers are validated](#how-answers-are-validated)
 - [Scoring](#scoring)
 - [Ranking backend](#ranking-backend)
+- [Admin area](#admin-area)
 - [Adding a challenge](#adding-a-challenge)
 - [Deployment](#deployment)
 - [Tech stack](#tech-stack)
@@ -95,6 +96,7 @@ src/
 │   ├── ui/              # Button, Badge, Modal, ConfirmDialog, FeedbackMessage…
 │   ├── ImageViewer.js
 │   └── CipherTool.js
+├── admin/               # admin area (lazy-loaded): login, players, stages
 ├── api/                 # ranking backend client
 ├── game/                # reducer, scoring, selectors, persistence, provider
 ├── hooks/
@@ -158,6 +160,21 @@ Known limits of a client-side CTF: the challenge content ships with the site, so
 
 To point the app at another Supabase project, apply the migration there and set `REACT_APP_SUPABASE_URL` and `REACT_APP_SUPABASE_KEY` (the publishable key) at build time.
 
+## Admin area
+
+The admin area lives at `/admin`. It is not linked from the player interface and is loaded as a separate bundle only when that route is opened.
+
+- **Players:** every run with score, time, errors, hints, completed stages and status; search by name, filter by class and status; per-player history by stage; edit name and class; hide a result from the public ranking or delete it (with confirmation).
+- **Stages:** preview any stage without playing, with its answer, hint, scoring and configuration, and a tester that checks an answer the same way the game does.
+
+Access is enforced by the server, not by hiding the route. Administrators sign in with Supabase Auth (email and password), and every `ctf_admin_*` database function checks that the caller's confirmed email is listed in the `ctf_admins` table. Players never sign in, and name and class are identification only. Plain-text answers are stored in the database and returned only to administrators; the public bundle contains hashes.
+
+To set up an administrator:
+
+1. Add the email to `ctf_admins` (SQL editor: `insert into ctf_admins (email) values ('you@example.com');`).
+2. In the Supabase dashboard, open Authentication → Users → Add user, create the user with that email and a password, and mark it as confirmed.
+3. Recommended: disable new sign-ups under Authentication → Sign In / Providers, since players do not need accounts.
+
 ## Adding a challenge
 
 1. Create `src/challenges/<name>/index.js` with the config (`id`, `slug`, `code`, `title`, `points`, `fastSeconds`, `slowSeconds`, `objective`, `answerMode`, `hint`, `success`, `Stage`) and a `Stage` component.
@@ -167,7 +184,7 @@ To point the app at another Supabase project, apply the migration there and set 
    npm run hash-flag -- <challenge-id> <answer>
    ```
 
-3. Add a row for it to the `ctf_challenges` table (same id, points, time window and hash) so the server can score it.
+3. Add a row for it to the `ctf_challenges` table (same id, points, time window and hash, plus the plain-text `answer` for the admin area) so the server can score it.
 4. Add the challenge to the array in [`src/challenges/index.js`](src/challenges/index.js). Routing, progress, mission map and scoring adapt automatically.
 
 ## Deployment
