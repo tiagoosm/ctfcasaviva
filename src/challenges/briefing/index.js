@@ -19,16 +19,10 @@ const briefing = {
       message: 'Quase lá: você precisa do conteúdo da senha, não do nome do campo.',
     },
   ],
-  hints: [
-    {
-      cost: 10,
-      text: 'Em documentos digitais, uma tarja preta nem sempre apaga o que está por baixo. Às vezes ela só esconde.',
-    },
-    {
-      cost: 15,
-      text: 'Selecione o texto do documento: arraste o cursor sobre as tarjas, use Ctrl+A ou, no celular, toque e segure sobre elas.',
-    },
-  ],
+  hint: {
+    cost: 10,
+    text: 'Em documentos digitais, uma tarja preta nem sempre apaga o que está por baixo. Às vezes ela só esconde.',
+  },
   success: {
     title: 'Acesso liberado',
     lesson:

@@ -22,11 +22,11 @@ describe('challenge registry', () => {
     expect(challenge.Stage).toEqual(expect.any(Function));
     expect(challenge.answerHash).toMatch(/^[0-9a-f]{64}$/);
     expect(['flag', 'interactive']).toContain(challenge.answerMode);
-    expect(challenge.hints.length).toBeGreaterThan(0);
-    expect(challenge.success.lesson).toBeTruthy();
-    // Hints must never bring a challenge down to zero (or negative) points
-    const totalCost = challenge.hints.reduce((sum, hint) => sum + hint.cost, 0);
-    expect(totalCost).toBeLessThan(challenge.points);
+    // A single hint per challenge, which must never be worth the whole challenge
+    expect(challenge.hints).toBeUndefined();
+    expect(challenge.hint.text).toBeTruthy();
+    expect(challenge.hint.cost).toBeGreaterThan(0);
+    expect(challenge.hint.cost).toBeLessThan(challenge.points);
     expect(getChallengeBySlug(challenge.slug)).toBe(challenge);
   });
 

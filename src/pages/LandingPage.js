@@ -1,13 +1,14 @@
-import { useId, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LuArrowRight, LuMap, LuTrophy } from 'react-icons/lu';
 import { challengePath, challenges } from '../challenges';
 import Credential from '../components/Credential';
 import Button from '../components/ui/Button';
 import { useGame } from '../game/GameProvider';
-import { CODENAME_MAX_LENGTH } from '../game/gameReducer';
-import { getCurrentChallenge, getSummary } from '../game/selectors';
+import { CODENAME_MAX_LENGTH, GROUP_MAX_LENGTH } from '../game/gameReducer';
+import { getCurrentChallenge, getSummary, isRegistered } from '../game/selectors';
 import useDocumentTitle from '../hooks/useDocumentTitle';
+import { cn } from '../utils/format';
 
 function Title() {
   const initial = (letter) => <span className="text-brand-orange">{letter}</span>;
@@ -19,19 +20,63 @@ function Title() {
   );
 }
 
+function Field({ label, error, inputRef, ...inputProps }) {
+  const id = useId();
+  const errorId = `${id}-erro`;
+  return (
+    <div>
+      <label htmlFor={id} className="block font-display font-semibold">
+        {label}
+      </label>
+      <input
+        ref={inputRef}
+        id={id}
+        type="text"
+        aria-required="true"
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? errorId : undefined}
+        className={cn(
+          'mt-1.5 h-12 w-full rounded-xl border-2 bg-ink-950/70 px-4 text-base focus:outline-none',
+          error
+            ? 'border-danger/70 focus:border-danger'
+            : 'border-ink-600 hover:border-fg-subtle focus:border-brand-orange',
+        )}
+        {...inputProps}
+      />
+      {error && (
+        <p id={errorId} role="alert" className="mt-1.5 text-sm text-danger">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
 export default function LandingPage() {
   useDocumentTitle('');
   const { state, startMission } = useGame();
   const summary = getSummary(state);
   const current = getCurrentChallenge(state);
-  const [codename, setCodename] = useState(state.codename);
+  const registered = isRegistered(state);
+  const [name, setName] = useState(state.codename);
+  const [group, setGroup] = useState(state.group);
+  const [errors, setErrors] = useState({});
+  const nameRef = useRef(null);
+  const groupRef = useRef(null);
   const navigate = useNavigate();
-  const inputId = useId();
 
   function handleStart(event) {
     event.preventDefault();
-    startMission(codename);
-    navigate(challengePath(challenges[0]));
+    const nextErrors = {
+      name: name.trim() ? undefined : 'Informe seu nome.',
+      group: group.trim() ? undefined : 'Informe sua turma.',
+    };
+    setErrors(nextErrors);
+    if (nextErrors.name) return nameRef.current?.focus();
+    if (nextErrors.group) return groupRef.current?.focus();
+
+    startMission(name, group);
+    navigate(current ? challengePath(current) : '/conclusao');
   }
 
   return (
@@ -45,29 +90,39 @@ export default function LandingPage() {
           Uma investigação digital em {challenges.length} etapas. Observe, deduza e decifre.
         </p>
 
-        {!summary.hasStarted && (
-          <form onSubmit={handleStart} className="mt-8 max-w-md space-y-3">
-            <label htmlFor={inputId} className="block font-display font-semibold">
-              Seu codinome <span className="font-normal text-fg-subtle">(opcional)</span>
-            </label>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <input
-                id={inputId}
-                type="text"
-                value={codename}
-                onChange={(event) => setCodename(event.target.value)}
-                maxLength={CODENAME_MAX_LENGTH}
-                autoComplete="nickname"
-                className="h-12 min-w-0 flex-1 rounded-xl border-2 border-ink-600 bg-ink-950/70 px-4 text-base hover:border-fg-subtle focus:border-brand-orange focus:outline-none"
-              />
-              <Button type="submit" size="lg">
-                Iniciar missão <LuArrowRight className="h-5 w-5" aria-hidden="true" />
-              </Button>
-            </div>
+        {!registered && (
+          <form onSubmit={handleStart} noValidate className="mt-8 max-w-md space-y-4">
+            <Field
+              label="Nome"
+              inputRef={nameRef}
+              value={name}
+              onChange={(event) => {
+                setName(event.target.value);
+                setErrors((current) => ({ ...current, name: undefined }));
+              }}
+              maxLength={CODENAME_MAX_LENGTH}
+              autoComplete="name"
+              error={errors.name}
+            />
+            <Field
+              label="Turma"
+              inputRef={groupRef}
+              value={group}
+              onChange={(event) => {
+                setGroup(event.target.value);
+                setErrors((current) => ({ ...current, group: undefined }));
+              }}
+              maxLength={GROUP_MAX_LENGTH}
+              autoComplete="off"
+              error={errors.group}
+            />
+            <Button type="submit" size="lg" className="w-full sm:w-auto">
+              Iniciar missão <LuArrowRight className="h-5 w-5" aria-hidden="true" />
+            </Button>
           </form>
         )}
 
-        {summary.hasStarted && (
+        {registered && (
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             {summary.isComplete ? (
               <Button to="/conclusao" size="lg">
@@ -75,7 +130,8 @@ export default function LandingPage() {
               </Button>
             ) : (
               <Button to={challengePath(current)} size="lg">
-                Continuar: {current.title} <LuArrowRight className="h-5 w-5" aria-hidden="true" />
+                {summary.hasStarted ? 'Continuar' : 'Iniciar'}: {current.title}{' '}
+                <LuArrowRight className="h-5 w-5" aria-hidden="true" />
               </Button>
             )}
             <Button to="/missao" variant="secondary" size="lg">
@@ -85,7 +141,10 @@ export default function LandingPage() {
         )}
       </div>
 
-      <Credential codename={summary.hasStarted ? state.codename : codename} />
+      <Credential
+        codename={registered ? state.codename : name}
+        group={registered ? state.group : group}
+      />
     </section>
   );
 }

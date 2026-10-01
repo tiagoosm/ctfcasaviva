@@ -1,6 +1,13 @@
 import { challenges } from '../challenges';
-import { createInitialState, gameReducer } from './gameReducer';
-import { getChallengeScore, getCurrentChallenge, getRank, getStatus, getSummary } from './selectors';
+import { CODENAME_MAX_LENGTH, createInitialState, gameReducer } from './gameReducer';
+import {
+  getChallengeScore,
+  getCurrentChallenge,
+  getRank,
+  getStatus,
+  getSummary,
+  isRegistered,
+} from './selectors';
 import { parseState } from './storage';
 
 const [first, second] = challenges;
@@ -21,22 +28,23 @@ describe('gameReducer + selectors', () => {
     expect(getCurrentChallenge(state)).toBe(second);
   });
 
-  it('deducts revealed hints from the challenge score', () => {
+  it('deducts the revealed hint from the challenge score', () => {
     let state = createInitialState();
-    state = gameReducer(state, { type: 'REVEAL_HINT', id: first.id, max: first.hints.length });
+    state = gameReducer(state, { type: 'REVEAL_HINT', id: first.id });
     state = solve(state, first);
-    expect(getChallengeScore(state, first)).toBe(first.points - first.hints[0].cost);
+    expect(getChallengeScore(state, first)).toBe(first.points - first.hint.cost);
+    expect(getSummary(state).hintsUsed).toBe(1);
   });
 
-  it('does not reveal more hints than exist, nor any after solving', () => {
+  it('reveals a single hint per challenge, and none after solving', () => {
     let state = createInitialState();
     for (let i = 0; i < 5; i++) {
-      state = gameReducer(state, { type: 'REVEAL_HINT', id: first.id, max: first.hints.length });
+      state = gameReducer(state, { type: 'REVEAL_HINT', id: first.id });
     }
-    expect(state.progress[first.id].hintsRevealed).toBe(first.hints.length);
+    expect(state.progress[first.id].hintsRevealed).toBe(1);
 
     let solved = solve(createInitialState(), first);
-    solved = gameReducer(solved, { type: 'REVEAL_HINT', id: first.id, max: 2 });
+    solved = gameReducer(solved, { type: 'REVEAL_HINT', id: first.id });
     expect(solved.progress[first.id].hintsRevealed).toBe(0);
   });
 
@@ -47,17 +55,29 @@ describe('gameReducer + selectors', () => {
   });
 
   it('records mission start, end and duration', () => {
-    let state = gameReducer(createInitialState(), { type: 'START', codename: '  Agente   X ', now: 100 });
+    let state = gameReducer(createInitialState(), {
+      type: 'START',
+      codename: '  Agente   X ',
+      group: ' 2º  A ',
+      now: 100,
+    });
     expect(state.codename).toBe('Agente X');
+    expect(state.group).toBe('2º A');
     state = gameReducer(state, { type: 'SOLVE', id: first.id, now: 700, completesMission: true });
     expect(getSummary(state).duration).toBe(600);
   });
 
-  it('clears progress but keeps the codename on restart', () => {
-    let state = gameReducer(createInitialState(), { type: 'START', codename: 'Coruja', now: 1 });
+  it('clears progress but keeps name and class on restart', () => {
+    let state = gameReducer(createInitialState(), { type: 'START', codename: 'Coruja', group: 'T1', now: 1 });
     state = solve(state, first);
     state = gameReducer(state, { type: 'RESET' });
-    expect(state).toEqual(createInitialState('Coruja'));
+    expect(state).toEqual(createInitialState('Coruja', 'T1'));
+  });
+
+  it('requires both name and class to be registered', () => {
+    expect(isRegistered(createInitialState())).toBe(false);
+    expect(isRegistered(createInitialState('Coruja'))).toBe(false);
+    expect(isRegistered(createInitialState('Coruja', 'T1'))).toBe(true);
   });
 
   it('assigns the title according to performance', () => {
@@ -82,7 +102,8 @@ describe('parseState', () => {
         progress: { briefing: { attempts: -3, hintsRevealed: 1.5, solvedAt: 10 }, lixo: null },
       }),
     );
-    expect(parsed.codename).toHaveLength(24);
+    expect(parsed.codename).toHaveLength(CODENAME_MAX_LENGTH);
+    expect(parsed.group).toBe('');
     expect(parsed.startedAt).toBeNull();
     expect(parsed.progress).toEqual({ briefing: { attempts: 0, hintsRevealed: 0, solvedAt: 10 } });
   });

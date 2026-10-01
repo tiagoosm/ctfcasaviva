@@ -65,6 +65,7 @@ export default function CompletionPage() {
           <h2 id="certificado-titulo" className="mt-1 break-words text-3xl font-bold sm:text-4xl">
             {name}
           </h2>
+          {state.group && <p className="mt-1 font-mono text-sm text-paper-ink/70">Turma {state.group}</p>}
           <p className="mt-3 max-w-xl leading-relaxed text-paper-ink/80">
             por concluir todas as etapas do Capture The Flag do Inatel cas@viva.
           </p>

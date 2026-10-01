@@ -16,10 +16,12 @@ export function getStatus(state, challenge) {
 export const getCurrentChallenge = (state) =>
   challenges.find((challenge) => !isSolved(state, challenge.id)) ?? null;
 
+export const isRegistered = (state) => Boolean(state.codename && state.group);
+
+export const usedHint = (state, id) => getProgress(state, id).hintsRevealed > 0;
+
 export const getHintPenalty = (state, challenge) =>
-  challenge.hints
-    .slice(0, getProgress(state, challenge.id).hintsRevealed)
-    .reduce((sum, hint) => sum + hint.cost, 0);
+  usedHint(state, challenge.id) ? challenge.hint.cost : 0;
 
 export function getChallengeScore(state, challenge) {
   if (!isSolved(state, challenge.id)) return 0;
@@ -33,7 +35,7 @@ export function getSummary(state) {
     total: challenges.length,
     score: challenges.reduce((sum, c) => sum + getChallengeScore(state, c), 0),
     maxScore: TOTAL_POINTS,
-    hintsUsed: challenges.reduce((sum, c) => sum + getProgress(state, c.id).hintsRevealed, 0),
+    hintsUsed: challenges.filter((c) => usedHint(state, c.id)).length,
     attempts: challenges.reduce((sum, c) => sum + getProgress(state, c.id).attempts, 0),
     isComplete: solvedCount === challenges.length,
     hasStarted: Boolean(state.startedAt) || solvedCount > 0,

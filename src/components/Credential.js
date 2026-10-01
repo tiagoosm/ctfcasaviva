@@ -5,7 +5,7 @@ import { cn } from '../utils/format';
 import { LOGO_SRC } from './layout/BrandMark';
 
 // Investigation badge: ties the mission to cas@viva's real visual identity
-export default function Credential({ codename }) {
+export default function Credential({ codename, group }) {
   const { state } = useGame();
   const summary = getSummary(state);
   const level = summary.isComplete ? getRank(summary.score).title : 'Recruta';
@@ -29,12 +29,16 @@ export default function Credential({ codename }) {
             Credencial de investigação
           </p>
           <div>
-            <p className="text-xs text-paper-ink/70">Codinome</p>
+            <p className="text-xs text-paper-ink/70">Nome</p>
             <p className="truncate font-display text-2xl font-bold">
-              {codename?.trim() || 'Investigador(a)'}
+              {codename?.trim() || '—'}
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-3 text-sm">
+          <div className="grid grid-cols-3 gap-3 text-sm">
+            <div className="min-w-0">
+              <p className="text-xs text-paper-ink/70">Turma</p>
+              <p className="truncate font-semibold">{group?.trim() || '—'}</p>
+            </div>
             <div>
               <p className="text-xs text-paper-ink/70">Nível</p>
               <p className="font-semibold">{level}</p>

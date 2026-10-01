@@ -26,11 +26,35 @@ async function solveFlag(value, successTitle) {
 
 const pageTitle = (name) => screen.findByRole('heading', { name, level: 1 });
 
+function seedState(progress = {}) {
+  window.localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({
+      version: 2,
+      codename: 'Coruja',
+      group: 'T1',
+      startedAt: 1,
+      finishedAt: null,
+      progress,
+    }),
+  );
+}
+
 describe('full CTF flow', () => {
   it('can be played from the briefing to the certificate', async () => {
     renderApp('/');
 
-    fireEvent.change(screen.getByLabelText(/seu codinome/i), { target: { value: 'Agente Teste' } });
+    // Name and class are both required before the mission starts
+    fireEvent.click(screen.getByRole('button', { name: /iniciar missão/i }));
+    expect(screen.getByText('Informe seu nome.')).toBeInTheDocument();
+    expect(screen.getByText('Informe sua turma.')).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('Nome'), { target: { value: 'Agente Teste' } });
+    fireEvent.click(screen.getByRole('button', { name: /iniciar missão/i }));
+    expect(screen.queryByText('Informe seu nome.')).not.toBeInTheDocument();
+    expect(screen.getByText('Informe sua turma.')).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('Turma'), { target: { value: 'T1' } });
     fireEvent.click(screen.getByRole('button', { name: /iniciar missão/i }));
 
     // 00 · Briefing — wrong answer, near miss, hint and correct answer
@@ -41,9 +65,10 @@ describe('full CTF flow', () => {
     await submitFlag('senha');
     expect(await screen.findByText(/não do nome do campo/i)).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: /ver dica 1/i }));
+    fireEvent.click(screen.getByRole('button', { name: /ver dica/i }));
     fireEvent.click(screen.getByRole('button', { name: /revelar \(−10\)/i }));
     expect(screen.getByText(/uma tarja preta nem sempre apaga/i)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /ver dica/i })).not.toBeInTheDocument();
 
     await solveFlag('Começar', 'Acesso liberado');
     expect(JSON.parse(window.localStorage.getItem(STORAGE_KEY)).progress.briefing.solvedAt).toEqual(
@@ -103,12 +128,20 @@ describe('full CTF flow', () => {
     await pageTitle('Missão cumprida');
     const certificate = screen.getByRole('article', { name: 'Agente Teste' });
     expect(within(certificate).getByText('Mestre do CTF')).toBeInTheDocument();
+    expect(certificate).toHaveTextContent('Turma T1');
     expect(certificate).toHaveTextContent('790/800');
   }, 30000);
 });
 
 describe('flow protection', () => {
+  it('does not open a challenge before name and class are given', async () => {
+    renderApp('/missao/briefing');
+    expect(await screen.findByLabelText('Nome')).toBeInTheDocument();
+    expect(screen.getByLabelText('Turma')).toBeInTheDocument();
+  });
+
   it('does not allow skipping stages through the URL', async () => {
+    seedState();
     renderApp('/missao/cofre');
     await pageTitle('Mapa da missão');
     expect(screen.getByText('O Cofre ainda está bloqueado')).toBeInTheDocument();
@@ -126,16 +159,7 @@ describe('flow protection', () => {
   });
 
   it('resumes saved progress and allows restarting the mission', async () => {
-    window.localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({
-        version: 2,
-        codename: 'Coruja',
-        startedAt: 1,
-        finishedAt: null,
-        progress: { briefing: { attempts: 1, hintsRevealed: 0, solvedAt: 2 } },
-      }),
-    );
+    seedState({ briefing: { attempts: 1, hintsRevealed: 0, solvedAt: 2 } });
     renderApp('/missao');
     await pageTitle('Mapa da missão');
     expect(screen.getByRole('link', { name: /jogar galeria/i })).toBeInTheDocument();

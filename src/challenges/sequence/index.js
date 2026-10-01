@@ -11,16 +11,10 @@ const sequence = {
   // The answer is produced by interaction (file order), not typed
   answerMode: 'interactive',
   answerHash: 'c98a6251170b6960afa7cf5dead713a1d2042d6c557b2c3a581bccd35ea2c4ea',
-  hints: [
-    {
-      cost: 30,
-      text: 'Os espaços do painel de ativação não são numerados. Por que um sistema de arquivos usaria essas marcações?',
-    },
-    {
-      cost: 45,
-      text: 'Dê um nome simples, em português, a cada imagem. A primeira letra de cada nome indica o espaço em que ela deve entrar.',
-    },
-  ],
+  hint: {
+    cost: 30,
+    text: 'Os espaços do painel usam letras, não números. O que cada imagem pode ter a ver com uma letra?',
+  },
   success: {
     title: 'Sequência aceita',
     lesson:

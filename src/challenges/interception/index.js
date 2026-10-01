@@ -27,16 +27,10 @@ const interception = {
       message: 'Esse é o método, não a mensagem. Use-o para decifrar a palavra suspeita.',
     },
   ],
-  hints: [
-    {
-      cost: 40,
-      text: 'Leia com atenção: uma das palavras do texto não pertence a nenhum idioma.',
-    },
-    {
-      cost: 60,
-      text: 'Quem comandou as Guerras Gálicas deu nome ao método: cada letra é trocada pela que está 3 posições à frente no alfabeto. Para decifrar, volte 3 posições.',
-    },
-  ],
+  hint: {
+    cost: 40,
+    text: 'Uma das palavras do relato não pertence a nenhum idioma. Quem comandou as Guerras Gálicas dá nome à cifra usada nela.',
+  },
   success: {
     title: 'Transmissão decifrada',
     lesson:

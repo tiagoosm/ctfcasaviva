@@ -1,4 +1,4 @@
-import { createInitialState, sanitizeCodename, STATE_VERSION } from './gameReducer';
+import { createInitialState, sanitizeCodename, sanitizeGroup, STATE_VERSION } from './gameReducer';
 
 export const STORAGE_KEY = 'casaviva-ctf/progress';
 
@@ -23,7 +23,7 @@ export function parseState(raw) {
     }
 
     return {
-      ...createInitialState(sanitizeCodename(data.codename)),
+      ...createInitialState(sanitizeCodename(data.codename), sanitizeGroup(data.group)),
       startedAt: isTimestamp(data.startedAt),
       finishedAt: isTimestamp(data.finishedAt),
       progress,

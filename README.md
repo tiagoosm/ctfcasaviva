@@ -40,7 +40,9 @@ An educational Capture The Flag (CTF) built for the students of **Inatel cas@viv
 
 - Progressive unlocking: stages cannot be skipped through the URL.
 - Progress is saved in `localStorage` and survives reloads; corrupted or outdated data is discarded safely.
-- Optional two-level hints that cost points, a running score and a final rank.
+- Name and class are required before the mission starts.
+- One optional hint per challenge, which costs points and guides without giving the answer away.
+- A running score and a final rank.
 - Contextual feedback for near misses, such as submitting the key instead of the message.
 - Printable completion certificate.
 
@@ -115,7 +117,7 @@ As with any client-side CTF, this raises the effort needed to read answers from 
 
 ## Adding a challenge
 
-1. Create `src/challenges/<name>/index.js` with the config (`id`, `slug`, `code`, `title`, `points`, `objective`, `answerMode`, `hints`, `success`, `Stage`) and a `Stage` component.
+1. Create `src/challenges/<name>/index.js` with the config (`id`, `slug`, `code`, `title`, `points`, `objective`, `answerMode`, `hint`, `success`, `Stage`) and a `Stage` component.
 2. Generate the answer hash and paste it into `answerHash`. Use the same command for `nearMisses[].hashes`.
 
    ```bash

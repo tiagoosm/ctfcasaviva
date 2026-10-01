@@ -38,10 +38,8 @@ export function GameProvider({ children }) {
 
   const actions = useMemo(
     () => ({
-      startMission: (codename) => dispatch({ type: 'START', codename, now: Date.now() }),
-      ensureStarted: () => dispatch({ type: 'ENSURE_STARTED', now: Date.now() }),
-      revealHint: (challenge) =>
-        dispatch({ type: 'REVEAL_HINT', id: challenge.id, max: challenge.hints.length }),
+      startMission: (codename, group) => dispatch({ type: 'START', codename, group, now: Date.now() }),
+      revealHint: (challenge) => dispatch({ type: 'REVEAL_HINT', id: challenge.id }),
       resetMission: () => dispatch({ type: 'RESET' }),
     }),
     [],

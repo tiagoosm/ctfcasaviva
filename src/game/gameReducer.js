@@ -1,10 +1,12 @@
 export const STATE_VERSION = 2;
-export const CODENAME_MAX_LENGTH = 24;
+export const CODENAME_MAX_LENGTH = 40;
+export const GROUP_MAX_LENGTH = 20;
 
-export function createInitialState(codename = '') {
+export function createInitialState(codename = '', group = '') {
   return {
     version: STATE_VERSION,
     codename,
+    group,
     startedAt: null,
     finishedAt: null,
     progress: {},
@@ -18,12 +20,15 @@ function updateProgress(state, id, update) {
   return { ...state, progress: { ...state.progress, [id]: { ...current, ...update(current) } } };
 }
 
-export function sanitizeCodename(value) {
+function sanitizeText(value, maxLength) {
   return String(value ?? '')
     .replace(/\s+/g, ' ')
     .trim()
-    .slice(0, CODENAME_MAX_LENGTH);
+    .slice(0, maxLength);
 }
+
+export const sanitizeCodename = (value) => sanitizeText(value, CODENAME_MAX_LENGTH);
+export const sanitizeGroup = (value) => sanitizeText(value, GROUP_MAX_LENGTH);
 
 export function gameReducer(state, action) {
   switch (action.type) {
@@ -31,19 +36,18 @@ export function gameReducer(state, action) {
       return {
         ...state,
         codename: sanitizeCodename(action.codename) || state.codename,
+        group: sanitizeGroup(action.group) || state.group,
         startedAt: state.startedAt ?? action.now,
       };
-
-    case 'ENSURE_STARTED':
-      return state.startedAt ? state : { ...state, startedAt: action.now };
 
     case 'RECORD_ATTEMPT':
       return updateProgress(state, action.id, (p) => ({ attempts: p.attempts + 1 }));
 
+    // Each challenge has a single hint
     case 'REVEAL_HINT': {
       const current = state.progress[action.id] ?? emptyProgress;
-      if (current.solvedAt || current.hintsRevealed >= action.max) return state;
-      return updateProgress(state, action.id, (p) => ({ hintsRevealed: p.hintsRevealed + 1 }));
+      if (current.solvedAt || current.hintsRevealed > 0) return state;
+      return updateProgress(state, action.id, () => ({ hintsRevealed: 1 }));
     }
 
     case 'SOLVE': {
@@ -53,7 +57,7 @@ export function gameReducer(state, action) {
     }
 
     case 'RESET':
-      return createInitialState(state.codename);
+      return createInitialState(state.codename, state.group);
 
     default:
       return state;

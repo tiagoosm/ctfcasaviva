@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
 import { challenges, getChallengeBySlug, getNextChallenge } from '../challenges';
 import ChallengeHeader, { challengeLabel } from '../components/challenge/ChallengeHeader';
@@ -7,23 +7,28 @@ import HintPanel from '../components/challenge/HintPanel';
 import ProgressTrack from '../components/challenge/ProgressTrack';
 import SuccessPanel from '../components/challenge/SuccessPanel';
 import { useGame } from '../game/GameProvider';
-import { getChallengeScore, getCurrentChallenge, getProgress, getStatus } from '../game/selectors';
+import {
+  getChallengeScore,
+  getCurrentChallenge,
+  getStatus,
+  isRegistered,
+  usedHint,
+} from '../game/selectors';
 import useDocumentTitle from '../hooks/useDocumentTitle';
 import NotFoundPage from './NotFoundPage';
 
 export default function ChallengePage() {
   const { slug } = useParams();
   const challenge = getChallengeBySlug(slug);
-  const { state, submitAnswer, revealHint, ensureStarted } = useGame();
+  const { state, submitAnswer, revealHint } = useGame();
   const [justSolved, setJustSolved] = useState(false);
 
   useDocumentTitle(challenge ? `${challengeLabel(challenge)}: ${challenge.title}` : 'Página não encontrada');
 
-  useEffect(() => {
-    ensureStarted();
-  }, [ensureStarted]);
-
   if (!challenge) return <NotFoundPage />;
+
+  // The mission cannot be played before the participant gives name and class
+  if (!isRegistered(state)) return <Navigate to="/" replace />;
 
   const status = getStatus(state, challenge);
 
@@ -45,7 +50,6 @@ export default function ChallengePage() {
   }
 
   const solved = status === 'solved';
-  const progress = getProgress(state, challenge.id);
   const { Stage } = challenge;
 
   function handleSubmit(answer) {
@@ -78,7 +82,7 @@ export default function ChallengePage() {
           <Stage challenge={challenge} solved={solved} onSubmitAnswer={handleSubmit} />
         </div>
 
-        <aside className="space-y-6" aria-label="Resposta e dicas">
+        <aside className="space-y-6" aria-label="Resposta e dica">
           {challenge.answerMode === 'flag' && !solved && (
             <section className="panel p-5">
               <FlagForm onSubmit={handleSubmit} />
@@ -87,7 +91,7 @@ export default function ChallengePage() {
 
           <HintPanel
             challenge={challenge}
-            revealed={progress.hintsRevealed}
+            revealed={usedHint(state, challenge.id)}
             solved={solved}
             onReveal={() => revealHint(challenge)}
           />

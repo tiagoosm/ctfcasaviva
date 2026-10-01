@@ -32,16 +32,10 @@ const vault = {
       message: 'Essa era a resposta da transmissão anterior. O cofre guarda outra palavra.',
     },
   ],
-  hints: [
-    {
-      cost: 60,
-      text: 'Revise as respostas que você já encontrou. Qual delas tinha exatamente 4 letras?',
-    },
-    {
-      cost: 90,
-      text: 'A chave é a resposta da Galeria (Desafio 01). Converta cada letra dela em um número (A = 0, B = 1, C = 2…) e, com a operação Decifrar, volte essa quantidade de posições: a 1ª letra da chave vale para as posições 1, 5 e 9; a 2ª para 2 e 6; a 3ª para 3 e 7; a 4ª para 4 e 8.',
-    },
-  ],
+  hint: {
+    cost: 60,
+    text: 'A chave é uma palavra que você já descobriu nesta missão. Cada letra dela indica um deslocamento: A = 0, B = 1, C = 2…',
+  },
   success: {
     title: 'Cofre aberto',
     lesson:

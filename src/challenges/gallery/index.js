@@ -22,16 +22,10 @@ const gallery = {
         'Você reconheceu o artista — ótimo olhar! Mas a resposta é formada apenas pelas marcas escondidas nas imagens.',
     },
   ],
-  hints: [
-    {
-      cost: 20,
-      text: 'As marcas são pequenas e se camuflam nas cores da pintura. Abra cada evidência e percorra-a com calma, inclusive a arquitetura e os pontos de luz.',
-    },
-    {
-      cost: 30,
-      text: 'Cada evidência esconde uma única letra. Procure na parede lateral da igreja, na estrela mais à esquerda, na moldura pendurada na parede do quarto e na torre da pequena igreja.',
-    },
-  ],
+  hint: {
+    cost: 20,
+    text: 'As marcas são pequenas e se camuflam nas cores da pintura. Percorra cada evidência com calma, dos prédios aos pontos de luz.',
+  },
   success: {
     title: 'Marcas identificadas',
     lesson:
