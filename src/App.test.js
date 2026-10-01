@@ -159,6 +159,31 @@ describe('flow protection', () => {
     expect(screen.getByText(/o certificado ainda está trancado/i)).toBeInTheDocument();
   });
 
+  it('leaves the mission only after confirmation, back to a clean start', async () => {
+    seedState({
+      briefing: { enteredAt: 1, solvedAt: 2, wrong: 0, hintUsed: false, seconds: 1, score: 100 },
+    });
+    renderApp('/missao');
+    await pageTitle('Mapa da missão');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Sair' }));
+    let dialog = screen.getByRole('dialog', { name: 'Sair do CTF?' });
+    expect(within(dialog).getByText(/perderá todo o progresso/i)).toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
+    expect(screen.getByRole('link', { name: /jogar galeria/i })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Sair' }));
+    dialog = screen.getByRole('dialog', { name: 'Sair do CTF?' });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Sair' }));
+
+    expect(await screen.findByLabelText('Nome')).toHaveValue('');
+    expect(screen.getByLabelText('Turma')).toHaveValue('');
+    expect(screen.queryByRole('button', { name: 'Sair' })).not.toBeInTheDocument();
+    const saved = JSON.parse(window.localStorage.getItem(STORAGE_KEY));
+    expect(saved.codename).toBe('');
+    expect(saved.progress).toEqual({});
+  });
+
   it('opens the ranking without starting the mission', async () => {
     renderApp('/ranking');
     await pageTitle('Ranking');

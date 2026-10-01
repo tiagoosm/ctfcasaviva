@@ -151,8 +151,11 @@ The browser cannot read or write the tables: row level security is enabled with 
 | `ctf_enter` | Starts the clock of a challenge (only once) |
 | `ctf_hint` | Records that the hint was used |
 | `ctf_submit` | Validates an answer; on success stores time and score |
+| `ctf_abandon` | Drops an unfinished run when the player leaves or restarts |
 | `ctf_ranking` | Returns the top players, one row per participant (their best run) |
 | `ctf_result` | Returns the final result and ranking place of a run |
+
+Only finished runs are kept. A run exists on the server while it is being played, since that is how time and errors are measured, but it is deleted when the player leaves or restarts, and runs abandoned without leaving are purged after 24 hours.
 
 The game stays playable if the backend is unreachable: answers are also validated locally and the score is estimated with the same formula, but that run does not enter the ranking.
 

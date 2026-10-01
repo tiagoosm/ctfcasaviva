@@ -129,6 +129,14 @@ describe('gameReducer + selectors', () => {
     expect(state).toEqual(createInitialState('Coruja', 'T1'));
   });
 
+  it('forgets the player and all progress when leaving', () => {
+    let state = gameReducer(createInitialState(), { type: 'START', codename: 'Coruja', group: 'T1', now: 1 });
+    state = gameReducer(state, { type: 'SET_RUN', runId: 'abc' });
+    state = solve(state, first);
+    state = gameReducer(state, { type: 'SIGN_OUT' });
+    expect(state).toEqual(createInitialState());
+  });
+
   it('requires both name and class to be registered', () => {
     expect(isRegistered(createInitialState())).toBe(false);
     expect(isRegistered(createInitialState('Coruja'))).toBe(false);

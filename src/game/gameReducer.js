@@ -100,6 +100,10 @@ export function gameReducer(state, action) {
     case 'RESET':
       return createInitialState(state.codename, state.group);
 
+    // Leaving forgets the player too: the next visitor starts from the form
+    case 'SIGN_OUT':
+      return createInitialState();
+
     default:
       return state;
   }

@@ -81,6 +81,13 @@ export function GameProvider({ children }) {
     [state, enqueue, getRunId],
   );
 
+  // Only finished runs are kept on the server: leaving or restarting drops the open one
+  const dropRun = useCallback(() => {
+    const runId = runIdRef.current;
+    runIdRef.current = null;
+    if (runId) enqueue(() => api.abandonRun(runId));
+  }, [enqueue]);
+
   const actions = useMemo(
     () => ({
       startMission: (codename, group) => dispatch({ type: 'START', codename, group, now: Date.now() }),
@@ -111,11 +118,16 @@ export function GameProvider({ children }) {
         }),
 
       resetMission: () => {
-        runIdRef.current = null;
+        dropRun();
         dispatch({ type: 'RESET' });
       },
+
+      leaveMission: () => {
+        dropRun();
+        dispatch({ type: 'SIGN_OUT' });
+      },
     }),
-    [enqueue, getRunId],
+    [enqueue, getRunId, dropRun],
   );
 
   const value = useMemo(() => ({ state, submitAnswer, ...actions }), [state, submitAnswer, actions]);

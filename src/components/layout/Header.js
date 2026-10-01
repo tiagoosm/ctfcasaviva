@@ -1,9 +1,14 @@
-import { Link, NavLink } from 'react-router-dom';
-import { LuFlag, LuListOrdered, LuMap } from 'react-icons/lu';
+import { useState } from 'react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { LuFlag, LuListOrdered, LuLogOut, LuMap } from 'react-icons/lu';
 import { useGame } from '../../game/GameProvider';
-import { getSummary } from '../../game/selectors';
+import { getSummary, isRegistered } from '../../game/selectors';
 import { cn } from '../../utils/format';
+import ConfirmDialog from '../ui/ConfirmDialog';
 import BrandMark from './BrandMark';
+
+const itemClasses =
+  'inline-flex h-11 items-center gap-2 rounded-xl px-3 font-display text-sm font-semibold transition-colors';
 
 function NavItem({ to, icon: Icon, children }) {
   return (
@@ -11,10 +16,7 @@ function NavItem({ to, icon: Icon, children }) {
       to={to}
       end
       className={({ isActive }) =>
-        cn(
-          'inline-flex h-11 items-center gap-2 rounded-xl px-3 font-display text-sm font-semibold transition-colors',
-          isActive ? 'bg-ink-700 text-fg' : 'text-fg-muted hover:bg-ink-800 hover:text-fg',
-        )
+        cn(itemClasses, isActive ? 'bg-ink-700 text-fg' : 'text-fg-muted hover:bg-ink-800 hover:text-fg')
       }
     >
       <Icon className="h-5 w-5" aria-hidden="true" />
@@ -24,8 +26,11 @@ function NavItem({ to, icon: Icon, children }) {
 }
 
 export default function Header() {
-  const { state } = useGame();
+  const { state, leaveMission } = useGame();
   const summary = getSummary(state);
+  const registered = isRegistered(state);
+  const navigate = useNavigate();
+  const [confirmLeave, setConfirmLeave] = useState(false);
 
   return (
     <header className="no-print sticky top-0 z-30 border-b border-ink-600/50 bg-ink-900/85 backdrop-blur-md">
@@ -59,8 +64,35 @@ export default function Header() {
           <NavItem to="/ranking" icon={LuListOrdered}>
             Ranking
           </NavItem>
+          {registered && (
+            <button
+              type="button"
+              onClick={() => setConfirmLeave(true)}
+              className={cn(itemClasses, 'text-fg-muted hover:bg-ink-800 hover:text-fg')}
+            >
+              <LuLogOut className="h-5 w-5" aria-hidden="true" />
+              <span className="sr-only sm:not-sr-only">Sair</span>
+            </button>
+          )}
         </nav>
       </div>
+
+      <ConfirmDialog
+        open={confirmLeave}
+        title="Sair do CTF?"
+        description={
+          summary.isComplete
+            ? 'Seus dados serão apagados deste navegador. O resultado já enviado ao ranking é mantido.'
+            : 'Você perderá todo o progresso desta missão e voltará ao início.'
+        }
+        confirmLabel="Sair"
+        onCancel={() => setConfirmLeave(false)}
+        onConfirm={() => {
+          setConfirmLeave(false);
+          leaveMission();
+          navigate('/');
+        }}
+      />
     </header>
   );
 }

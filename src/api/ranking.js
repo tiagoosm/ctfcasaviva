@@ -64,6 +64,9 @@ export const revealHint = (runId, challengeId) =>
 export const submitAnswer = (runId, challengeId, answer) =>
   rpc('ctf_submit', { p_run: runId, p_challenge: challengeId, p_answer: answer });
 
+// Tells the server to drop an unfinished run (the player left or restarted)
+export const abandonRun = (runId) => rpc('ctf_abandon', { p_run: runId });
+
 export async function fetchResult(runId) {
   const data = await rpc('ctf_result', { p_run: runId });
   if (!data) return null;
