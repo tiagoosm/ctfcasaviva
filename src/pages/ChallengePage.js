@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
-import { LuCircleCheck } from 'react-icons/lu';
 import { challenges, getChallengeBySlug, getNextChallenge } from '../challenges';
 import ChallengeHeader, { challengeLabel } from '../components/challenge/ChallengeHeader';
 import FlagForm from '../components/challenge/FlagForm';
@@ -60,7 +59,7 @@ export default function ChallengePage() {
       <ProgressTrack currentId={challenge.id} />
 
       <div className="mt-8 sm:mt-10">
-        <ChallengeHeader challenge={challenge} solved={solved} />
+        <ChallengeHeader challenge={challenge} />
       </div>
 
       {solved && (
@@ -80,15 +79,9 @@ export default function ChallengePage() {
         </div>
 
         <aside className="space-y-6" aria-label="Resposta e dicas">
-          {challenge.answerMode === 'flag' && (
+          {challenge.answerMode === 'flag' && !solved && (
             <section className="panel p-5">
-              {solved ? (
-                <p className="flex items-center gap-2 font-display font-semibold text-success">
-                  <LuCircleCheck className="h-5 w-5" aria-hidden="true" /> Flag capturada
-                </p>
-              ) : (
-                <FlagForm onSubmit={handleSubmit} />
-              )}
+              <FlagForm onSubmit={handleSubmit} />
             </section>
           )}
 
@@ -98,12 +91,6 @@ export default function ChallengePage() {
             solved={solved}
             onReveal={() => revealHint(challenge)}
           />
-
-          {progress.attempts > 0 && (
-            <p className="px-1 font-mono text-xs text-fg-subtle">
-              Envios neste desafio: {progress.attempts}
-            </p>
-          )}
         </aside>
       </div>
     </div>

@@ -5,13 +5,9 @@ const gallery = {
   slug: 'galeria',
   code: '01',
   title: 'Galeria',
-  category: 'Observação',
-  skill: 'Análise visual',
-  difficulty: 2,
   points: 100,
-  summary: 'Quatro obras recuperadas. Alguém deixou marcas nelas.',
   objective:
-    'Quatro imagens foram recuperadas de um arquivo suspeito. Cada uma carrega uma marca discreta. Junte as marcas na ordem das evidências para formar a flag.',
+    'Cada imagem carrega uma marca discreta. Junte as marcas na ordem das evidências.',
   answerMode: 'flag',
   answerHash: '3c59defc470aed151f067e24c11dbac32987a0e1939b5bbe62e20a43130bd40d',
   nearMisses: [
@@ -23,13 +19,13 @@ const gallery = {
         'aa1f83952bd70d268f5dc8e2784e810d998696c152db7d7bcf8647eac15c94e2',
       ],
       message:
-        'Você reconheceu o artista — ótimo olhar! Mas a flag é formada apenas pelas marcas escondidas nas imagens.',
+        'Você reconheceu o artista — ótimo olhar! Mas a resposta é formada apenas pelas marcas escondidas nas imagens.',
     },
   ],
   hints: [
     {
       cost: 20,
-      text: 'As marcas são pequenas e se camuflam nas cores da pintura. Amplie cada evidência e percorra-a com calma, inclusive a arquitetura e os pontos de luz.',
+      text: 'As marcas são pequenas e se camuflam nas cores da pintura. Abra cada evidência e percorra-a com calma, inclusive a arquitetura e os pontos de luz.',
     },
     {
       cost: 30,
@@ -39,8 +35,8 @@ const gallery = {
   success: {
     title: 'Marcas identificadas',
     lesson:
-      'Esconder informação dentro de imagens é uma técnica chamada esteganografia. Diferente da criptografia, ela não embaralha a mensagem: disfarça que a mensagem existe.',
-    nextClue: 'Guarde bem a palavra que você encontrou. Ela vai abrir uma porta mais adiante.',
+      'Esconder informação em imagens é esteganografia: em vez de embaralhar a mensagem, ela disfarça que a mensagem existe.',
+    nextClue: 'Guarde a palavra que você encontrou. Ela abre uma porta mais adiante.',
   },
   Stage: GalleryStage,
 };

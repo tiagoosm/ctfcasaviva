@@ -28,7 +28,7 @@ An educational Capture The Flag (CTF) built for the students of **Inatel cas@viv
 
 | # | Challenge | Skill | What the player learns |
 |---|-----------|-------|------------------------|
-| 00 | Briefing | Careful reading | How flags work, and that a black bar does not erase data |
+| 00 | Briefing | Careful reading | A black bar hides data, it does not erase it |
 | 01 | Galeria (Gallery) | Visual analysis | Steganography: information hidden inside images |
 | 02 | Sequência (Sequence) | Pattern recognition | Finding the rule behind apparently random data |
 | 03 | Interceptação (Interception) | Substitution cipher | Breaking a Caesar cipher |
@@ -46,7 +46,7 @@ An educational Capture The Flag (CTF) built for the students of **Inatel cas@viv
 
 **Tools**
 
-- Image viewer with zoom and pan (mouse, touch pinch and keyboard).
+- Image viewer that opens each piece of evidence at a fixed size. It has no zoom, by design.
 - Interactive shift-cipher tool for the cryptography stages.
 
 **Quality**
@@ -105,7 +105,7 @@ Design tokens (cas@viva orange `#E87000`, blue `#004898`, surfaces, fonts and an
 
 Flags are never stored in plain text.
 
-1. The submitted answer is normalized: case, accents, spaces and the optional `casaviva{...}` wrapper are ignored.
+1. The player types the answer word directly. It is normalized so that case, accents and spaces are ignored.
 2. The normalized answer is hashed with SHA-256, using the challenge id as salt, so the same word produces different hashes in different challenges.
 3. The result is compared with the hash stored in the challenge config. Near-miss answers are stored as hashes too.
 
@@ -115,7 +115,7 @@ As with any client-side CTF, this raises the effort needed to read answers from 
 
 ## Adding a challenge
 
-1. Create `src/challenges/<name>/index.js` with the config (`id`, `slug`, `code`, `title`, `points`, `objective`, `hints`, `success`, `Stage`…) and a `Stage` component.
+1. Create `src/challenges/<name>/index.js` with the config (`id`, `slug`, `code`, `title`, `points`, `objective`, `answerMode`, `hints`, `success`, `Stage`) and a `Stage` component.
 2. Generate the answer hash and paste it into `answerHash`. Use the same command for `nearMisses[].hashes`.
 
    ```bash

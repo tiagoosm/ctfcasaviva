@@ -5,13 +5,9 @@ const vault = {
   slug: 'cofre',
   code: 'FINAL',
   title: 'O Cofre',
-  category: 'Criptografia avançada',
-  skill: 'Cifra de Vigenère',
-  difficulty: 4,
   points: 300,
-  summary: 'Tudo o que você aprendeu, em um só desafio.',
   objective:
-    'A mensagem final foi protegida com uma evolução da Cifra de César: cada letra usa um deslocamento diferente, definido por uma chave de 4 letras que se repete. Você já encontrou essa chave nesta missão.',
+    'Cada letra usa um deslocamento diferente, definido por uma chave de 4 letras que se repete. Você já encontrou essa chave.',
   answerMode: 'flag',
   answerHash: '457ed97614e3e0c5bb706a03007bbc60c0dd5ada44451e0002627323309d45e5',
   ciphertext: 'ICTXAWYAG',
@@ -39,17 +35,17 @@ const vault = {
   hints: [
     {
       cost: 60,
-      text: 'Revise as flags que você capturou. Qual delas tinha exatamente 4 letras?',
+      text: 'Revise as respostas que você já encontrou. Qual delas tinha exatamente 4 letras?',
     },
     {
       cost: 90,
-      text: 'A chave é a flag da Galeria (Desafio 01). Converta cada letra dela em um número (A = 0, B = 1, C = 2…) e, com a operação Decifrar, volte essa quantidade de posições: a 1ª letra da chave vale para as posições 1, 5 e 9; a 2ª para 2 e 6; a 3ª para 3 e 7; a 4ª para 4 e 8.',
+      text: 'A chave é a resposta da Galeria (Desafio 01). Converta cada letra dela em um número (A = 0, B = 1, C = 2…) e, com a operação Decifrar, volte essa quantidade de posições: a 1ª letra da chave vale para as posições 1, 5 e 9; a 2ª para 2 e 6; a 3ª para 3 e 7; a 4ª para 4 e 8.',
     },
   ],
   success: {
     title: 'Cofre aberto',
     lesson:
-      'Você decifrou uma Cifra de Vigenère, que resistiu por quase 300 anos e ficou conhecida como "a cifra indecifrável". Combinar uma chave com a mensagem continua sendo a base da criptografia moderna.',
+      'Você decifrou uma Cifra de Vigenère, conhecida por séculos como "a cifra indecifrável".',
   },
   Stage: VaultStage,
 };

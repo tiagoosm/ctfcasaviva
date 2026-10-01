@@ -40,8 +40,8 @@ describe('challenge registry', () => {
     expect(evaluateAnswer(gallery, SOLUTIONS.interception).status).toBe('incorrect');
   });
 
-  it('never decreases in difficulty along the mission', () => {
-    const levels = challenges.map((c) => c.difficulty);
+  it('never decreases in points along the mission', () => {
+    const levels = challenges.map((c) => c.points);
     expect(levels).toEqual([...levels].sort((a, b) => a - b));
   });
 

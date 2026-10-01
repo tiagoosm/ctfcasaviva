@@ -94,37 +94,8 @@ export default function VaultStage({ challenge, solved }) {
               );
             })}
           </ol>
-          <p className="mt-3 text-xs text-fg-subtle">
-            A última linha é seu rascunho: anote as letras decifradas. Ela não é enviada — a resposta
-            vai no campo da flag.
-          </p>
+          <p className="mt-3 text-xs text-fg-subtle">A última linha é o seu rascunho.</p>
 
-          <div className="mt-6 rounded-xl border border-ink-600 bg-ink-800/60 p-4">
-            <h3 className="flex items-center gap-2 font-display font-semibold">
-              <LuKeyRound className="h-4 w-4 text-brand-orange-light" aria-hidden="true" />
-              Como este cofre funciona
-            </h3>
-            <p className="mt-2 text-sm leading-relaxed text-fg-muted">
-              A chave tem <strong className="text-fg">{keyLength} letras</strong> e se repete ao
-              longo da mensagem: a 1ª letra da chave desloca as posições 1, 5 e 9; a 2ª desloca as
-              posições 2 e 6; e assim por diante. Exemplo: com a chave <code className="font-mono text-fg">BAD</code>,
-              a 1ª letra anda 1 posição, a 2ª anda 0, a 3ª anda 3 e a 4ª volta a andar 1.
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2" aria-label={`Chave desconhecida de ${keyLength} letras`} role="img">
-              {Array.from({ length: keyLength }, (_, i) => (
-                <span
-                  key={i}
-                  className={cn(
-                    'flex h-10 w-10 items-center justify-center rounded-lg border-2 font-mono text-lg',
-                    KEY_COLORS[i],
-                  )}
-                  aria-hidden="true"
-                >
-                  ?
-                </span>
-              ))}
-            </div>
-          </div>
         </div>
       </section>
 

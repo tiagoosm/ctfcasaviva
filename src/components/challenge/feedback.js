@@ -1,13 +1,4 @@
-// Error messages vary on each attempt so the player notices that the
-// system reacted to the new submission, without ever giving the answer away.
-const INCORRECT_MESSAGES = [
-  'Essa não parece ser a solução. Analise novamente as pistas.',
-  'Ainda não. Revise o que você já observou e teste outra hipótese.',
-  'Não foi dessa vez. Talvez algum detalhe tenha passado despercebido.',
-  'Resposta recusada. Volte ao objetivo e confira o que ele pede exatamente.',
-];
-
-export function incorrectFeedback(result, wrongCount) {
+export function incorrectFeedback(result) {
   if (result.message) {
     return { key: Date.now(), tone: 'info', title: 'Você está no caminho', message: result.message };
   }
@@ -15,7 +6,7 @@ export function incorrectFeedback(result, wrongCount) {
     key: Date.now(),
     tone: 'error',
     title: 'Resposta incorreta',
-    message: INCORRECT_MESSAGES[wrongCount % INCORRECT_MESSAGES.length],
+    message: 'Revise as pistas e tente de novo.',
   };
 }
 
@@ -24,6 +15,6 @@ export function systemErrorFeedback() {
     key: Date.now(),
     tone: 'error',
     title: 'Não foi possível verificar',
-    message: 'Algo falhou ao validar sua resposta. Tente enviar de novo.',
+    message: 'Tente enviar de novo.',
   };
 }

@@ -32,10 +32,6 @@ export default function CipherTool({ title = 'Disco de deslocamento' }) {
         <LuSettings2 className="h-5 w-5 text-brand-blue-light" aria-hidden="true" />
         {title}
       </h2>
-      <p className="mt-1 text-sm text-fg-muted">
-        Escolha uma letra-chave para deslocar o alfabeto. A letra define o tamanho do salto: A = 0,
-        B = 1, C = 2…
-      </p>
 
       <div className="mt-4 flex flex-wrap items-end gap-4">
         <fieldset>

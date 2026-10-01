@@ -15,8 +15,8 @@ function renderApp(route = '/') {
 }
 
 async function submitFlag(value) {
-  fireEvent.change(screen.getByLabelText('Capturar flag'), { target: { value } });
-  fireEvent.click(screen.getByRole('button', { name: /enviar flag/i }));
+  fireEvent.change(screen.getByLabelText('Resposta'), { target: { value } });
+  fireEvent.click(screen.getByRole('button', { name: 'Enviar' }));
 }
 
 async function solveFlag(value, successTitle) {
@@ -38,24 +38,24 @@ describe('full CTF flow', () => {
     await submitFlag('errado');
     expect(await screen.findByText('Resposta incorreta')).toBeInTheDocument();
 
-    await submitFlag('casaviva');
-    expect(await screen.findByText(/só o prefixo do formato/i)).toBeInTheDocument();
+    await submitFlag('senha');
+    expect(await screen.findByText(/não do nome do campo/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /ver dica 1/i }));
     fireEvent.click(screen.getByRole('button', { name: /revelar \(−10\)/i }));
     expect(screen.getByText(/uma tarja preta nem sempre apaga/i)).toBeInTheDocument();
 
-    await solveFlag('casaviva{Começar}', 'Acesso liberado');
+    await solveFlag('Começar', 'Acesso liberado');
     expect(JSON.parse(window.localStorage.getItem(STORAGE_KEY)).progress.briefing.solvedAt).toEqual(
       expect.any(Number),
     );
     fireEvent.click(screen.getByRole('link', { name: /próximo: galeria/i }));
 
-    // 01 · Gallery — the viewer opens and closes with Esc
+    // 01 · Gallery — the viewer opens, has no zoom and closes with Esc
     await pageTitle('Galeria');
-    fireEvent.click(screen.getByRole('button', { name: /examinar evidência 01/i }));
+    fireEvent.click(screen.getByRole('button', { name: /abrir evidência 01/i }));
     const dialog = screen.getByRole('dialog', { name: /evidência 01 de 04/i });
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Ampliar zoom' }));
+    expect(within(dialog).queryByRole('button', { name: /zoom/i })).not.toBeInTheDocument();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Próxima evidência' }));
     expect(screen.getByRole('dialog', { name: /evidência 02 de 04/i })).toBeInTheDocument();
     fireEvent.keyDown(document, { key: 'Escape' });

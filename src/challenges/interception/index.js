@@ -5,13 +5,9 @@ const interception = {
   slug: 'interceptacao',
   code: '03',
   title: 'Interceptação',
-  category: 'Criptografia',
-  skill: 'Cifra de substituição',
-  difficulty: 3,
   points: 200,
-  summary: 'Um relato histórico com algo que não se encaixa.',
   objective:
-    'Interceptamos um relato histórico. Em algum ponto dele, alguém inseriu uma palavra cifrada com o mesmo método que o texto descreve. Encontre-a e decifre-a.',
+    'Há uma palavra cifrada infiltrada neste relato, com o mesmo método que ele descreve. Encontre-a e decifre-a.',
   answerMode: 'flag',
   answerHash: 'ee0cef5a78e7c6e17625d7cc4caec4888fdbcaa43b5e2da4b61a17d7f5e4d452',
   nearMisses: [
@@ -44,9 +40,8 @@ const interception = {
   success: {
     title: 'Transmissão decifrada',
     lesson:
-      'Você quebrou uma Cifra de César: cada letra avança um número fixo de posições (aqui, 3). Como usa um único deslocamento, ela tem só 25 chaves possíveis — basta testar todas.',
-    nextClue:
-      'E se, em vez de um deslocamento fixo, cada letra usasse um deslocamento diferente? É exatamente isso que protege o cofre.',
+      'Você quebrou uma Cifra de César: cada letra avança um número fixo de posições (aqui, 3).',
+    nextClue: 'E se cada letra usasse um deslocamento diferente? É isso que protege o cofre.',
   },
   Stage: InterceptionStage,
 };

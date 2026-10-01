@@ -17,10 +17,9 @@ describe('normalizeAnswer', () => {
   it.each([
     ['  GOGH ', 'gogh'],
     ['Começar', 'comecar'],
-    ['casaviva{Começar}', 'comecar'],
-    ['CASAVIVA{ ultimato }', 'ultimato'],
+    [' Ultimato\n', 'ultimato'],
     ['g o g h', 'gogh'],
-    ['casaviva{}', ''],
+    ['   ', ''],
     [undefined, ''],
   ])('%p → %p', (input, expected) => {
     expect(normalizeAnswer(input)).toBe(expected);
@@ -35,7 +34,7 @@ describe('evaluateAnswer', () => {
   };
 
   it('recognizes the correct answer across format variations', () => {
-    expect(evaluateAnswer(challenge, 'casaviva{SEGREDO}').status).toBe('correct');
+    expect(evaluateAnswer(challenge, '  SEGREDO ').status).toBe('correct');
   });
 
   it('returns a contextual message for near misses', () => {

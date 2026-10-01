@@ -1,20 +1,13 @@
 import { sha256 } from './sha256.js';
 
-export const FLAG_PREFIX = 'casaviva';
-
 // Makes validation tolerant of variations that do not change the answer:
-// casing, accents, spaces and the optional casaviva{...} wrapper.
+// casing, accents and spaces.
 export function normalizeAnswer(raw) {
-  let value = String(raw ?? '')
-    .trim()
+  return String(raw ?? '')
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '');
-
-  const wrapped = value.match(new RegExp(`^${FLAG_PREFIX}\\s*\\{(.*)\\}$`));
-  if (wrapped) value = wrapped[1];
-
-  return value.replace(/\s+/g, '');
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/\s+/g, '');
 }
 
 // The challenge id acts as a "salt": the same word yields different hashes

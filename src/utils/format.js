@@ -14,10 +14,6 @@ export function formatDate(timestamp) {
   return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'long' }).format(new Date(timestamp));
 }
 
-export function pluralize(count, singular, plural) {
-  return `${count} ${count === 1 ? singular : plural}`;
-}
-
 export function cn(...classes) {
   return classes.filter(Boolean).join(' ');
 }

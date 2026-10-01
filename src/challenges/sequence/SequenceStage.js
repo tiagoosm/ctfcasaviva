@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LuEraser, LuLockOpen, LuSend, LuUndo2 } from 'react-icons/lu';
+import { LuEraser, LuLockOpen, LuSend } from 'react-icons/lu';
 import Button from '../../components/ui/Button';
 import FeedbackMessage from '../../components/ui/FeedbackMessage';
 import { cn } from '../../utils/format';
@@ -44,34 +44,21 @@ export default function SequenceStage({ onSubmitAnswer, solved }) {
         key: Date.now(),
         tone: 'error',
         title: 'Sequência rejeitada',
-        message:
-          'O sistema não reconheceu essa ordem. Reorganize os arquivos — clique em um arquivo ativado para removê-lo.',
+        message: 'Tente outra ordem.',
       });
     } else if (result.status === 'error') {
       setFeedback({
         key: Date.now(),
         tone: 'error',
         title: 'Não foi possível verificar',
-        message: 'Algo falhou ao validar a sequência. Tente enviar de novo.',
+        message: 'Tente enviar de novo.',
       });
     }
   }
 
   return (
-    <section className="panel p-4 sm:p-6" aria-labelledby="arquivos-titulo">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 id="arquivos-titulo" className="text-xl font-semibold">
-          Arquivos do sistema legado
-        </h2>
-        <p className="font-mono text-xs text-fg-subtle" aria-live="polite">
-          {solved ? 'Acesso liberado' : `${selection.length}/${SLOTS.length} ativados`}
-        </p>
-      </div>
-      <p className="mt-1 text-sm text-fg-muted">
-        Ative os arquivos na ordem correta. Cada clique ocupa o próximo espaço do painel.
-      </p>
-
-      <ul className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+    <section className="panel p-4 sm:p-6" aria-label="Arquivos">
+      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
         {FILES.map((file) => {
           const position = selection.indexOf(file.id);
           const selected = position !== -1;
@@ -120,9 +107,14 @@ export default function SequenceStage({ onSubmitAnswer, solved }) {
       </ul>
 
       <div className="mt-6 rounded-xl border border-ink-600 bg-ink-950/60 p-4">
-        <h3 className="font-mono text-xs font-medium uppercase tracking-[0.18em] text-fg-subtle">
-          Painel de ativação
-        </h3>
+        <div className="flex items-baseline justify-between gap-2">
+          <h3 className="font-mono text-xs font-medium uppercase tracking-[0.18em] text-fg-subtle">
+            Painel de ativação
+          </h3>
+          <p className="font-mono text-xs text-fg-subtle" aria-live="polite">
+            {selection.length}/{SLOTS.length}
+          </p>
+        </div>
         <ol
           className={cn('mt-3 grid grid-cols-3 gap-2 sm:grid-cols-6', shaking && 'animate-shake')}
           onAnimationEnd={() => setShaking(false)}
@@ -166,21 +158,8 @@ export default function SequenceStage({ onSubmitAnswer, solved }) {
           <Button size="lg" onClick={submit} disabled={!isComplete} className="sm:order-last sm:ml-auto">
             <LuSend className="h-5 w-5" aria-hidden="true" /> Enviar sequência
           </Button>
-          <div className="flex gap-3">
-            <Button
-              variant="secondary"
-              className="flex-1"
-              onClick={() => {
-                setFeedback(null);
-                setSelection((current) => current.slice(0, -1));
-              }}
-              disabled={selection.length === 0}
-            >
-              <LuUndo2 className="h-4 w-4" aria-hidden="true" /> Desfazer
-            </Button>
-            <Button
-              variant="secondary"
-              className="flex-1"
+          <Button
+            variant="secondary"
               onClick={() => {
                 setFeedback(null);
                 setSelection([]);
@@ -188,8 +167,7 @@ export default function SequenceStage({ onSubmitAnswer, solved }) {
               disabled={selection.length === 0}
             >
               <LuEraser className="h-4 w-4" aria-hidden="true" /> Limpar
-            </Button>
-          </div>
+          </Button>
         </div>
       )}
 
