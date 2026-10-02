@@ -62,8 +62,9 @@ export function gameReducer(state, action) {
     case 'SET_RUN':
       return { ...state, runId: action.runId };
 
-    // The clock of a challenge starts on the first visit and is never restarted,
-    // so reloading the page or leaving and coming back does not reset it
+    // Each challenge has its own hidden clock, used only for its speed bonus: it
+    // starts on the first visit and is never restarted. The clock players see is
+    // the mission clock, which runs from startedAt to finishedAt.
     case 'ENTER':
       if (current.enteredAt || current.solvedAt) return state;
       return {

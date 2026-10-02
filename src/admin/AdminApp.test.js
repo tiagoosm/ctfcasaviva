@@ -41,6 +41,7 @@ const detail = {
   startedAt: '2026-10-01T12:00:00Z',
   finishedAt: '2026-10-01T12:20:00Z',
   hidden: false,
+  totalSeconds: 1200,
   challenges: [
     { id: 'briefing', maxPoints: 100, enteredAt: 'x', solvedAt: 'y', seconds: 40, wrong: 1, hintUsed: true, score: 65 },
     { id: 'gallery', maxPoints: 200, enteredAt: null, solvedAt: null, seconds: null, wrong: 0, hintUsed: false, score: null },
@@ -121,8 +122,9 @@ describe('admin area', () => {
 
     const dialog = await screen.findByRole('dialog', { name: 'João' });
     expect(await within(dialog).findByText('Briefing')).toBeInTheDocument();
-    // Total time and the time of the only solved stage
-    expect(within(dialog).getAllByText('00:40')).toHaveLength(2);
+    // Total mission time, and the (hidden to players) time inside the solved stage
+    expect(within(dialog).getByText('20:00')).toBeInTheDocument();
+    expect(within(dialog).getByText('00:40')).toBeInTheDocument();
     expect(within(dialog).getByText('Não iniciada')).toBeInTheDocument();
 
     fireEvent.change(within(dialog).getByLabelText('Nome'), { target: { value: ' João  Silva ' } });

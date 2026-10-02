@@ -4,6 +4,7 @@ import { SCORING } from './scoring';
 import {
   getChallengeScore,
   getCurrentChallenge,
+  getMissionSeconds,
   getProgress,
   getRank,
   getStatus,
@@ -92,21 +93,45 @@ describe('gameReducer + selectors', () => {
     expect(getChallengeScore(state, second)).toBe(0);
   });
 
-  it('adds up the time spent inside each challenge', () => {
-    let state = createInitialState();
-    let clock = 0;
+  it('measures the mission from start to finish, including time between challenges', () => {
+    let state = gameReducer(createInitialState(), { type: 'START', codename: 'Coruja', group: 'A1', now: 1000 });
+    let clock = 1000;
     challenges.forEach((challenge, index) => {
       state = enter(state, challenge, clock);
       clock += 10000;
       state = solve(state, challenge, clock, index === challenges.length - 1);
-      // Time between challenges does not count
-      clock += 60000;
+      // Time between challenges counts for the mission, not for any challenge score
+      if (index < challenges.length - 1) clock += 60000;
     });
     const summary = getSummary(state);
     expect(summary.isComplete).toBe(true);
-    expect(summary.totalSeconds).toBe(10 * challenges.length);
+    const expected = 10 * challenges.length + 60 * (challenges.length - 1);
+    expect(summary.totalSeconds).toBe(expected);
+    // Frozen after the last challenge, whatever the current time is
+    expect(getMissionSeconds(state, clock + 999999)).toBe(expected);
     expect(summary.score).toBe(TOTAL_POINTS);
     expect(state.finishedAt).toBeTruthy();
+  });
+
+  it('derives the running clock from the start time', () => {
+    expect(getMissionSeconds(createInitialState(), 5000)).toBeNull();
+    let state = gameReducer(createInitialState(), { type: 'START', codename: 'Coruja', group: 'A1', now: 1000 });
+    expect(getMissionSeconds(state, 1000)).toBe(0);
+    // Entering challenges, or starting again, never restarts it
+    state = enter(state, first, 30000);
+    state = gameReducer(state, { type: 'START', codename: 'Coruja', group: 'A1', now: 40000 });
+    expect(getMissionSeconds(state, 62000)).toBe(61);
+  });
+
+  it('uses the total time confirmed by the server once the mission is over', () => {
+    let state = gameReducer(createInitialState(), { type: 'START', codename: 'Coruja', group: 'A1', now: 1000 });
+    state = solve(state, first, 91000, true);
+    expect(getMissionSeconds(state)).toBe(90);
+    state = gameReducer(state, {
+      type: 'RESULT',
+      result: { place: 1, score: 100, totalSeconds: 93, errors: 0, hints: 0 },
+    });
+    expect(getMissionSeconds(state)).toBe(93);
   });
 
   it('records name and class when the mission starts', () => {

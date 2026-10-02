@@ -97,7 +97,6 @@ export default function PlayerDialog({ playerId, onClose, onChanged }) {
 
   const solved = player?.challenges.filter((item) => item.solvedAt) ?? [];
   const totalScore = solved.reduce((sum, item) => sum + (item.score ?? 0), 0);
-  const totalSeconds = solved.reduce((sum, item) => sum + (item.seconds ?? 0), 0);
   const unchanged = player && name === player.name && group === player.group;
 
   return (
@@ -110,7 +109,9 @@ export default function PlayerDialog({ playerId, onClose, onChanged }) {
         <div className="space-y-7 p-5 sm:p-6">
           <dl className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <Fact label="Pontuação total">{totalScore}</Fact>
-            <Fact label="Tempo total">{formatClock(totalSeconds)}</Fact>
+            <Fact label={player.finishedAt ? "Tempo total" : "Tempo decorrido"}>
+              {formatClock(player.totalSeconds)}
+            </Fact>
             <Fact label="Início">{formatDateTime(player.startedAt)}</Fact>
             <Fact label="Conclusão">
               {player.finishedAt ? formatDateTime(player.finishedAt) : 'Em andamento'}
@@ -126,7 +127,7 @@ export default function PlayerDialog({ playerId, onClose, onChanged }) {
                     Fase
                   </th>
                   <th scope="col" className="px-3 py-2.5 text-right">
-                    Tempo
+                    Tempo na fase
                   </th>
                   <th scope="col" className="px-3 py-2.5 text-right">
                     Erros

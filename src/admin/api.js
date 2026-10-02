@@ -132,6 +132,7 @@ export async function getPlayer(id) {
     startedAt: data.started_at,
     finishedAt: data.finished_at,
     hidden: data.hidden,
+    totalSeconds: data.total_seconds,
     challenges: data.challenges.map((item) => ({
       id: item.id,
       maxPoints: item.max_points,

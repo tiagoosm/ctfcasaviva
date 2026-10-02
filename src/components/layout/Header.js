@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { LuFlag, LuListOrdered, LuLogOut, LuMap } from 'react-icons/lu';
+import { LuFlag, LuListOrdered, LuLogOut, LuMap, LuTimer } from 'react-icons/lu';
 import { useGame } from '../../game/GameProvider';
 import { getSummary, isRegistered } from '../../game/selectors';
-import { cn } from '../../utils/format';
+import useMissionClock from '../../hooks/useMissionClock';
+import { cn, formatClock } from '../../utils/format';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import BrandMark from './BrandMark';
 
@@ -20,8 +21,32 @@ function NavItem({ to, icon: Icon, children }) {
       }
     >
       <Icon className="h-5 w-5" aria-hidden="true" />
-      <span className="sr-only sm:not-sr-only">{children}</span>
+      <span className="sr-only lg:not-sr-only">{children}</span>
     </NavLink>
+  );
+}
+
+// Mission clock, always at the top right corner: total time since the mission
+// started, frozen once the last challenge is solved
+function MissionTimer() {
+  const { seconds, finished } = useMissionClock();
+  if (seconds === null) return null;
+
+  return (
+    <p
+      className={cn(
+        'ml-1 flex h-10 items-center gap-1.5 rounded-full border px-3 font-mono text-base font-bold tabular-nums sm:px-3.5 sm:text-lg',
+        finished
+          ? 'border-success/50 bg-success/10 text-success'
+          : 'border-brand-orange/60 bg-brand-orange/10 text-brand-orange-light shadow-glow',
+      )}
+    >
+      <LuTimer className="h-5 w-5" aria-hidden="true" />
+      <span className="sr-only">{finished ? 'Tempo final da missão: ' : 'Tempo de missão: '}</span>
+      <span role="timer" aria-live="off">
+        {formatClock(seconds)}
+      </span>
+    </p>
   );
 }
 
@@ -34,14 +59,14 @@ export default function Header() {
 
   return (
     <header className="no-print sticky top-0 z-30 border-b border-ink-600/50 bg-ink-900/85 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:gap-3 sm:px-6">
         <Link to="/" className="rounded-lg" aria-label="CTF Inatel cas@viva — página inicial">
           <BrandMark compact={summary.hasStarted} />
         </Link>
 
-        <nav aria-label="Principal" className="flex items-center gap-1 sm:gap-2">
+        <nav aria-label="Principal" className="flex items-center gap-0.5 sm:gap-1.5">
           {summary.hasStarted && (
-            <p className="mr-1 flex items-center gap-2 whitespace-nowrap rounded-full border border-ink-600 bg-ink-850 px-3 py-1.5 font-mono text-xs sm:text-sm">
+            <p className="mr-1 hidden items-center gap-2 whitespace-nowrap rounded-full border border-ink-600 bg-ink-850 px-3 py-1.5 font-mono text-sm md:flex">
               <LuFlag className="h-4 w-4 text-brand-orange" aria-hidden="true" />
               <span>
                 {summary.solvedCount}/{summary.total}
@@ -71,9 +96,10 @@ export default function Header() {
               className={cn(itemClasses, 'text-fg-muted hover:bg-ink-800 hover:text-fg')}
             >
               <LuLogOut className="h-5 w-5" aria-hidden="true" />
-              <span className="sr-only sm:not-sr-only">Sair</span>
+              <span className="sr-only lg:not-sr-only">Sair</span>
             </button>
           )}
+          <MissionTimer />
         </nav>
       </div>
 

@@ -70,7 +70,7 @@ export default function ChallengePage() {
       <ProgressTrack currentId={challenge.id} />
 
       <div className="mt-8 sm:mt-10">
-        <ChallengeHeader challenge={challenge} progress={progress} />
+        <ChallengeHeader challenge={challenge} />
       </div>
 
       {solved && (

@@ -45,7 +45,7 @@ An educational Capture The Flag (CTF) built for the students of **Inatel cas@viv
 - Progress is saved in `localStorage` and survives reloads; corrupted or outdated data is discarded safely.
 - Name and class are required before the mission starts; the class is picked from a fixed list.
 - One optional hint per challenge, which guides without giving the answer away.
-- Scoring that rewards speed and accuracy, with a stopwatch per challenge.
+- Scoring that rewards speed and accuracy, and a mission clock always visible at the top right.
 - A shared Top 20 ranking, computed by the server.
 - Contextual feedback for near misses, such as submitting the key instead of the message.
 - Printable completion certificate.
@@ -130,12 +130,15 @@ The mission is worth 1000 points: 100 for the Briefing, 200 each for the Gallery
 | Component | Rule |
 |-----------|------|
 | Base | 70% of the challenge, earned by solving it |
-| Speed bonus | Up to 30%. Full up to the challenge's fast time, then decaying linearly to zero at its slow time |
+| Speed bonus | Up to 30%, based on the time spent in that challenge. Full up to the challenge's fast time, then decaying linearly to zero at its slow time |
 | Wrong answers | −10 each, charged for at most five |
 | Hint | −25 |
 | Floor | A challenge never scores below zero |
 
-The clock of a challenge starts when the player first opens it and stops when it is solved. Time spent between challenges does not count, and reloading the page does not restart it. The total time is the sum of the challenge times and breaks ties in the ranking.
+There are two kinds of time:
+
+- **Mission clock (visible).** It starts when the player begins the mission, after giving name and class, and stops when the last challenge is solved. It is derived from the persisted start time, so reloading, navigating or reopening the site cannot reset or pause it. This total time is shown on the result, stored with the run and breaks ties in the ranking.
+- **Challenge clocks (hidden).** Each challenge is timed from the first visit until it is solved, and that time alone decides its speed bonus. Time spent between challenges does not cost points.
 
 The formula lives in [`src/game/scoring.js`](src/game/scoring.js) and is mirrored by `ctf_score` on the server.
 

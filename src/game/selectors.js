@@ -25,6 +25,21 @@ export const getCurrentChallenge = (state) =>
 export const getChallengeScore = (state, challenge) =>
   isSolved(state, challenge.id) ? getProgress(state, challenge.id).score ?? 0 : 0;
 
+// Total mission time in seconds: from the start until the last challenge is
+// solved (or until now, while the mission is still running). It is derived from
+// the persisted start time, never from a counter. Returns null before the start.
+export function getMissionSeconds(state, now = Date.now()) {
+  if (!state.startedAt) return null;
+  if (state.finishedAt) {
+    // The server's measurement wins once it is known
+    return (
+      state.result?.totalSeconds ??
+      Math.max(0, Math.round((state.finishedAt - state.startedAt) / 1000))
+    );
+  }
+  return Math.max(0, Math.floor((now - state.startedAt) / 1000));
+}
+
 export function getSummary(state) {
   const entries = challenges.map((c) => getProgress(state, c.id));
   const solvedCount = entries.filter((p) => p.solvedAt).length;
@@ -36,8 +51,7 @@ export function getSummary(state) {
     maxScore: TOTAL_POINTS,
     hintsUsed: entries.filter((p) => p.hintUsed).length,
     errors: entries.reduce((sum, p) => sum + p.wrong, 0),
-    // Sum of the time spent inside each challenge, not wall-clock time
-    totalSeconds: isComplete ? entries.reduce((sum, p) => sum + (p.seconds ?? 0), 0) : null,
+    totalSeconds: isComplete ? getMissionSeconds(state) : null,
     isComplete,
     hasStarted: Boolean(state.startedAt) || solvedCount > 0,
   };

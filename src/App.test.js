@@ -78,7 +78,9 @@ describe('full CTF flow', () => {
     await submitFlag('errado');
     expect(await screen.findByText('Resposta incorreta')).toBeInTheDocument();
     expect(screen.getByText(/−10 pontos/)).toBeInTheDocument();
-    expect(screen.getByRole('timer')).toBeInTheDocument();
+    // One mission clock, in the header
+    expect(screen.getAllByRole('timer')).toHaveLength(1);
+    expect(within(screen.getAllByRole('banner')[0]).getByRole('timer')).toHaveTextContent(/^00:0\d$/);
 
     await submitFlag('senha');
     expect(await screen.findByText(/não do nome do campo/i)).toBeInTheDocument();
@@ -155,6 +157,8 @@ describe('full CTF flow', () => {
     expect(within(certificate).getByText('Erros').nextSibling).toHaveTextContent('6');
     expect(within(certificate).getByText('Dicas').nextSibling).toHaveTextContent('1');
     expect(screen.getByRole('link', { name: /ver ranking/i })).toBeInTheDocument();
+    // The clock is frozen once the mission is over
+    expect(screen.getByText(/tempo final da missão/i)).toBeInTheDocument();
   }, 30000);
 });
 
@@ -206,6 +210,8 @@ describe('flow protection', () => {
   it('opens the ranking without starting the mission', async () => {
     renderApp('/ranking');
     await pageTitle('Ranking');
+    // No clock before the mission starts
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument();
   });
 
   it('shows a friendly page for unknown routes', async () => {
