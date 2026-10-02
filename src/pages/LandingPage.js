@@ -4,6 +4,7 @@ import { LuArrowRight, LuMap, LuTrophy } from 'react-icons/lu';
 import { challengePath, challenges } from '../challenges';
 import Credential from '../components/Credential';
 import Button from '../components/ui/Button';
+import Select from '../components/ui/Select';
 import { useGame } from '../game/GameProvider';
 import { CODENAME_MAX_LENGTH } from '../game/gameReducer';
 import { GROUPS, isValidGroup } from '../game/groups';
@@ -21,7 +22,7 @@ function Title() {
   );
 }
 
-// Renders a text input, or a select when `options` is given
+// Renders a text input, or a dropdown when `options` is given
 function Field({ label, error, fieldRef, options, placeholder, ...fieldProps }) {
   const id = useId();
   const errorId = `${id}-erro`;
@@ -36,7 +37,6 @@ function Field({ label, error, fieldRef, options, placeholder, ...fieldProps }) 
       error
         ? 'border-danger/70 focus:border-danger'
         : 'border-ink-600 hover:border-fg-subtle focus:border-brand-orange',
-      options && !fieldProps.value && 'text-fg-subtle',
     ),
     ...fieldProps,
   };
@@ -47,16 +47,16 @@ function Field({ label, error, fieldRef, options, placeholder, ...fieldProps }) 
         {label}
       </label>
       {options ? (
-        <select {...shared}>
-          <option value="" disabled>
-            {placeholder}
-          </option>
-          {options.map((option) => (
-            <option key={option} value={option} className="text-fg">
-              {option}
-            </option>
-          ))}
-        </select>
+        <Select
+          id={id}
+          buttonRef={fieldRef}
+          value={fieldProps.value}
+          onChange={fieldProps.onChange}
+          options={options}
+          placeholder={placeholder}
+          invalid={Boolean(error)}
+          describedBy={error ? errorId : undefined}
+        />
       ) : (
         <input type="text" {...shared} />
       )}
@@ -127,8 +127,8 @@ export default function LandingPage() {
               options={GROUPS}
               placeholder="Selecione sua turma"
               value={group}
-              onChange={(event) => {
-                setGroup(event.target.value);
+              onChange={(value) => {
+                setGroup(value);
                 setErrors((current) => ({ ...current, group: undefined }));
               }}
               error={errors.group}

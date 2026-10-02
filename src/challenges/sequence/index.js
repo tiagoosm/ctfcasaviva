@@ -15,7 +15,7 @@ const sequence = {
   answerMode: 'interactive',
   answerHash: 'c98a6251170b6960afa7cf5dead713a1d2042d6c557b2c3a581bccd35ea2c4ea',
   hint: {
-    text: 'Dê um nome simples a cada imagem: cada nome começa com uma letra diferente, de A a F.',
+    text: 'Repare no que cada imagem mostra e procure uma lógica que as coloque em ordem.',
   },
   success: {
     title: 'Sequência aceita',

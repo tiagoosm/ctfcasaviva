@@ -55,10 +55,10 @@ describe('full CTF flow', () => {
     expect(screen.getByText('Selecione sua turma.')).toBeInTheDocument();
 
     // The class is chosen from a fixed list
-    const groupField = screen.getByLabelText('Turma');
-    expect(groupField.tagName).toBe('SELECT');
-    expect(within(groupField).getAllByRole('option').map((option) => option.textContent)).toEqual([
-      'Selecione sua turma',
+    const groupField = screen.getByRole('combobox', { name: 'Turma' });
+    expect(groupField).toHaveTextContent('Selecione sua turma');
+    fireEvent.click(groupField);
+    expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
       'A1',
       'A2',
       'A3',
@@ -68,7 +68,9 @@ describe('full CTF flow', () => {
       'B3',
       'B4',
     ]);
-    fireEvent.change(groupField, { target: { value: 'B2' } });
+    fireEvent.click(screen.getByRole('option', { name: 'B2' }));
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    expect(groupField).toHaveTextContent('B2');
     fireEvent.click(screen.getByRole('button', { name: /iniciar missão/i }));
 
     // 00 · Briefing — wrong answer, near miss, hint and correct answer
@@ -194,7 +196,7 @@ describe('flow protection', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: 'Sair' }));
 
     expect(await screen.findByLabelText('Nome')).toHaveValue('');
-    expect(screen.getByLabelText('Turma')).toHaveValue('');
+    expect(screen.getByLabelText('Turma')).toHaveTextContent('Selecione sua turma');
     expect(screen.queryByRole('button', { name: 'Sair' })).not.toBeInTheDocument();
     const saved = JSON.parse(window.localStorage.getItem(STORAGE_KEY));
     expect(saved.codename).toBe('');
