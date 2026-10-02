@@ -1,6 +1,6 @@
 import { useId, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LuArrowRight, LuMap, LuTrophy } from 'react-icons/lu';
+import { LuArrowRight, LuListOrdered, LuLoaderCircle, LuMap, LuTrophy } from 'react-icons/lu';
 import { challengePath, challenges } from '../challenges';
 import Credential from '../components/Credential';
 import Button from '../components/ui/Button';
@@ -8,9 +8,9 @@ import Select from '../components/ui/Select';
 import { useGame } from '../game/GameProvider';
 import { CODENAME_MAX_LENGTH } from '../game/gameReducer';
 import { GROUPS, isValidGroup } from '../game/groups';
-import { getCurrentChallenge, getSummary, isRegistered } from '../game/selectors';
+import { getCurrentChallenge, getMissionSeconds, getSummary, isRegistered } from '../game/selectors';
 import useDocumentTitle from '../hooks/useDocumentTitle';
-import { cn } from '../utils/format';
+import { cn, formatDuration } from '../utils/format';
 
 function Title() {
   const initial = (letter) => <span className="text-brand-orange">{letter}</span>;
@@ -69,21 +69,61 @@ function Field({ label, error, fieldRef, options, placeholder, ...fieldProps }) 
   );
 }
 
+// The player's single, official attempt is over: there is nothing to start again
+function Concluded({ state, summary }) {
+  const { result } = state;
+  const score = result?.score ?? summary.score;
+  const seconds = getMissionSeconds(state);
+
+  return (
+    <div className="mt-8 max-w-md">
+      <div className="panel border-success/40 p-5">
+        <h2 className="text-2xl font-bold text-success">CTF concluído</h2>
+        <p className="mt-1 text-fg-muted">Você já realizou sua tentativa oficial.</p>
+        <dl className="mt-4 grid grid-cols-3 gap-3">
+          <div>
+            <dt className="text-xs text-fg-subtle">Pontos</dt>
+            <dd className="font-mono text-lg font-semibold">{score}</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-fg-subtle">Tempo</dt>
+            <dd className="font-mono text-lg font-semibold">{formatDuration(seconds * 1000)}</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-fg-subtle">Ranking</dt>
+            <dd className="font-mono text-lg font-semibold">{result?.place ? `${result.place}º` : '—'}</dd>
+          </div>
+        </dl>
+      </div>
+      <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+        <Button to="/conclusao" size="lg">
+          <LuTrophy className="h-5 w-5" aria-hidden="true" /> Ver resultado
+        </Button>
+        <Button to="/ranking" variant="secondary" size="lg">
+          <LuListOrdered className="h-5 w-5" aria-hidden="true" /> Ranking
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export default function LandingPage() {
   useDocumentTitle('');
   const { state, startMission } = useGame();
   const summary = getSummary(state);
   const current = getCurrentChallenge(state);
   const registered = isRegistered(state);
-  const [name, setName] = useState(state.codename);
-  const [group, setGroup] = useState(state.group);
+  const [name, setName] = useState('');
+  const [group, setGroup] = useState('');
   const [errors, setErrors] = useState({});
+  const [busy, setBusy] = useState(false);
   const nameRef = useRef(null);
   const groupRef = useRef(null);
   const navigate = useNavigate();
 
-  function handleStart(event) {
+  async function handleStart(event) {
     event.preventDefault();
+    if (busy) return;
     const nextErrors = {
       name: name.trim() ? undefined : 'Informe seu nome.',
       group: isValidGroup(group) ? undefined : 'Selecione sua turma.',
@@ -92,8 +132,18 @@ export default function LandingPage() {
     if (nextErrors.name) return nameRef.current?.focus();
     if (nextErrors.group) return groupRef.current?.focus();
 
-    startMission(name, group);
-    navigate(current ? challengePath(current) : '/conclusao');
+    setBusy(true);
+    try {
+      // Creates the attempt on the server, or picks up the one this player
+      // already has: there is only ever one per name and class
+      const attempt = await startMission(name, group);
+      if (attempt.status === 'completed') return navigate('/conclusao');
+      const solved = new Set(attempt.challenges.filter((item) => item.solvedAt).map((item) => item.id));
+      navigate(challengePath(challenges.find((challenge) => !solved.has(challenge.id))));
+    } catch {
+      setBusy(false);
+      setErrors({ form: 'Não foi possível iniciar agora. Verifique a conexão e tente de novo.' });
+    }
   }
 
   return (
@@ -133,24 +183,32 @@ export default function LandingPage() {
               }}
               error={errors.group}
             />
-            <Button type="submit" size="lg" className="w-full sm:w-auto">
-              Iniciar missão <LuArrowRight className="h-5 w-5" aria-hidden="true" />
+            {errors.form && (
+              <p role="alert" className="text-sm text-danger">
+                {errors.form}
+              </p>
+            )}
+            <Button type="submit" size="lg" className="w-full sm:w-auto" disabled={busy}>
+              {busy ? (
+                <>
+                  <LuLoaderCircle className="h-5 w-5 animate-spin" aria-hidden="true" /> Iniciando…
+                </>
+              ) : (
+                <>
+                  Iniciar missão <LuArrowRight className="h-5 w-5" aria-hidden="true" />
+                </>
+              )}
             </Button>
           </form>
         )}
 
-        {registered && (
+        {registered && summary.isComplete && <Concluded state={state} summary={summary} />}
+
+        {registered && !summary.isComplete && (
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            {summary.isComplete ? (
-              <Button to="/conclusao" size="lg">
-                <LuTrophy className="h-5 w-5" aria-hidden="true" /> Ver certificado
-              </Button>
-            ) : (
-              <Button to={challengePath(current)} size="lg">
-                {summary.hasStarted ? 'Continuar' : 'Iniciar'}: {current.title}{' '}
-                <LuArrowRight className="h-5 w-5" aria-hidden="true" />
-              </Button>
-            )}
+            <Button to={challengePath(current)} size="lg">
+              Continuar: {current.title} <LuArrowRight className="h-5 w-5" aria-hidden="true" />
+            </Button>
             <Button to="/missao" variant="secondary" size="lg">
               <LuMap className="h-5 w-5" aria-hidden="true" /> Mapa da missão
             </Button>

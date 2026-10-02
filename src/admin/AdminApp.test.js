@@ -10,6 +10,8 @@ const players = [
     id: 'run-1',
     name: 'João',
     group: 'A2',
+    status: 'completed',
+    currentChallenge: null,
     startedAt: '2026-10-01T12:00:00Z',
     finishedAt: '2026-10-01T12:20:00Z',
     hidden: false,
@@ -23,6 +25,8 @@ const players = [
     id: 'run-2',
     name: 'Maria',
     group: 'A1',
+    status: 'in_progress',
+    currentChallenge: 'sequence',
     startedAt: '2026-10-01T13:00:00Z',
     finishedAt: null,
     hidden: false,
@@ -96,9 +100,12 @@ describe('admin area', () => {
     signedIn();
     renderAdmin();
     expect(await screen.findByRole('button', { name: 'João' })).toBeInTheDocument();
-    expect(screen.getByText(/2 participações · 1 concluída/)).toBeInTheDocument();
+    expect(screen.getByText(/2 jogadores · 1 concluiu/)).toBeInTheDocument();
     expect(screen.getByText('08:32')).toBeInTheDocument();
     expect(within(screen.getByRole('table')).getByText('Em andamento')).toBeInTheDocument();
+    // Players who have not finished show the stage they are in
+    expect(within(screen.getByRole('table')).getByText('Sequência')).toBeInTheDocument();
+    expect(within(screen.getByRole('table')).getByText('Final')).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText('Pesquisar por nome'), { target: { value: 'mar' } });
     expect(screen.queryByRole('button', { name: 'João' })).not.toBeInTheDocument();
@@ -134,22 +141,22 @@ describe('admin area', () => {
     expect(await within(dialog).findByText('Dados atualizados.')).toBeInTheDocument();
   });
 
-  it('only deletes a result after an explicit confirmation', async () => {
+  it('only resets an attempt after an explicit confirmation', async () => {
     signedIn();
     api.deletePlayer.mockResolvedValue(null);
     renderAdmin();
     fireEvent.click(await screen.findByRole('button', { name: 'João' }));
     const dialog = await screen.findByRole('dialog', { name: 'João' });
 
-    fireEvent.click(await within(dialog).findByRole('button', { name: /excluir resultado/i }));
+    fireEvent.click(await within(dialog).findByRole('button', { name: /resetar tentativa/i }));
     expect(api.deletePlayer).not.toHaveBeenCalled();
 
-    // Cancelling keeps the result
+    // Cancelling keeps the attempt
     fireEvent.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
     expect(api.deletePlayer).not.toHaveBeenCalled();
 
-    fireEvent.click(within(dialog).getByRole('button', { name: /excluir resultado/i }));
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Excluir definitivamente' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: /resetar tentativa/i }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Confirmar reset' }));
     await waitFor(() => expect(api.deletePlayer).toHaveBeenCalledWith('run-1'));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });

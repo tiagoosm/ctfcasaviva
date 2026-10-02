@@ -42,7 +42,7 @@ An educational Capture The Flag (CTF) built for the students of **Inatel cas@viv
 **Gameplay**
 
 - Progressive unlocking: stages cannot be skipped through the URL.
-- Progress is saved in `localStorage` and survives reloads; corrupted or outdated data is discarded safely.
+- One official attempt per player, stored on the server from the moment it starts: it survives reloads, closed browsers and a change of device, and cannot be replayed once completed.
 - Name and class are required before the mission starts; the class is picked from a fixed list.
 - One optional hint per challenge, which guides without giving the answer away.
 - Scoring that rewards speed and accuracy, and a mission clock pinned to the corner of each challenge.
@@ -149,20 +149,29 @@ The browser cannot read or write the tables: row level security is enabled with 
 
 | Function | Purpose |
 |----------|---------|
-| `ctf_start` | Opens a run for a name and class |
-| `ctf_enter` | Starts or resumes the clock of a challenge |
+| `ctf_start` | Creates the player's attempt, or returns the one that already exists |
+| `ctf_state` | Returns the current state of an attempt |
+| `ctf_enter` | Starts or resumes the clock of a challenge; also the heartbeat |
 | `ctf_leave` | Pauses the clock of a challenge |
 | `ctf_hint` | Records that the hint was used |
-| `ctf_submit` | Validates an answer; on success stores time and score |
-| `ctf_abandon` | Drops an unfinished run when the player leaves or restarts |
-| `ctf_ranking` | Returns the top players, one row per participant (their best run) |
-| `ctf_result` | Returns the final result and ranking place of a run |
+| `ctf_submit` | Validates an answer; on success stores time and score, and freezes the result on the last one |
+| `ctf_ranking` | Returns the top players: completed attempts only |
 
-Only finished runs are kept. A run exists on the server while it is being played, since that is how time and errors are measured, but it is deleted when the player leaves or restarts, and runs abandoned without leaving are purged after 24 hours.
+### One player, one attempt
 
-The game stays playable if the backend is unreachable: answers are also validated locally and the score is estimated with the same formula, but that run does not enter the ranking.
+A player is identified by name and class. The server compares a normalized form of the name (case, accents and extra spaces are ignored), so `João da Silva`, `joao da silva` and `JOÃO  DA  SILVA` are the same player, while the name is displayed as first typed. A unique index on that key guarantees a single attempt per player, even under parallel requests.
 
-Known limits of a client-side CTF: the challenge content ships with the site, so someone who already knows the answers can replay the mission quickly. The server bounds every score to what the rules allow, but it cannot tell a fast solver from a returning one.
+- The attempt is created when the player starts and every relevant action updates it right away: entering a stage, a wrong answer, the hint, a solved stage.
+- Coming back with the same name and class resumes it, from any browser or device. What the browser keeps in `localStorage` is only a cache, rebuilt from the server when the app opens.
+- When the last challenge is solved the attempt becomes `completed` and its score, time, errors and hints are frozen. A completed attempt cannot be entered, answered or started again.
+- Requests are idempotent: starting twice returns the same attempt, a retried wrong answer is charged once, the hint is a flag, and a solved challenge stays solved.
+- Only an administrator can reset an attempt (by deleting it), which lets that player start over.
+
+Because identity is just name and class, anyone who types another player's name and class picks up that player's attempt. That is a deliberate trade-off to avoid accounts and passwords for students.
+
+The backend is required to play: nothing starts and no answer is accepted unless the server confirms it.
+
+Known limits of a client-side CTF: the challenge content ships with the site, so someone who was told the answers can finish quickly. The server bounds every score to what the rules allow, but it cannot tell a fast solver from an informed one.
 
 To point the app at another Supabase project, apply the migration there and set `REACT_APP_SUPABASE_URL` and `REACT_APP_SUPABASE_KEY` (the publishable key) at build time.
 
@@ -170,7 +179,7 @@ To point the app at another Supabase project, apply the migration there and set 
 
 The admin area lives at `/admin`. It is not linked from the player interface and is loaded as a separate bundle only when that route is opened.
 
-- **Players:** every run with score, time, errors, hints, completed stages and status; search by name, filter by class and status; per-player history by stage; edit name and class; hide a result from the public ranking or delete it (with confirmation).
+- **Players:** every attempt, in progress or completed, with current stage, score, time, errors, hints and start/finish times; search by name, filter by class and status; per-player history by stage; edit name and class; hide a result from the public ranking; reset an attempt (with confirmation) so the player can start again.
 - **Stages:** preview any stage without playing, with its answer, hint, scoring and configuration, and a tester that checks an answer the same way the game does.
 
 Access is enforced by the server, not by hiding the route. Administrators sign in with Supabase Auth (email and password), and every `ctf_admin_*` database function checks that the caller's confirmed email is listed in the `ctf_admins` table. Players never sign in, and name and class are identification only. Plain-text answers are stored in the database and returned only to administrators; the public bundle contains hashes.

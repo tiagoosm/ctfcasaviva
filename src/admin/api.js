@@ -47,6 +47,8 @@ async function request(path, { token = API_KEY, body } = {}) {
   if (!response.ok) {
     const error = new Error(data?.message || data?.msg || data?.error_description || `HTTP ${response.status}`);
     error.status = response.status;
+    // Another attempt already uses that name and class
+    error.duplicate = data?.code === '23505';
     throw error;
   }
   return data;
@@ -108,6 +110,8 @@ const toPlayer = (row) => ({
   id: row.id,
   name: row.name,
   group: row.class_name,
+  status: row.status,
+  currentChallenge: row.current_challenge,
   startedAt: row.started_at,
   finishedAt: row.finished_at,
   hidden: row.hidden,

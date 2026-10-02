@@ -18,10 +18,12 @@ import {
 import useDocumentTitle from '../hooks/useDocumentTitle';
 import NotFoundPage from './NotFoundPage';
 
+const HEARTBEAT_INTERVAL = 30000;
+
 export default function ChallengePage() {
   const { slug } = useParams();
   const challenge = getChallengeBySlug(slug);
-  const { state, submitAnswer, revealHint, enterChallenge, leaveChallenge } = useGame();
+  const { state, submitAnswer, revealHint, enterChallenge, leaveChallenge, keepAlive } = useGame();
   const [justSolved, setJustSolved] = useState(false);
 
   useDocumentTitle(challenge ? `${challengeLabel(challenge)}: ${challenge.title}` : 'Página não encontrada');
@@ -38,11 +40,15 @@ export default function ChallengePage() {
     // Coming back to a page the browser kept in memory (back/forward)
     const onPageShow = (event) => event.persisted && enterChallenge(challenge);
     window.addEventListener('pageshow', onPageShow);
+    // Lets the server know the player is still here, so a tab that is closed
+    // without warning stops counting time
+    const heartbeat = setInterval(() => keepAlive(challenge), HEARTBEAT_INTERVAL);
     return () => {
       window.removeEventListener('pageshow', onPageShow);
+      clearInterval(heartbeat);
       leaveChallenge(challenge);
     };
-  }, [challenge, registered, status, enterChallenge, leaveChallenge]);
+  }, [challenge, registered, status, enterChallenge, leaveChallenge, keepAlive]);
 
   if (!challenge) return <NotFoundPage />;
 
@@ -70,9 +76,9 @@ export default function ChallengePage() {
   const progress = getProgress(state, challenge.id);
   const { Stage } = challenge;
 
-  function handleSubmit(answer) {
-    const result = submitAnswer(challenge, answer);
-    if (result.status === 'correct') setJustSolved(true);
+  async function handleSubmit(answer) {
+    const result = await submitAnswer(challenge, answer);
+    if (result?.status === 'correct') setJustSolved(true);
     return result;
   }
 

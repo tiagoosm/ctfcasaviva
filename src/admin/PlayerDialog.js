@@ -36,7 +36,9 @@ export default function PlayerDialog({ playerId, onClose, onChanged }) {
 
   function fail(error) {
     if (error.unauthorized) onExpired();
-    else setMessage({ tone: 'error', text: 'Não foi possível concluir a ação. Tente de novo.' });
+    else if (error.duplicate) {
+      setMessage({ tone: 'error', text: 'Já existe outro jogador com esse nome e turma.' });
+    } else setMessage({ tone: 'error', text: 'Não foi possível concluir a ação. Tente de novo.' });
   }
 
   useEffect(() => {
@@ -250,8 +252,10 @@ export default function PlayerDialog({ playerId, onClose, onChanged }) {
             </Button>
 
             {confirmingDelete ? (
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center" role="group" aria-label="Confirmar exclusão">
-                <p className="text-sm text-fg-muted">Excluir de vez? Não pode ser desfeito.</p>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center" role="group" aria-label="Confirmar reset">
+                <p className="text-sm text-fg-muted">
+                  Apagar esta tentativa? O jogador poderá começar de novo.
+                </p>
                 <div className="flex gap-2">
                   <Button variant="secondary" size="sm" onClick={() => setConfirmingDelete(false)}>
                     Cancelar
@@ -262,13 +266,13 @@ export default function PlayerDialog({ playerId, onClose, onChanged }) {
                     disabled={busy}
                     onClick={() => run(() => deletePlayer(player.id), onClose)}
                   >
-                    Excluir definitivamente
+                    Confirmar reset
                   </Button>
                 </div>
               </div>
             ) : (
               <Button variant="danger" disabled={busy} onClick={() => setConfirmingDelete(true)}>
-                <LuTrash2 className="h-4 w-4" aria-hidden="true" /> Excluir resultado
+                <LuTrash2 className="h-4 w-4" aria-hidden="true" /> Resetar tentativa
               </Button>
             )}
           </div>

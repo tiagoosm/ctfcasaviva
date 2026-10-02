@@ -5,22 +5,25 @@ import Button from '../ui/Button';
 import FeedbackMessage from '../ui/FeedbackMessage';
 import { incorrectFeedback, systemErrorFeedback } from './feedback';
 
-// Short "verification" pause: gives the submission weight and prevents double clicks
-const VERIFY_DELAY = 350;
-
+// `onSubmit` may be asynchronous: the answer is checked by the server
 export default function FlagForm({ onSubmit }) {
   const [value, setValue] = useState('');
   const [feedback, setFeedback] = useState(null);
   const [verifying, setVerifying] = useState(false);
   const [shaking, setShaking] = useState(false);
   const inputRef = useRef(null);
-  const timerRef = useRef(null);
+  const mounted = useRef(true);
   const inputId = useId();
   const feedbackId = useId();
 
-  useEffect(() => () => clearTimeout(timerRef.current), []);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     if (verifying) return;
 
@@ -37,18 +40,18 @@ export default function FlagForm({ onSubmit }) {
 
     setVerifying(true);
     setFeedback(null);
-    timerRef.current = setTimeout(() => {
-      const result = onSubmit(value);
-      setVerifying(false);
+    const result = (await onSubmit(value)) ?? { status: 'error' };
+    // On a correct answer the form is removed from the page
+    if (!mounted.current) return;
+    setVerifying(false);
 
-      if (result.status === 'incorrect') {
-        setFeedback(incorrectFeedback(result));
-        setShaking(true);
-        inputRef.current?.select();
-      } else if (result.status === 'error') {
-        setFeedback(systemErrorFeedback());
-      }
-    }, VERIFY_DELAY);
+    if (result.status === 'incorrect') {
+      setFeedback(incorrectFeedback(result));
+      setShaking(true);
+      inputRef.current?.select();
+    } else if (result.status === 'error') {
+      setFeedback(systemErrorFeedback());
+    }
   }
 
   const isError = feedback?.tone === 'error';

@@ -22,6 +22,8 @@ const SORTS = {
 
 const STATUSES = { all: 'Todos', finished: 'Concluído', playing: 'Em andamento' };
 
+const titles = Object.fromEntries(challenges.map((challenge) => [challenge.id, challenge.title]));
+
 const fieldClasses =
   'h-11 rounded-xl border border-ink-600 bg-ink-950/70 px-3 text-base focus:border-brand-orange focus:outline-none';
 
@@ -71,8 +73,8 @@ export default function PlayersPage() {
           <h1 className="text-3xl font-bold sm:text-4xl">Jogadores</h1>
           {data && (
             <p className="mt-1 text-fg-muted">
-              {players.length} {players.length === 1 ? 'participação' : 'participações'} ·{' '}
-              {finishedCount} {finishedCount === 1 ? 'concluída' : 'concluídas'}
+              {players.length} {players.length === 1 ? 'jogador' : 'jogadores'} ·{' '}
+              {finishedCount} {finishedCount === 1 ? 'concluiu' : 'concluíram'}
             </p>
           )}
         </div>
@@ -169,7 +171,7 @@ export default function PlayersPage() {
 
         {visible.length > 0 && (
           <div className="panel scrollbar-thin overflow-x-auto">
-            <table className="w-full min-w-[46rem] border-collapse text-left">
+            <table className="w-full min-w-[54rem] border-collapse text-left">
               <thead>
                 <tr className="border-b border-ink-600/60 font-mono text-xs uppercase tracking-wider text-fg-subtle">
                   <th scope="col" className="px-4 py-3">
@@ -177,6 +179,9 @@ export default function PlayersPage() {
                   </th>
                   <th scope="col" className="px-3 py-3">
                     Turma
+                  </th>
+                  <th scope="col" className="px-3 py-3">
+                    Fase atual
                   </th>
                   <th scope="col" className="px-3 py-3 text-right">
                     Pontos
@@ -221,6 +226,13 @@ export default function PlayersPage() {
                       </button>
                     </th>
                     <td className="max-w-[10rem] truncate px-3 py-2 text-fg-muted">{player.group}</td>
+                    <td className="whitespace-nowrap px-3 py-2 text-sm">
+                      {player.finishedAt ? (
+                        <span className="text-fg-subtle">Final</span>
+                      ) : (
+                        titles[player.currentChallenge] ?? '—'
+                      )}
+                    </td>
                     <td className="px-3 py-2 text-right font-mono font-semibold">{player.score}</td>
                     <td className="px-3 py-2 text-right font-mono text-sm">
                       {formatClock(player.totalSeconds)}

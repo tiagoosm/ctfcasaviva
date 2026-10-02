@@ -1,9 +1,7 @@
-import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { LuArrowRight, LuCheck, LuLock, LuRotateCcw, LuTrophy } from 'react-icons/lu';
+import { LuArrowRight, LuCheck, LuLock, LuTrophy } from 'react-icons/lu';
 import { challengePath, challenges } from '../challenges';
 import Button from '../components/ui/Button';
-import ConfirmDialog from '../components/ui/ConfirmDialog';
 import FeedbackMessage from '../components/ui/FeedbackMessage';
 import { useGame } from '../game/GameProvider';
 import { getChallengeScore, getStatus, getSummary } from '../game/selectors';
@@ -31,18 +29,14 @@ function ChallengeAction({ challenge, status }) {
 
 export default function MissionPage() {
   useDocumentTitle('Mapa da missão');
-  const { state, resetMission } = useGame();
+  const { state } = useGame();
   const location = useLocation();
   const summary = getSummary(state);
-  const [confirmReset, setConfirmReset] = useState(false);
-  const [resetDone, setResetDone] = useState(false);
   const notice = location.state?.notice;
 
-  const feedback = resetDone
-    ? { key: 'reset', tone: 'info', title: 'Missão reiniciada', message: 'O progresso foi apagado.' }
-    : notice
-      ? { key: 'notice', tone: 'info', title: notice.title, message: notice.message }
-      : null;
+  const feedback = notice
+    ? { key: 'notice', tone: 'info', title: notice.title, message: notice.message }
+    : null;
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
@@ -50,7 +44,7 @@ export default function MissionPage() {
         <h1 className="text-4xl font-bold">Mapa da missão</h1>
         {summary.isComplete && (
           <Button to="/conclusao">
-            <LuTrophy className="h-5 w-5" aria-hidden="true" /> Ver certificado
+            <LuTrophy className="h-5 w-5" aria-hidden="true" /> Ver resultado
           </Button>
         )}
       </div>
@@ -103,27 +97,6 @@ export default function MissionPage() {
           );
         })}
       </ol>
-
-      {summary.hasStarted && (
-        <div className="mt-10">
-          <Button variant="ghost" onClick={() => setConfirmReset(true)}>
-            <LuRotateCcw className="h-4 w-4" aria-hidden="true" /> Reiniciar missão
-          </Button>
-        </div>
-      )}
-
-      <ConfirmDialog
-        open={confirmReset}
-        title="Reiniciar a missão?"
-        description="Todo o progresso será apagado. Esta ação não pode ser desfeita."
-        confirmLabel="Reiniciar"
-        onCancel={() => setConfirmReset(false)}
-        onConfirm={() => {
-          resetMission();
-          setConfirmReset(false);
-          setResetDone(true);
-        }}
-      />
     </div>
   );
 }

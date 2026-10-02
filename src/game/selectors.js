@@ -5,11 +5,8 @@ export const getProgress = (state, id) => state.progress[id] ?? emptyProgress;
 
 export const isSolved = (state, id) => Boolean(getProgress(state, id).solvedAt);
 
-export const isRegistered = (state) => Boolean(state.codename && state.group);
-
-// True once the player has acted on the mission (visiting a challenge does not count)
-export const hasProgress = (state) =>
-  Object.values(state.progress).some((p) => p.solvedAt || p.wrong > 0 || p.hintUsed);
+// The player is identified once the server has confirmed their attempt
+export const isRegistered = (state) => Boolean(state.runId && state.codename && state.group);
 
 // A challenge only unlocks once all the previous ones are solved
 export function getStatus(state, challenge) {

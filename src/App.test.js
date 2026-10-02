@@ -1,8 +1,25 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import * as server from './api/ranking';
 import App from './App';
 import { GameProvider } from './game/GameProvider';
 import { STORAGE_KEY } from './game/storage';
+
+// The in-memory backend in src/api/__mocks__ follows the same rules as the server
+jest.mock('./api/ranking');
+
+const ANSWERS = {
+  briefing: 'começar',
+  gallery: 'gogh',
+  sequence: 'w-q-r-t-m-k',
+  interception: 'ultimato',
+  vault: 'conquista',
+};
+
+beforeEach(() => {
+  server.__reset();
+  window.localStorage.clear();
+});
 
 function renderApp(route = '/') {
   return render(
@@ -15,7 +32,7 @@ function renderApp(route = '/') {
 }
 
 async function submitFlag(value) {
-  fireEvent.change(screen.getByLabelText('Resposta'), { target: { value } });
+  fireEvent.change(await screen.findByLabelText('Resposta'), { target: { value } });
   fireEvent.click(screen.getByRole('button', { name: 'Enviar' }));
 }
 
@@ -26,28 +43,49 @@ async function solveFlag(value, successTitle) {
 
 const pageTitle = (name) => screen.findByRole('heading', { name, level: 1 });
 
-function seedState(progress = {}) {
+// Fills in the start form the way a player does
+function identify(name, group) {
+  fireEvent.change(screen.getByLabelText('Nome'), { target: { value: name } });
+  fireEvent.click(screen.getByRole('combobox', { name: 'Turma' }));
+  fireEvent.click(screen.getByRole('option', { name: group }));
+  fireEvent.click(screen.getByRole('button', { name: /iniciar missão/i }));
+}
+
+// Plays on the server directly, as if it had happened on another device
+async function playOnServer(name, group, stages) {
+  const attempt = await server.startRun(name, group);
+  for (const id of stages) await server.submitAnswer(attempt.id, id, ANSWERS[id]);
+  return attempt.id;
+}
+
+// A browser that already knows the player (what localStorage keeps between visits)
+async function knownPlayer(stages = []) {
+  const runId = await playOnServer('Coruja', 'A1', stages);
   window.localStorage.setItem(
     STORAGE_KEY,
     JSON.stringify({
-      version: 4,
+      version: 5,
       codename: 'Coruja',
       group: 'A1',
+      runId,
       startedAt: 1,
       finishedAt: null,
-      progress,
+      result: null,
+      progress: {},
     }),
   );
+  return runId;
 }
 
 describe('full CTF flow', () => {
-  it('can be played from the briefing to the certificate', async () => {
+  it('can be played from the briefing to the official result', async () => {
     renderApp('/');
 
     // Name and class are both required before the mission starts
     fireEvent.click(screen.getByRole('button', { name: /iniciar missão/i }));
     expect(screen.getByText('Informe seu nome.')).toBeInTheDocument();
     expect(screen.getByText('Selecione sua turma.')).toBeInTheDocument();
+    expect(server.__attempts()).toHaveLength(0);
 
     fireEvent.change(screen.getByLabelText('Nome'), { target: { value: 'Agente Teste' } });
     fireEvent.click(screen.getByRole('button', { name: /iniciar missão/i }));
@@ -75,6 +113,9 @@ describe('full CTF flow', () => {
 
     // 00 · Briefing — wrong answer, near miss, hint and correct answer
     await pageTitle('Briefing');
+    // The attempt exists on the server from the very start
+    expect(server.__attempts()).toHaveLength(1);
+
     await submitFlag('errado');
     expect(await screen.findByText('Resposta incorreta')).toBeInTheDocument();
     expect(screen.getByText(/−10 pontos/)).toBeInTheDocument();
@@ -93,9 +134,10 @@ describe('full CTF flow', () => {
     expect(screen.queryByRole('button', { name: /ver dica/i })).not.toBeInTheDocument();
 
     await solveFlag('Começar', 'Acesso liberado');
-    expect(JSON.parse(window.localStorage.getItem(STORAGE_KEY)).progress.briefing.solvedAt).toEqual(
-      expect.any(Number),
-    );
+    // Every step was saved on the server as it happened
+    const [saved] = server.__attempts();
+    expect(saved.stages.briefing).toMatchObject({ wrong: 2, hintUsed: true, score: 55 });
+    expect(saved.finishedAt).toBeNull();
     fireEvent.click(screen.getByRole('link', { name: /próximo: galeria/i }));
 
     // 01 · Gallery — the viewer opens, has no zoom and closes with Esc
@@ -149,8 +191,9 @@ describe('full CTF flow', () => {
     await solveFlag('conquista', 'Cofre aberto');
     fireEvent.click(screen.getByRole('link', { name: /ver resultado da missão/i }));
 
-    // Certificate
+    // Official result
     await pageTitle('Missão cumprida');
+    expect(screen.getByText('Sua tentativa oficial está registrada.')).toBeInTheDocument();
     const certificate = screen.getByRole('article', { name: 'Agente Teste' });
     expect(within(certificate).getByText('Mestre do CTF')).toBeInTheDocument();
     expect(certificate).toHaveTextContent('Turma B2');
@@ -158,10 +201,139 @@ describe('full CTF flow', () => {
     expect(certificate).toHaveTextContent('915 / 1000 pts');
     expect(within(certificate).getByText('Erros').nextSibling).toHaveTextContent('6');
     expect(within(certificate).getByText('Dicas').nextSibling).toHaveTextContent('1');
+    expect(await within(certificate).findByText('1º no ranking')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /ver ranking/i })).toBeInTheDocument();
     // The result page shows the final time itself: no running clock there
     expect(screen.queryByRole('timer')).not.toBeInTheDocument();
+
+    // The attempt is over: nothing offers to play again
+    expect(screen.queryByRole('button', { name: /jogar novamente/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /reiniciar/i })).not.toBeInTheDocument();
+    expect(server.__attempts()).toHaveLength(1);
+    expect(server.__attempts()[0].score).toBe(915);
   }, 30000);
+});
+
+describe('one official attempt per player', () => {
+  it('resumes the attempt when the same player comes back from another browser', async () => {
+    await playOnServer('João da Silva', 'A2', ['briefing']);
+
+    // Nothing saved locally, and the name is typed differently
+    renderApp('/');
+    identify('  joao   da SILVA ', 'A2');
+
+    // Straight to the stage where the player stopped
+    await pageTitle('Galeria');
+    expect(server.__attempts()).toHaveLength(1);
+
+    fireEvent.click(screen.getByRole('link', { name: 'Mapa' }));
+    await pageTitle('Mapa da missão');
+    expect(screen.getByText('1/5 etapas · 100 pts')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /revisar briefing/i })).toBeInTheDocument();
+  });
+
+  it('treats another class as another player', async () => {
+    await playOnServer('João da Silva', 'A2', ['briefing']);
+    renderApp('/');
+    identify('João da Silva', 'B1');
+    await pageTitle('Briefing');
+    expect(server.__attempts()).toHaveLength(2);
+  });
+
+  it('does not let a player who finished start again', async () => {
+    await playOnServer('Maria Souza', 'B1', Object.keys(ANSWERS));
+
+    renderApp('/');
+    identify('maria souza', 'B1');
+
+    // No new attempt: the official result is shown instead
+    await pageTitle('Missão cumprida');
+    expect(server.__attempts()).toHaveLength(1);
+    const certificate = screen.getByRole('article', { name: 'Maria Souza' });
+    expect(certificate).toHaveTextContent('1000 / 1000 pts');
+    expect(within(certificate).getByText('1º no ranking')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /jogar novamente/i })).not.toBeInTheDocument();
+
+    // Back on the start page there is no form, only the notice
+    fireEvent.click(screen.getByRole('link', { name: /página inicial/i }));
+    expect(await screen.findByRole('heading', { name: 'CTF concluído' })).toBeInTheDocument();
+    expect(screen.getByText('Você já realizou sua tentativa oficial.')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Nome')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /iniciar/i })).not.toBeInTheDocument();
+  });
+
+  it('keeps the official score when a finished stage is opened again', async () => {
+    const runId = await knownPlayer(Object.keys(ANSWERS));
+    renderApp('/missao');
+    await pageTitle('Mapa da missão');
+    fireEvent.click(await screen.findByRole('link', { name: /revisar o cofre/i }));
+    await pageTitle('O Cofre');
+    // A solved stage can be reviewed but not answered
+    expect(await screen.findByRole('heading', { name: 'Cofre aberto', level: 2 })).toBeInTheDocument();
+    expect(screen.queryByLabelText('Resposta')).not.toBeInTheDocument();
+    expect(server.__attempts().find((attempt) => attempt.id === runId).score).toBe(1000);
+  });
+
+  it('does not start anything when the server cannot be reached', async () => {
+    server.__setFailing(true);
+    renderApp('/');
+    identify('Agente Teste', 'A1');
+    expect(await screen.findByText(/não foi possível iniciar agora/i)).toBeInTheDocument();
+    expect(screen.getByLabelText('Nome')).toBeInTheDocument();
+    expect(server.__attempts()).toHaveLength(0);
+  });
+
+  it('does not accept an answer the server did not confirm', async () => {
+    await knownPlayer();
+    renderApp('/missao/briefing');
+    await pageTitle('Briefing');
+
+    server.__setFailing(true);
+    await submitFlag('começar');
+    expect(await screen.findByText('Não foi possível verificar')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Acesso liberado' })).not.toBeInTheDocument();
+
+    server.__setFailing(false);
+    await solveFlag('começar', 'Acesso liberado');
+  });
+
+  it('follows the server when the local data is behind or was tampered with', async () => {
+    const runId = await knownPlayer(['briefing', 'gallery']);
+    // This browser claims a perfect finished mission
+    const fake = { activeMs: 0, resumedAt: null, solvedAt: 5, wrong: 0, hintUsed: false, seconds: 0, score: 9999 };
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        version: 5,
+        codename: 'Coruja',
+        group: 'A1',
+        runId,
+        startedAt: 1,
+        finishedAt: 10,
+        result: { place: 1, score: 99999, totalSeconds: 1, errors: 0, hints: 0 },
+        progress: { briefing: fake, gallery: fake, sequence: fake, interception: fake, vault: fake },
+      }),
+    );
+
+    renderApp('/missao');
+    await pageTitle('Mapa da missão');
+    expect(await screen.findByText('2/5 etapas · 300 pts')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /jogar sequência/i })).toBeInTheDocument();
+    expect(server.__attempts()[0].finishedAt).toBeNull();
+  });
+
+  it('sends the player back to the start when an administrator resets the attempt', async () => {
+    const runId = await knownPlayer(['briefing']);
+    server.__remove(runId);
+
+    renderApp('/');
+    expect(await screen.findByLabelText('Nome')).toBeInTheDocument();
+    // Identifying again starts a brand new attempt
+    identify('Coruja', 'A1');
+    await pageTitle('Briefing');
+    expect(server.__attempts()).toHaveLength(1);
+    expect(server.__attempts()[0].id).not.toBe(runId);
+  });
 });
 
 describe('flow protection', () => {
@@ -172,7 +344,7 @@ describe('flow protection', () => {
   });
 
   it('does not allow skipping stages through the URL', async () => {
-    seedState();
+    await knownPlayer();
     renderApp('/missao/cofre');
     await pageTitle('Mapa da missão');
     expect(screen.getByText('O Cofre ainda está bloqueado')).toBeInTheDocument();
@@ -184,16 +356,25 @@ describe('flow protection', () => {
     expect(screen.getByText(/o certificado ainda está trancado/i)).toBeInTheDocument();
   });
 
-  it('leaves the mission only after confirmation, back to a clean start', async () => {
-    seedState({
-      briefing: { activeMs: 1000, resumedAt: null, solvedAt: 2, wrong: 0, hintUsed: false, seconds: 1, score: 100 },
-    });
+  it('has no way for the player to restart the mission', async () => {
+    await knownPlayer(['briefing']);
     renderApp('/missao');
     await pageTitle('Mapa da missão');
+    expect(await screen.findByRole('link', { name: /jogar galeria/i })).toBeInTheDocument();
+    // Outside a challenge the clock is paused and hidden
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /reiniciar/i })).not.toBeInTheDocument();
+  });
+
+  it('forgets the player on this browser when leaving, keeping the attempt on the server', async () => {
+    await knownPlayer(['briefing']);
+    renderApp('/missao');
+    await pageTitle('Mapa da missão');
+    await screen.findByRole('link', { name: /jogar galeria/i });
 
     fireEvent.click(screen.getByRole('button', { name: 'Sair' }));
     let dialog = screen.getByRole('dialog', { name: 'Sair do CTF?' });
-    expect(within(dialog).getByText(/perderá todo o progresso/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/seu progresso fica salvo/i)).toBeInTheDocument();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
     expect(screen.getByRole('link', { name: /jogar galeria/i })).toBeInTheDocument();
 
@@ -206,7 +387,13 @@ describe('flow protection', () => {
     expect(screen.queryByRole('button', { name: 'Sair' })).not.toBeInTheDocument();
     const saved = JSON.parse(window.localStorage.getItem(STORAGE_KEY));
     expect(saved.codename).toBe('');
-    expect(saved.progress).toEqual({});
+    expect(saved.runId).toBeNull();
+
+    // The attempt is still there, with its progress
+    expect(server.__attempts()).toHaveLength(1);
+    identify('coruja', 'A1');
+    await pageTitle('Galeria');
+    expect(server.__attempts()).toHaveLength(1);
   });
 
   it('opens the ranking without starting the mission', async () => {
@@ -216,27 +403,18 @@ describe('flow protection', () => {
     expect(screen.queryByRole('timer')).not.toBeInTheDocument();
   });
 
+  it('lists only completed attempts in the ranking', async () => {
+    await playOnServer('Maria Souza', 'B1', Object.keys(ANSWERS));
+    await playOnServer('João Silva', 'A2', ['briefing', 'gallery']);
+    renderApp('/ranking');
+    await pageTitle('Ranking');
+    expect(await screen.findByText('Maria Souza')).toBeInTheDocument();
+    expect(screen.queryByText('João Silva')).not.toBeInTheDocument();
+  });
+
   it('shows a friendly page for unknown routes', async () => {
     renderApp('/rota/que/nao/existe');
     expect(await pageTitle('Esta rota não faz parte da missão')).toBeInTheDocument();
-  });
-
-  it('resumes saved progress and allows restarting the mission', async () => {
-    seedState({
-      briefing: { activeMs: 1000, resumedAt: null, solvedAt: 2, wrong: 0, hintUsed: false, seconds: 1, score: 100 },
-    });
-    renderApp('/missao');
-    await pageTitle('Mapa da missão');
-    expect(screen.getByRole('link', { name: /jogar galeria/i })).toBeInTheDocument();
-    // Outside a challenge the clock is paused and hidden
-    expect(screen.queryByRole('timer')).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: /reiniciar missão/i }));
-    const dialog = screen.getByRole('dialog', { name: /reiniciar a missão\?/i });
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Reiniciar' }));
-
-    expect(await screen.findByText('Missão reiniciada')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /jogar briefing/i })).toBeInTheDocument();
   });
 
   it('keeps working with corrupted data in storage', async () => {

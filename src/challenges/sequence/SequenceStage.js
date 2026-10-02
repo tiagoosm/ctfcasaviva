@@ -25,6 +25,7 @@ export default function SequenceStage({ onSubmitAnswer, solved }) {
   const [selection, setSelection] = useState([]);
   const [feedback, setFeedback] = useState(null);
   const [shaking, setShaking] = useState(false);
+  const [sending, setSending] = useState(false);
 
   const isComplete = selection.length === SLOTS.length;
 
@@ -37,9 +38,12 @@ export default function SequenceStage({ onSubmitAnswer, solved }) {
     });
   }
 
-  function submit() {
-    if (!isComplete || solved) return;
-    const result = onSubmitAnswer(selection.join('-'));
+  // The order is checked by the server
+  async function submit() {
+    if (!isComplete || solved || sending) return;
+    setSending(true);
+    const result = (await onSubmitAnswer(selection.join('-'))) ?? { status: 'error' };
+    setSending(false);
     if (result.status === 'incorrect') {
       setShaking(true);
       setFeedback({
@@ -156,7 +160,7 @@ export default function SequenceStage({ onSubmitAnswer, solved }) {
         </p>
       ) : (
         <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-          <Button size="lg" onClick={submit} disabled={!isComplete} className="sm:order-last sm:ml-auto">
+          <Button size="lg" onClick={submit} disabled={!isComplete || sending} className="sm:order-last sm:ml-auto">
             <LuSend className="h-5 w-5" aria-hidden="true" /> Enviar sequência
           </Button>
           <Button

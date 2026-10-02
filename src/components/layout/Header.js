@@ -72,8 +72,8 @@ export default function Header() {
         title="Sair do CTF?"
         description={
           summary.isComplete
-            ? 'Seus dados serão apagados deste navegador. O resultado já enviado ao ranking é mantido.'
-            : 'Você perderá todo o progresso desta missão e voltará ao início.'
+            ? 'Seu resultado oficial continua registrado.'
+            : 'Seu progresso fica salvo. Para continuar depois, informe o mesmo nome e turma.'
         }
         confirmLabel="Sair"
         onCancel={() => setConfirmLeave(false)}

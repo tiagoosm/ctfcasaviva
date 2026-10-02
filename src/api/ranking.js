@@ -1,6 +1,7 @@
-// Client for the ranking backend (Supabase). Every call is a server-side
-// function: the server validates answers, measures time and computes scores,
-// so nothing sent from here can set a score directly.
+// Client for the CTF backend (Supabase). Every call is a server-side function:
+// the server owns the attempt of each player (one per name + class), validates
+// answers, measures time and computes scores. Nothing sent from here can set a
+// score or create a second attempt.
 // The publishable key is meant to be public; it only grants access to the
 // ctf_* functions exposed in supabase/migrations.
 export const API_URL = process.env.REACT_APP_SUPABASE_URL || 'https://zssdxfbsnsjcqqoxgckp.supabase.co';
@@ -10,7 +11,7 @@ export const API_KEY =
 const TIMEOUT = 8000;
 const RETRY_DELAYS = [400, 1200];
 
-export const rankingEnabled = typeof fetch === 'function' && process.env.NODE_ENV !== 'test';
+export const rankingEnabled = typeof fetch === 'function';
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -34,6 +35,8 @@ async function call(name, params, keepalive) {
       const error = new Error(data?.message || `HTTP ${response.status}`);
       // The server understood and refused: retrying would not help
       error.rejected = response.status >= 400 && response.status < 500;
+      // The attempt no longer exists (an administrator reset it)
+      error.gone = data?.message === 'run not found';
       throw error;
     }
     return data;
@@ -42,7 +45,8 @@ async function call(name, params, keepalive) {
   }
 }
 
-// Network failures and server errors are retried; refusals are not
+// Network failures and server errors are retried; refusals are not. Retrying is
+// safe because every function is idempotent on the server.
 async function rpc(name, params = {}, { keepalive = false } = {}) {
   for (let attempt = 0; ; attempt++) {
     try {
@@ -54,8 +58,43 @@ async function rpc(name, params = {}, { keepalive = false } = {}) {
   }
 }
 
-export const startRun = (name, group) => rpc('ctf_start', { p_name: name, p_class: group });
+const toTime = (value) => (value ? new Date(value).getTime() : null);
 
+// The attempt as the server knows it: identity, status, totals and progress
+function toAttempt(data) {
+  if (!data) return null;
+  return {
+    id: data.id,
+    name: data.name,
+    group: data.class_name,
+    status: data.status,
+    startedAt: toTime(data.started_at),
+    finishedAt: toTime(data.finished_at),
+    score: data.score,
+    totalSeconds: data.total_seconds,
+    errors: data.errors,
+    hints: data.hints,
+    place: data.place,
+    challenges: data.challenges.map((item) => ({
+      id: item.id,
+      solvedAt: toTime(item.solved_at),
+      wrong: item.wrong,
+      hintUsed: item.hint_used,
+      seconds: item.seconds,
+      score: item.score,
+    })),
+  };
+}
+
+// Creates the attempt of this player, or returns the one that already exists
+// (in progress or completed). There is never a second one.
+export const startRun = async (name, group) =>
+  toAttempt(await rpc('ctf_start', { p_name: name, p_class: group }));
+
+// Null when the attempt no longer exists
+export const fetchState = async (runId) => toAttempt(await rpc('ctf_state', { p_run: runId }));
+
+// Starts or resumes the challenge clock; also used as a heartbeat
 export const enterChallenge = (runId, challengeId) =>
   rpc('ctf_enter', { p_run: runId, p_challenge: challengeId });
 
@@ -67,23 +106,14 @@ export const leaveChallenge = (runId, challengeId) =>
 export const revealHint = (runId, challengeId) =>
   rpc('ctf_hint', { p_run: runId, p_challenge: challengeId });
 
-export const submitAnswer = (runId, challengeId, answer) =>
-  rpc('ctf_submit', { p_run: runId, p_challenge: challengeId, p_answer: answer });
-
-// Tells the server to drop an unfinished run (the player left or restarted)
-export const abandonRun = (runId) => rpc('ctf_abandon', { p_run: runId });
-
-export async function fetchResult(runId) {
-  const data = await rpc('ctf_result', { p_run: runId });
-  if (!data) return null;
-  return {
-    place: data.place,
-    score: data.score,
-    totalSeconds: data.total_seconds,
-    errors: data.errors,
-    hints: data.hints,
-  };
-}
+// `actionId` identifies this submission, so a retry is not charged twice
+export const submitAnswer = (runId, challengeId, answer, actionId) =>
+  rpc('ctf_submit', {
+    p_run: runId,
+    p_challenge: challengeId,
+    p_answer: answer,
+    p_action: actionId,
+  });
 
 export async function fetchRanking(limit = 20) {
   const rows = await rpc('ctf_ranking', { p_limit: limit });

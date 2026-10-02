@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
-import { LuAward, LuListOrdered, LuPrinter, LuRotateCcw } from 'react-icons/lu';
+import { useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
+import { LuAward, LuListOrdered, LuPrinter } from 'react-icons/lu';
 import Confetti from '../components/Confetti';
 import { LOGO_SRC } from '../components/layout/BrandMark';
 import Button from '../components/ui/Button';
-import ConfirmDialog from '../components/ui/ConfirmDialog';
 import { useGame } from '../game/GameProvider';
 import { getRank, getSummary } from '../game/selectors';
 import useDocumentTitle from '../hooks/useDocumentTitle';
@@ -19,22 +18,17 @@ function Stat({ label, children }) {
   );
 }
 
+// The official result. The attempt is over: there is no way to play again.
 export default function CompletionPage() {
-  useDocumentTitle('Missão cumprida');
-  const { state, resetMission, refreshResult } = useGame();
+  useDocumentTitle('CTF concluído');
+  const { state, refreshState } = useGame();
   const summary = getSummary(state);
-  const navigate = useNavigate();
-  const [confirmReset, setConfirmReset] = useState(false);
-  const resetting = useRef(false);
+  const hasResult = Boolean(state.result);
 
-  // The ranking place comes from the server, once it has confirmed the last answer
+  // The official numbers and the ranking place come from the server
   useEffect(() => {
-    if (summary.isComplete) refreshResult();
-  }, [summary.isComplete, refreshResult]);
-
-  // During "play again" the state resets before navigation finishes:
-  // we do not want the guard below to redirect to the map in the meantime.
-  if (resetting.current) return null;
+    if (summary.isComplete && !hasResult) refreshState();
+  }, [summary.isComplete, hasResult, refreshState]);
 
   if (!summary.isComplete) {
     return (
@@ -51,7 +45,6 @@ export default function CompletionPage() {
     );
   }
 
-  // Server-confirmed numbers win over the local estimate
   const { result } = state;
   const score = result?.score ?? summary.score;
   const totalSeconds = result?.totalSeconds ?? summary.totalSeconds;
@@ -63,9 +56,12 @@ export default function CompletionPage() {
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
       <Confetti />
 
-      <h1 className="text-center text-4xl font-bold sm:text-6xl">
-        Missão <span className="text-brand-orange">cumprida</span>
-      </h1>
+      <header className="text-center">
+        <h1 className="text-4xl font-bold sm:text-6xl">
+          Missão <span className="text-brand-orange">cumprida</span>
+        </h1>
+        <p className="mt-3 text-lg text-fg-muted">Sua tentativa oficial está registrada.</p>
+      </header>
 
       <article
         className="relative mx-auto mt-10 max-w-3xl overflow-hidden rounded-2xl bg-paper text-paper-ink shadow-paper animate-fade-up"
@@ -119,23 +115,7 @@ export default function CompletionPage() {
         <Button variant="secondary" size="lg" onClick={() => window.print()}>
           <LuPrinter className="h-5 w-5" aria-hidden="true" /> Imprimir
         </Button>
-        <Button variant="secondary" size="lg" onClick={() => setConfirmReset(true)}>
-          <LuRotateCcw className="h-5 w-5" aria-hidden="true" /> Jogar novamente
-        </Button>
       </div>
-
-      <ConfirmDialog
-        open={confirmReset}
-        title="Jogar novamente?"
-        description="Você recomeça do zero. No ranking, vale o seu melhor resultado."
-        confirmLabel="Recomeçar"
-        onCancel={() => setConfirmReset(false)}
-        onConfirm={() => {
-          resetting.current = true;
-          resetMission();
-          navigate('/');
-        }}
-      />
     </div>
   );
 }

@@ -22,8 +22,8 @@ function parseResult(result) {
 
 // localStorage data may be corrupted, hand-edited or in an old
 // format: we accept only what has the expected shape and discard the rest.
-// Editing it only changes what this browser shows: the ranking is computed
-// by the server from its own records.
+// Editing it only changes what this browser shows for a moment: the attempt
+// lives on the server, and this cache is rebuilt from it when the app opens.
 export function parseState(raw) {
   try {
     const data = JSON.parse(raw);
@@ -46,7 +46,9 @@ export function parseState(raw) {
     }
 
     return {
-      ...createInitialState(sanitizeCodename(data.codename), sanitizeGroup(data.group)),
+      ...createInitialState(),
+      codename: sanitizeCodename(data.codename),
+      group: sanitizeGroup(data.group),
       startedAt: isTimestamp(data.startedAt),
       finishedAt: isTimestamp(data.finishedAt),
       runId: typeof data.runId === 'string' && UUID.test(data.runId) ? data.runId : null,
