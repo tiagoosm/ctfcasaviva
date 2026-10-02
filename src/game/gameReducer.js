@@ -1,8 +1,8 @@
+import { isValidGroup } from './groups';
 import { computeScore } from './scoring';
 
 export const STATE_VERSION = 3;
 export const CODENAME_MAX_LENGTH = 40;
-export const GROUP_MAX_LENGTH = 20;
 
 export function createInitialState(codename = '', group = '') {
   return {
@@ -41,7 +41,11 @@ function sanitizeText(value, maxLength) {
 }
 
 export const sanitizeCodename = (value) => sanitizeText(value, CODENAME_MAX_LENGTH);
-export const sanitizeGroup = (value) => sanitizeText(value, GROUP_MAX_LENGTH);
+// The class must be one of the known classes; anything else counts as not informed
+export function sanitizeGroup(value) {
+  const group = String(value ?? '').trim().toUpperCase();
+  return isValidGroup(group) ? group : '';
+}
 
 export function gameReducer(state, action) {
   const current = state.progress[action.id ?? action.challenge?.id] ?? emptyProgress;

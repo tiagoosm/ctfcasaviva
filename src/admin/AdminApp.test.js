@@ -9,7 +9,7 @@ const players = [
   {
     id: 'run-1',
     name: 'João',
-    group: '2º Info',
+    group: 'A2',
     startedAt: '2026-10-01T12:00:00Z',
     finishedAt: '2026-10-01T12:20:00Z',
     hidden: false,
@@ -22,7 +22,7 @@ const players = [
   {
     id: 'run-2',
     name: 'Maria',
-    group: '1º Info',
+    group: 'A1',
     startedAt: '2026-10-01T13:00:00Z',
     finishedAt: null,
     hidden: false,
@@ -37,7 +37,7 @@ const players = [
 const detail = {
   id: 'run-1',
   name: 'João',
-  group: '2º Info',
+  group: 'A2',
   startedAt: '2026-10-01T12:00:00Z',
   finishedAt: '2026-10-01T12:20:00Z',
   hidden: false,
@@ -104,7 +104,7 @@ describe('admin area', () => {
     expect(screen.getByRole('button', { name: 'Maria' })).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText('Pesquisar por nome'), { target: { value: '' } });
-    fireEvent.change(screen.getByLabelText('Turma'), { target: { value: '2º Info' } });
+    fireEvent.change(screen.getByLabelText('Turma'), { target: { value: 'A2' } });
     expect(screen.queryByRole('button', { name: 'Maria' })).not.toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText('Turma'), { target: { value: '' } });
@@ -126,8 +126,9 @@ describe('admin area', () => {
     expect(within(dialog).getByText('Não iniciada')).toBeInTheDocument();
 
     fireEvent.change(within(dialog).getByLabelText('Nome'), { target: { value: ' João  Silva ' } });
+    fireEvent.change(within(dialog).getByLabelText('Turma'), { target: { value: 'B4' } });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Salvar' }));
-    await waitFor(() => expect(api.updatePlayer).toHaveBeenCalledWith('run-1', 'João Silva', '2º Info'));
+    await waitFor(() => expect(api.updatePlayer).toHaveBeenCalledWith('run-1', 'João Silva', 'B4'));
     expect(await within(dialog).findByText('Dados atualizados.')).toBeInTheDocument();
   });
 

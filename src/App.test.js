@@ -32,7 +32,7 @@ function seedState(progress = {}) {
     JSON.stringify({
       version: 3,
       codename: 'Coruja',
-      group: 'T1',
+      group: 'A1',
       startedAt: 1,
       finishedAt: null,
       progress,
@@ -47,14 +47,28 @@ describe('full CTF flow', () => {
     // Name and class are both required before the mission starts
     fireEvent.click(screen.getByRole('button', { name: /iniciar missão/i }));
     expect(screen.getByText('Informe seu nome.')).toBeInTheDocument();
-    expect(screen.getByText('Informe sua turma.')).toBeInTheDocument();
+    expect(screen.getByText('Selecione sua turma.')).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText('Nome'), { target: { value: 'Agente Teste' } });
     fireEvent.click(screen.getByRole('button', { name: /iniciar missão/i }));
     expect(screen.queryByText('Informe seu nome.')).not.toBeInTheDocument();
-    expect(screen.getByText('Informe sua turma.')).toBeInTheDocument();
+    expect(screen.getByText('Selecione sua turma.')).toBeInTheDocument();
 
-    fireEvent.change(screen.getByLabelText('Turma'), { target: { value: 'T1' } });
+    // The class is chosen from a fixed list
+    const groupField = screen.getByLabelText('Turma');
+    expect(groupField.tagName).toBe('SELECT');
+    expect(within(groupField).getAllByRole('option').map((option) => option.textContent)).toEqual([
+      'Selecione sua turma',
+      'A1',
+      'A2',
+      'A3',
+      'A4',
+      'B1',
+      'B2',
+      'B3',
+      'B4',
+    ]);
+    fireEvent.change(groupField, { target: { value: 'B2' } });
     fireEvent.click(screen.getByRole('button', { name: /iniciar missão/i }));
 
     // 00 · Briefing — wrong answer, near miss, hint and correct answer
@@ -95,6 +109,8 @@ describe('full CTF flow', () => {
 
     // 02 · Sequence — the wrong order is rejected, the right one is accepted
     await pageTitle('Sequência');
+    // No letter is shown to the player, neither on the images nor on the panel
+    expect(screen.queryByText(/^[A-F]$/)).not.toBeInTheDocument();
     const send = screen.getByRole('button', { name: /enviar sequência/i });
     expect(send).toBeDisabled();
 
@@ -103,6 +119,7 @@ describe('full CTF flow', () => {
       fireEvent.click(screen.getByRole('button', { name: new RegExp(`^Arquivo: .*${pattern.source}`, 'i') }));
 
     [...order].reverse().forEach(pick);
+    expect(screen.queryByText(/^[A-F]$/)).not.toBeInTheDocument();
     fireEvent.click(send);
     expect(await screen.findByText('Sequência rejeitada')).toBeInTheDocument();
 
@@ -130,7 +147,7 @@ describe('full CTF flow', () => {
     await pageTitle('Missão cumprida');
     const certificate = screen.getByRole('article', { name: 'Agente Teste' });
     expect(within(certificate).getByText('Mestre do CTF')).toBeInTheDocument();
-    expect(certificate).toHaveTextContent('Turma T1');
+    expect(certificate).toHaveTextContent('Turma B2');
     // 1000 − 6 wrong answers (10 each) − 1 hint (25)
     expect(certificate).toHaveTextContent('915 / 1000 pts');
     expect(within(certificate).getByText('Erros').nextSibling).toHaveTextContent('6');

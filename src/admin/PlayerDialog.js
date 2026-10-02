@@ -1,7 +1,8 @@
 import { useEffect, useId, useState } from 'react';
 import { LuCheck, LuEye, LuEyeOff, LuLoaderCircle, LuTrash2 } from 'react-icons/lu';
 import { challenges } from '../challenges';
-import { CODENAME_MAX_LENGTH, GROUP_MAX_LENGTH } from '../game/gameReducer';
+import { CODENAME_MAX_LENGTH } from '../game/gameReducer';
+import { GROUPS, isValidGroup } from '../game/groups';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import { cn, formatClock, formatDateTime } from '../utils/format';
@@ -79,8 +80,8 @@ export default function PlayerDialog({ playerId, onClose, onChanged }) {
     event.preventDefault();
     const nextName = name.replace(/\s+/g, ' ').trim();
     const nextGroup = group.replace(/\s+/g, ' ').trim();
-    if (!nextName || !nextGroup) {
-      setMessage({ tone: 'error', text: 'Nome e turma são obrigatórios.' });
+    if (!nextName || !isValidGroup(nextGroup)) {
+      setMessage({ tone: 'error', text: 'Informe o nome e escolha uma turma válida.' });
       return;
     }
     run(
@@ -189,14 +190,20 @@ export default function PlayerDialog({ playerId, onClose, onChanged }) {
               <label htmlFor={groupId} className="text-sm font-medium text-fg-muted">
                 Turma
               </label>
-              <input
+              <select
                 id={groupId}
-                type="text"
                 value={group}
                 onChange={(event) => setGroup(event.target.value)}
-                maxLength={GROUP_MAX_LENGTH}
                 className={inputClasses}
-              />
+              >
+                {/* A class saved before the list was fixed stays visible until corrected */}
+                {!isValidGroup(group) && <option value={group}>{group}</option>}
+                {GROUPS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
             </div>
             <Button type="submit" disabled={busy || unchanged}>
               Salvar

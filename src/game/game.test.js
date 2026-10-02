@@ -113,34 +113,43 @@ describe('gameReducer + selectors', () => {
     const state = gameReducer(createInitialState(), {
       type: 'START',
       codename: '  Agente   X ',
-      group: ' 2º  A ',
+      group: ' b3 ',
       now: 100,
     });
     expect(state.codename).toBe('Agente X');
-    expect(state.group).toBe('2º A');
+    expect(state.group).toBe('B3');
     expect(state.startedAt).toBe(100);
   });
 
   it('clears progress and the server run but keeps name and class on restart', () => {
-    let state = gameReducer(createInitialState(), { type: 'START', codename: 'Coruja', group: 'T1', now: 1 });
+    let state = gameReducer(createInitialState(), { type: 'START', codename: 'Coruja', group: 'A1', now: 1 });
     state = gameReducer(state, { type: 'SET_RUN', runId: 'abc' });
     state = solve(state, first);
     state = gameReducer(state, { type: 'RESET' });
-    expect(state).toEqual(createInitialState('Coruja', 'T1'));
+    expect(state).toEqual(createInitialState('Coruja', 'A1'));
   });
 
   it('forgets the player and all progress when leaving', () => {
-    let state = gameReducer(createInitialState(), { type: 'START', codename: 'Coruja', group: 'T1', now: 1 });
+    let state = gameReducer(createInitialState(), { type: 'START', codename: 'Coruja', group: 'A1', now: 1 });
     state = gameReducer(state, { type: 'SET_RUN', runId: 'abc' });
     state = solve(state, first);
     state = gameReducer(state, { type: 'SIGN_OUT' });
     expect(state).toEqual(createInitialState());
   });
 
+  it('accepts only the known classes', () => {
+    const start = (group) =>
+      gameReducer(createInitialState(), { type: 'START', codename: 'Coruja', group, now: 1 });
+    expect(start('A4').group).toBe('A4');
+    expect(start('C1').group).toBe('');
+    expect(start('2º Info').group).toBe('');
+    expect(isRegistered(start('Turma inventada'))).toBe(false);
+  });
+
   it('requires both name and class to be registered', () => {
     expect(isRegistered(createInitialState())).toBe(false);
     expect(isRegistered(createInitialState('Coruja'))).toBe(false);
-    expect(isRegistered(createInitialState('Coruja', 'T1'))).toBe(true);
+    expect(isRegistered(createInitialState('Coruja', 'A1'))).toBe(true);
   });
 
   it('does not treat a visit as progress', () => {

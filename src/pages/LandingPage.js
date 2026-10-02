@@ -5,7 +5,8 @@ import { challengePath, challenges } from '../challenges';
 import Credential from '../components/Credential';
 import Button from '../components/ui/Button';
 import { useGame } from '../game/GameProvider';
-import { CODENAME_MAX_LENGTH, GROUP_MAX_LENGTH } from '../game/gameReducer';
+import { CODENAME_MAX_LENGTH } from '../game/gameReducer';
+import { GROUPS, isValidGroup } from '../game/groups';
 import { getCurrentChallenge, getSummary, isRegistered } from '../game/selectors';
 import useDocumentTitle from '../hooks/useDocumentTitle';
 import { cn } from '../utils/format';
@@ -20,29 +21,45 @@ function Title() {
   );
 }
 
-function Field({ label, error, inputRef, ...inputProps }) {
+// Renders a text input, or a select when `options` is given
+function Field({ label, error, fieldRef, options, placeholder, ...fieldProps }) {
   const id = useId();
   const errorId = `${id}-erro`;
+  const shared = {
+    ref: fieldRef,
+    id,
+    'aria-required': 'true',
+    'aria-invalid': error ? true : undefined,
+    'aria-describedby': error ? errorId : undefined,
+    className: cn(
+      'mt-1.5 h-12 w-full rounded-xl border-2 bg-ink-950/70 px-4 text-base focus:outline-none',
+      error
+        ? 'border-danger/70 focus:border-danger'
+        : 'border-ink-600 hover:border-fg-subtle focus:border-brand-orange',
+      options && !fieldProps.value && 'text-fg-subtle',
+    ),
+    ...fieldProps,
+  };
+
   return (
     <div>
       <label htmlFor={id} className="block font-display font-semibold">
         {label}
       </label>
-      <input
-        ref={inputRef}
-        id={id}
-        type="text"
-        aria-required="true"
-        aria-invalid={error ? true : undefined}
-        aria-describedby={error ? errorId : undefined}
-        className={cn(
-          'mt-1.5 h-12 w-full rounded-xl border-2 bg-ink-950/70 px-4 text-base focus:outline-none',
-          error
-            ? 'border-danger/70 focus:border-danger'
-            : 'border-ink-600 hover:border-fg-subtle focus:border-brand-orange',
-        )}
-        {...inputProps}
-      />
+      {options ? (
+        <select {...shared}>
+          <option value="" disabled>
+            {placeholder}
+          </option>
+          {options.map((option) => (
+            <option key={option} value={option} className="text-fg">
+              {option}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <input type="text" {...shared} />
+      )}
       {error && (
         <p id={errorId} role="alert" className="mt-1.5 text-sm text-danger">
           {error}
@@ -69,7 +86,7 @@ export default function LandingPage() {
     event.preventDefault();
     const nextErrors = {
       name: name.trim() ? undefined : 'Informe seu nome.',
-      group: group.trim() ? undefined : 'Informe sua turma.',
+      group: isValidGroup(group) ? undefined : 'Selecione sua turma.',
     };
     setErrors(nextErrors);
     if (nextErrors.name) return nameRef.current?.focus();
@@ -94,7 +111,7 @@ export default function LandingPage() {
           <form onSubmit={handleStart} noValidate className="mt-8 max-w-md space-y-4">
             <Field
               label="Nome"
-              inputRef={nameRef}
+              fieldRef={nameRef}
               value={name}
               onChange={(event) => {
                 setName(event.target.value);
@@ -106,14 +123,14 @@ export default function LandingPage() {
             />
             <Field
               label="Turma"
-              inputRef={groupRef}
+              fieldRef={groupRef}
+              options={GROUPS}
+              placeholder="Selecione sua turma"
               value={group}
               onChange={(event) => {
                 setGroup(event.target.value);
                 setErrors((current) => ({ ...current, group: undefined }));
               }}
-              maxLength={GROUP_MAX_LENGTH}
-              autoComplete="off"
               error={errors.group}
             />
             <Button type="submit" size="lg" className="w-full sm:w-auto">

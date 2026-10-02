@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { LuEraser, LuLockOpen, LuSend } from 'react-icons/lu';
 import Button from '../../components/ui/Button';
 import FeedbackMessage from '../../components/ui/FeedbackMessage';
+import { SCORING } from '../../game/scoring';
 import { cn } from '../../utils/format';
 
 const base = `${process.env.PUBLIC_URL}/assets/sequence`;
@@ -16,7 +17,8 @@ const FILES = [
   { id: 'w', alt: 'Uma árvore frondosa isolada em um campo ao entardecer' },
 ].map((file) => ({ ...file, src: `${base}/arquivo-${file.id}.webp` }));
 
-const SLOTS = ['A', 'B', 'C', 'D', 'E', 'F'];
+// Slots are plain positions: nothing on screen ties an image to a letter
+const SLOTS = FILES.map((_, index) => index + 1);
 const byId = Object.fromEntries(FILES.map((file) => [file.id, file]));
 
 export default function SequenceStage({ onSubmitAnswer, solved }) {
@@ -44,7 +46,7 @@ export default function SequenceStage({ onSubmitAnswer, solved }) {
         key: Date.now(),
         tone: 'error',
         title: 'Sequência rejeitada',
-        message: 'Tente outra ordem.',
+        message: `−${SCORING.wrongPenalty} pontos. Tente outra ordem.`,
       });
     } else if (result.status === 'error') {
       setFeedback({
@@ -69,7 +71,7 @@ export default function SequenceStage({ onSubmitAnswer, solved }) {
                 onClick={() => toggle(file.id)}
                 disabled={solved}
                 aria-pressed={selected}
-                aria-label={`Arquivo: ${file.alt}${selected ? ` — no espaço ${SLOTS[position]}` : ''}`}
+                aria-label={`Arquivo: ${file.alt}${selected ? ` — posição ${SLOTS[position]}` : ''}`}
                 className={cn(
                   'relative block w-full overflow-hidden rounded-xl border-2 bg-ink-950 transition-[border-color,transform,opacity]',
                   selected
@@ -122,22 +124,21 @@ export default function SequenceStage({ onSubmitAnswer, solved }) {
           {SLOTS.map((slot, index) => {
             const file = byId[selection[index]];
             return (
-              <li key={slot} className="flex flex-col items-center gap-1.5">
-                <span className="font-mono text-sm font-semibold text-brand-orange-light">{slot}</span>
+              <li key={slot} className="flex justify-center">
                 {file ? (
                   <button
                     type="button"
                     onClick={() => toggle(file.id)}
                     disabled={solved}
                     className="aspect-square w-full max-w-[5rem] overflow-hidden rounded-lg border-2 border-brand-orange/70"
-                    aria-label={`Espaço ${slot}: ${file.alt}. Remover`}
+                    aria-label={`Posição ${slot}: ${file.alt}. Remover`}
                   >
                     <img src={file.src} alt="" className="h-full w-full object-cover" />
                   </button>
                 ) : (
                   <span
                     className="flex aspect-square w-full max-w-[5rem] items-center justify-center rounded-lg border-2 border-dashed border-ink-600 text-fg-subtle"
-                    aria-label={`Espaço ${slot}: vazio`}
+                    aria-label={`Posição ${slot}: vazia`}
                     role="img"
                   >
                     ·

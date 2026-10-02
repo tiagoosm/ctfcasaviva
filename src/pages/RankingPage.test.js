@@ -17,13 +17,13 @@ function renderRanking() {
   );
 }
 
-const player = (place, name, score) => ({ place, name, group: '2º Info', score, totalSeconds: 600 + place });
+const player = (place, name, score) => ({ place, name, group: 'A2', score, totalSeconds: 600 + place });
 
 describe('RankingPage', () => {
   it('lists players in order and marks the current one', async () => {
     window.localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ version: 3, codename: 'maria', group: '2º info', progress: {} }),
+      JSON.stringify({ version: 3, codename: 'maria', group: 'a2', progress: {} }),
     );
     fetchRanking.mockResolvedValue([player(1, 'João', 920), player(2, 'Maria', 870), player(3, 'Pedro', 810)]);
     renderRanking();

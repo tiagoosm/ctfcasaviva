@@ -10,12 +10,12 @@ const sequence = {
   fastSeconds: 120,
   slowSeconds: 600,
   objective:
-    'O sistema só aceita os seis arquivos na ordem certa. Repare em como o painel está organizado.',
+    'O sistema só aceita os seis arquivos na ordem em que foram indexados. Essa ordem não é aleatória.',
   // The answer is produced by interaction (file order), not typed
   answerMode: 'interactive',
   answerHash: 'c98a6251170b6960afa7cf5dead713a1d2042d6c557b2c3a581bccd35ea2c4ea',
   hint: {
-    text: 'Os espaços do painel usam letras, não números. O que cada imagem pode ter a ver com uma letra?',
+    text: 'Dê um nome simples a cada imagem: cada nome começa com uma letra diferente, de A a F.',
   },
   success: {
     title: 'Sequência aceita',

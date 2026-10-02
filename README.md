@@ -43,7 +43,7 @@ An educational Capture The Flag (CTF) built for the students of **Inatel cas@viv
 
 - Progressive unlocking: stages cannot be skipped through the URL.
 - Progress is saved in `localStorage` and survives reloads; corrupted or outdated data is discarded safely.
-- Name and class are required before the mission starts.
+- Name and class are required before the mission starts; the class is picked from a fixed list.
 - One optional hint per challenge, which guides without giving the answer away.
 - Scoring that rewards speed and accuracy, with a stopwatch per challenge.
 - A shared Top 20 ranking, computed by the server.
