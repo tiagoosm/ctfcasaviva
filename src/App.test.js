@@ -78,9 +78,9 @@ describe('full CTF flow', () => {
     await submitFlag('errado');
     expect(await screen.findByText('Resposta incorreta')).toBeInTheDocument();
     expect(screen.getByText(/−10 pontos/)).toBeInTheDocument();
-    // One mission clock, in the header
-    expect(screen.getAllByRole('timer')).toHaveLength(1);
-    expect(within(screen.getAllByRole('banner')[0]).getByRole('timer')).toHaveTextContent(/^00:0\d$/);
+    // One mission clock, pinned to the page (not part of the header)
+    expect(screen.getByRole('timer')).toHaveTextContent(/^00:0\d$/);
+    expect(within(screen.getAllByRole('banner')[0]).queryByRole('timer')).not.toBeInTheDocument();
     // It runs while a challenge is on screen
     expect(screen.getByText(/tempo de missão/i)).toBeInTheDocument();
 
@@ -159,8 +159,8 @@ describe('full CTF flow', () => {
     expect(within(certificate).getByText('Erros').nextSibling).toHaveTextContent('6');
     expect(within(certificate).getByText('Dicas').nextSibling).toHaveTextContent('1');
     expect(screen.getByRole('link', { name: /ver ranking/i })).toBeInTheDocument();
-    // The clock is frozen once the mission is over
-    expect(screen.getByText(/tempo final da missão/i)).toBeInTheDocument();
+    // The result page shows the final time itself: no running clock there
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument();
   }, 30000);
 });
 
@@ -228,9 +228,8 @@ describe('flow protection', () => {
     renderApp('/missao');
     await pageTitle('Mapa da missão');
     expect(screen.getByRole('link', { name: /jogar galeria/i })).toBeInTheDocument();
-    // On the map the clock is paused, showing the time already spent in challenges
-    expect(screen.getByText(/tempo pausado/i)).toBeInTheDocument();
-    expect(screen.getByRole('timer')).toHaveTextContent('00:01');
+    // Outside a challenge the clock is paused and hidden
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /reiniciar missão/i }));
     const dialog = screen.getByRole('dialog', { name: /reiniciar a missão\?/i });

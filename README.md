@@ -45,7 +45,7 @@ An educational Capture The Flag (CTF) built for the students of **Inatel cas@viv
 - Progress is saved in `localStorage` and survives reloads; corrupted or outdated data is discarded safely.
 - Name and class are required before the mission starts; the class is picked from a fixed list.
 - One optional hint per challenge, which guides without giving the answer away.
-- Scoring that rewards speed and accuracy, and a mission clock always visible at the top right.
+- Scoring that rewards speed and accuracy, and a mission clock pinned to the corner of each challenge.
 - A shared Top 20 ranking, computed by the server.
 - Contextual feedback for near misses, such as submitting the key instead of the message.
 - Printable completion certificate.
@@ -137,7 +137,7 @@ The mission is worth 1000 points: 100 for the Briefing, 200 each for the Gallery
 
 Time only counts while the player is inside a challenge. Each challenge has its own clock, which runs while its page is open and pauses when the player goes to the map, the ranking or anywhere else. That active time alone decides the challenge speed bonus.
 
-The mission clock shown at the top right is the sum of the challenge clocks, so it also stops outside challenges, and it freezes when the last challenge is solved. It is derived from the persisted game state rather than from a counter, so reloading or navigating cannot reset it. The total time is shown on the result, stored with the run and breaks ties in the ranking.
+The mission clock, pinned to the top right corner of the challenge pages, is the sum of the challenge clocks. It is hidden outside challenges, where it is paused anyway, and it stops for good when the last challenge is solved. It is derived from the persisted game state rather than from a counter, so reloading or navigating cannot reset it. The total time is shown on the result, stored with the run and breaks ties in the ranking.
 
 The formula lives in [`src/game/scoring.js`](src/game/scoring.js) and is mirrored by `ctf_score` on the server.
 

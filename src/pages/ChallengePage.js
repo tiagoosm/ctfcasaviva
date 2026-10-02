@@ -4,6 +4,7 @@ import { challenges, getChallengeBySlug, getNextChallenge } from '../challenges'
 import ChallengeHeader, { challengeLabel } from '../components/challenge/ChallengeHeader';
 import FlagForm from '../components/challenge/FlagForm';
 import HintPanel from '../components/challenge/HintPanel';
+import MissionTimer from '../components/challenge/MissionTimer';
 import ProgressTrack from '../components/challenge/ProgressTrack';
 import SuccessPanel from '../components/challenge/SuccessPanel';
 import { useGame } from '../game/GameProvider';
@@ -76,7 +77,8 @@ export default function ChallengePage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
+    <div className="mx-auto max-w-6xl px-4 pb-6 pt-[4.5rem] sm:px-6 sm:pb-10">
+      <MissionTimer />
       <ProgressTrack currentId={challenge.id} />
 
       <div className="mt-8 sm:mt-10">
