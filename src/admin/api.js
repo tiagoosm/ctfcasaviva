@@ -136,7 +136,7 @@ export async function getPlayer(id) {
     challenges: data.challenges.map((item) => ({
       id: item.id,
       maxPoints: item.max_points,
-      enteredAt: item.entered_at,
+      started: Boolean(item.entered_at),
       solvedAt: item.solved_at,
       seconds: item.seconds,
       wrong: item.wrong,

@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useGame } from '../game/GameProvider';
-import { getMissionSeconds } from '../game/selectors';
+import { getMissionSeconds, isClockRunning } from '../game/selectors';
 
-// The mission clock. There is no counter to keep in sync: the elapsed time is
-// always derived from the moment the mission started, which is persisted, so
-// reloading, changing page or reopening the site cannot reset or pause it.
+// The mission clock. There is no counter to keep in sync: the time is always
+// derived from the persisted game state (the periods already spent inside
+// challenges plus the one in progress), so reloading or changing page cannot
+// reset it. It only advances while the player is inside a challenge.
 export default function useMissionClock() {
   const { state } = useGame();
-  const running = Boolean(state.startedAt) && !state.finishedAt;
+  const running = isClockRunning(state);
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {

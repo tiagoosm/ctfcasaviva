@@ -109,7 +109,7 @@ export default function PlayerDialog({ playerId, onClose, onChanged }) {
         <div className="space-y-7 p-5 sm:p-6">
           <dl className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <Fact label="Pontuação total">{totalScore}</Fact>
-            <Fact label={player.finishedAt ? "Tempo total" : "Tempo decorrido"}>
+            <Fact label={player.finishedAt ? "Tempo total" : "Tempo em fases"}>
               {formatClock(player.totalSeconds)}
             </Fact>
             <Fact label="Início">{formatDateTime(player.startedAt)}</Fact>
@@ -154,12 +154,12 @@ export default function PlayerDialog({ playerId, onClose, onChanged }) {
                       </span>
                       {!item.solvedAt && (
                         <span className="ml-6 text-xs text-fg-subtle">
-                          {item.enteredAt ? 'Em andamento' : 'Não iniciada'}
+                          {item.started ? 'Em andamento' : 'Não iniciada'}
                         </span>
                       )}
                     </th>
                     <td className="px-3 py-2.5 text-right font-mono text-sm">
-                      {item.solvedAt ? formatClock(item.seconds) : '—'}
+                      {item.started ? formatClock(item.seconds ?? 0) : '—'}
                     </td>
                     <td className="px-3 py-2.5 text-right font-mono text-sm">{item.wrong}</td>
                     <td className="px-3 py-2.5 text-center text-sm">{item.hintUsed ? 'Sim' : '—'}</td>

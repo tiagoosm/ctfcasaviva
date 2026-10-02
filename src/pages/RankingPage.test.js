@@ -23,7 +23,7 @@ describe('RankingPage', () => {
   it('lists players in order and marks the current one', async () => {
     window.localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ version: 3, codename: 'maria', group: 'a2', progress: {} }),
+      JSON.stringify({ version: 4, codename: 'maria', group: 'a2', progress: {} }),
     );
     fetchRanking.mockResolvedValue([player(1, 'João', 920), player(2, 'Maria', 870), player(3, 'Pedro', 810)]);
     renderRanking();

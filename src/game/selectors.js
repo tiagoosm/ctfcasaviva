@@ -1,5 +1,5 @@
 import { challenges, TOTAL_POINTS } from '../challenges';
-import { emptyProgress } from './gameReducer';
+import { activeTime, emptyProgress } from './gameReducer';
 
 export const getProgress = (state, id) => state.progress[id] ?? emptyProgress;
 
@@ -25,19 +25,23 @@ export const getCurrentChallenge = (state) =>
 export const getChallengeScore = (state, challenge) =>
   isSolved(state, challenge.id) ? getProgress(state, challenge.id).score ?? 0 : 0;
 
-// Total mission time in seconds: from the start until the last challenge is
-// solved (or until now, while the mission is still running). It is derived from
-// the persisted start time, never from a counter. Returns null before the start.
+export const isClockRunning = (state) =>
+  Object.values(state.progress).some((entry) => entry.resumedAt);
+
+// Mission time in seconds: the time spent inside challenges, added up. Time on
+// the map, the ranking or any other page does not count. It is derived from the
+// persisted state, never from a counter. Returns null before the mission starts.
 export function getMissionSeconds(state, now = Date.now()) {
   if (!state.startedAt) return null;
-  if (state.finishedAt) {
-    // The server's measurement wins once it is known
-    return (
-      state.result?.totalSeconds ??
-      Math.max(0, Math.round((state.finishedAt - state.startedAt) / 1000))
-    );
-  }
-  return Math.max(0, Math.floor((now - state.startedAt) / 1000));
+  // The server's measurement wins once the mission is over and it is known
+  if (state.finishedAt && state.result) return state.result.totalSeconds;
+
+  const total = Object.values(state.progress).reduce(
+    (sum, entry) =>
+      sum + (entry.solvedAt && entry.seconds !== null ? entry.seconds * 1000 : activeTime(entry, now)),
+    0,
+  );
+  return Math.floor(total / 1000);
 }
 
 export function getSummary(state) {

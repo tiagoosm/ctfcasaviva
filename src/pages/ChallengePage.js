@@ -20,7 +20,7 @@ import NotFoundPage from './NotFoundPage';
 export default function ChallengePage() {
   const { slug } = useParams();
   const challenge = getChallengeBySlug(slug);
-  const { state, submitAnswer, revealHint, enterChallenge } = useGame();
+  const { state, submitAnswer, revealHint, enterChallenge, leaveChallenge } = useGame();
   const [justSolved, setJustSolved] = useState(false);
 
   useDocumentTitle(challenge ? `${challengeLabel(challenge)}: ${challenge.title}` : 'Página não encontrada');
@@ -28,10 +28,20 @@ export default function ChallengePage() {
   const registered = isRegistered(state);
   const status = challenge ? getStatus(state, challenge) : null;
 
-  // Entering an open challenge starts its clock (only the first time)
+  // Time only counts while an open challenge is on screen: its clock starts (or
+  // resumes) here and pauses when the player leaves this page
   useEffect(() => {
-    if (challenge && registered && status === 'available') enterChallenge(challenge);
-  }, [challenge, registered, status, enterChallenge]);
+    if (!challenge || !registered || status !== 'available') return undefined;
+    enterChallenge(challenge);
+
+    // Coming back to a page the browser kept in memory (back/forward)
+    const onPageShow = (event) => event.persisted && enterChallenge(challenge);
+    window.addEventListener('pageshow', onPageShow);
+    return () => {
+      window.removeEventListener('pageshow', onPageShow);
+      leaveChallenge(challenge);
+    };
+  }, [challenge, registered, status, enterChallenge, leaveChallenge]);
 
   if (!challenge) return <NotFoundPage />;
 

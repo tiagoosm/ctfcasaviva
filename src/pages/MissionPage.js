@@ -55,6 +55,10 @@ export default function MissionPage() {
         )}
       </div>
 
+      <p className="mt-2 font-mono text-sm text-fg-muted">
+        {summary.solvedCount}/{summary.total} etapas · {summary.score} pts
+      </p>
+
       <FeedbackMessage feedback={feedback} className={feedback ? 'mt-6' : undefined} />
 
       <ol className="mt-8 space-y-3">

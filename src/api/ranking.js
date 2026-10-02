@@ -14,7 +14,7 @@ export const rankingEnabled = typeof fetch === 'function' && process.env.NODE_EN
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function call(name, params) {
+async function call(name, params, keepalive) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT);
   try {
@@ -27,6 +27,7 @@ async function call(name, params) {
       },
       body: JSON.stringify(params),
       signal: controller.signal,
+      keepalive,
     });
     const data = await response.json().catch(() => null);
     if (!response.ok) {
@@ -42,10 +43,10 @@ async function call(name, params) {
 }
 
 // Network failures and server errors are retried; refusals are not
-async function rpc(name, params = {}) {
+async function rpc(name, params = {}, { keepalive = false } = {}) {
   for (let attempt = 0; ; attempt++) {
     try {
-      return await call(name, params);
+      return await call(name, params, keepalive);
     } catch (error) {
       if (error.rejected || attempt >= RETRY_DELAYS.length) throw error;
       await wait(RETRY_DELAYS[attempt]);
@@ -57,6 +58,11 @@ export const startRun = (name, group) => rpc('ctf_start', { p_name: name, p_clas
 
 export const enterChallenge = (runId, challengeId) =>
   rpc('ctf_enter', { p_run: runId, p_challenge: challengeId });
+
+// Pauses the challenge clock. `keepalive` lets the request finish even when it
+// is sent while the page is being closed.
+export const leaveChallenge = (runId, challengeId) =>
+  rpc('ctf_leave', { p_run: runId, p_challenge: challengeId }, { keepalive: true });
 
 export const revealHint = (runId, challengeId) =>
   rpc('ctf_hint', { p_run: runId, p_challenge: challengeId });

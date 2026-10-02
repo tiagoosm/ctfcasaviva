@@ -30,7 +30,7 @@ function seedState(progress = {}) {
   window.localStorage.setItem(
     STORAGE_KEY,
     JSON.stringify({
-      version: 3,
+      version: 4,
       codename: 'Coruja',
       group: 'A1',
       startedAt: 1,
@@ -81,6 +81,8 @@ describe('full CTF flow', () => {
     // One mission clock, in the header
     expect(screen.getAllByRole('timer')).toHaveLength(1);
     expect(within(screen.getAllByRole('banner')[0]).getByRole('timer')).toHaveTextContent(/^00:0\d$/);
+    // It runs while a challenge is on screen
+    expect(screen.getByText(/tempo de missão/i)).toBeInTheDocument();
 
     await submitFlag('senha');
     expect(await screen.findByText(/não do nome do campo/i)).toBeInTheDocument();
@@ -184,7 +186,7 @@ describe('flow protection', () => {
 
   it('leaves the mission only after confirmation, back to a clean start', async () => {
     seedState({
-      briefing: { enteredAt: 1, solvedAt: 2, wrong: 0, hintUsed: false, seconds: 1, score: 100 },
+      briefing: { activeMs: 1000, resumedAt: null, solvedAt: 2, wrong: 0, hintUsed: false, seconds: 1, score: 100 },
     });
     renderApp('/missao');
     await pageTitle('Mapa da missão');
@@ -221,11 +223,14 @@ describe('flow protection', () => {
 
   it('resumes saved progress and allows restarting the mission', async () => {
     seedState({
-      briefing: { enteredAt: 1, solvedAt: 2, wrong: 0, hintUsed: false, seconds: 1, score: 100 },
+      briefing: { activeMs: 1000, resumedAt: null, solvedAt: 2, wrong: 0, hintUsed: false, seconds: 1, score: 100 },
     });
     renderApp('/missao');
     await pageTitle('Mapa da missão');
     expect(screen.getByRole('link', { name: /jogar galeria/i })).toBeInTheDocument();
+    // On the map the clock is paused, showing the time already spent in challenges
+    expect(screen.getByText(/tempo pausado/i)).toBeInTheDocument();
+    expect(screen.getByRole('timer')).toHaveTextContent('00:01');
 
     fireEvent.click(screen.getByRole('button', { name: /reiniciar missão/i }));
     const dialog = screen.getByRole('dialog', { name: /reiniciar a missão\?/i });

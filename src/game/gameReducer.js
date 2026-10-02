@@ -1,7 +1,7 @@
 import { isValidGroup } from './groups';
 import { computeScore } from './scoring';
 
-export const STATE_VERSION = 3;
+export const STATE_VERSION = 4;
 export const CODENAME_MAX_LENGTH = 40;
 
 export function createInitialState(codename = '', group = '') {
@@ -19,8 +19,12 @@ export function createInitialState(codename = '', group = '') {
   };
 }
 
+// Time only counts while the player is inside a challenge: `activeMs` holds the
+// periods already finished and `resumedAt` marks the one in progress (null
+// while the clock is paused).
 export const emptyProgress = {
-  enteredAt: null,
+  activeMs: 0,
+  resumedAt: null,
   solvedAt: null,
   wrong: 0,
   hintUsed: false,
@@ -33,6 +37,14 @@ function updateProgress(state, id, changes) {
   return { ...state, progress: { ...state.progress, [id]: { ...current, ...changes } } };
 }
 
+// Active time of a challenge up to `now`, in milliseconds
+export function activeTime(progress, now) {
+  const running = progress.resumedAt ? Math.max(0, now - progress.resumedAt) : 0;
+  return progress.activeMs + running;
+}
+
+const paused = (progress, now) => ({ activeMs: activeTime(progress, now), resumedAt: null });
+
 function sanitizeText(value, maxLength) {
   return String(value ?? '')
     .replace(/\s+/g, ' ')
@@ -41,6 +53,7 @@ function sanitizeText(value, maxLength) {
 }
 
 export const sanitizeCodename = (value) => sanitizeText(value, CODENAME_MAX_LENGTH);
+
 // The class must be one of the known classes; anything else counts as not informed
 export function sanitizeGroup(value) {
   const group = String(value ?? '').trim().toUpperCase();
@@ -62,15 +75,29 @@ export function gameReducer(state, action) {
     case 'SET_RUN':
       return { ...state, runId: action.runId };
 
-    // Each challenge has its own hidden clock, used only for its speed bonus: it
-    // starts on the first visit and is never restarted. The clock players see is
-    // the mission clock, which runs from startedAt to finishedAt.
+    // Entering a challenge starts (or resumes) its clock
     case 'ENTER':
-      if (current.enteredAt || current.solvedAt) return state;
+      if (current.solvedAt || current.resumedAt) return state;
       return {
-        ...updateProgress(state, action.id, { enteredAt: action.now }),
+        ...updateProgress(state, action.id, { resumedAt: action.now }),
         startedAt: state.startedAt ?? action.now,
       };
+
+    // Leaving it (to the map, the ranking, anywhere else) pauses the clock
+    case 'LEAVE':
+      if (!current.resumedAt) return state;
+      return updateProgress(state, action.id, paused(current, action.now));
+
+    // The page is going away: pause whatever is running
+    case 'PAUSE_ALL': {
+      const progress = Object.fromEntries(
+        Object.entries(state.progress).map(([id, entry]) => [
+          id,
+          entry.resumedAt ? { ...entry, ...paused(entry, action.now) } : entry,
+        ]),
+      );
+      return { ...state, progress };
+    }
 
     case 'WRONG':
       if (current.solvedAt) return state;
@@ -84,13 +111,14 @@ export function gameReducer(state, action) {
     case 'SOLVE': {
       if (current.solvedAt) return state;
       const { challenge, now } = action;
-      const seconds = Math.max(0, Math.round((now - (current.enteredAt ?? now)) / 1000));
+      const stopped = paused(current, now);
+      const seconds = Math.round(stopped.activeMs / 1000);
       const score = computeScore(challenge, {
         seconds,
         wrong: current.wrong,
         hintUsed: current.hintUsed,
       });
-      const next = updateProgress(state, challenge.id, { solvedAt: now, seconds, score });
+      const next = updateProgress(state, challenge.id, { ...stopped, solvedAt: now, seconds, score });
       return action.completesMission ? { ...next, finishedAt: now } : next;
     }
 

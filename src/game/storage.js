@@ -7,6 +7,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const isTimestamp = (value) => (Number.isFinite(value) && value > 0 ? value : null);
 const isCount = (value) => (Number.isInteger(value) && value >= 0 ? value : 0);
 const isCountOrNull = (value) => (Number.isInteger(value) && value >= 0 ? value : null);
+const isDuration = (value) => (Number.isFinite(value) && value > 0 ? value : 0);
 
 function parseResult(result) {
   if (!result || typeof result !== 'object') return null;
@@ -32,7 +33,10 @@ export function parseState(raw) {
     for (const [id, entry] of Object.entries(data.progress ?? {})) {
       if (!entry || typeof entry !== 'object') continue;
       progress[id] = {
-        enteredAt: isTimestamp(entry.enteredAt),
+        activeMs: isDuration(entry.activeMs),
+        // A clock is never restored as running: the page that is loading is not
+        // inside a challenge yet, and the challenge page starts it again
+        resumedAt: null,
         solvedAt: isTimestamp(entry.solvedAt),
         wrong: isCount(entry.wrong),
         hintUsed: entry.hintUsed === true,

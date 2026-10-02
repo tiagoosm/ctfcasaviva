@@ -3,6 +3,7 @@ import * as api from '../api/ranking';
 import { challenges } from '../challenges';
 import { evaluateAnswer } from '../utils/answers';
 import { gameReducer } from './gameReducer';
+import { isClockRunning } from './selectors';
 import { hasProgress, isSolved } from './selectors';
 import { loadState, saveState } from './storage';
 
@@ -100,6 +101,14 @@ export function GameProvider({ children }) {
         });
       },
 
+      // The player left the challenge page: its clock pauses
+      leaveChallenge: (challenge) => {
+        dispatch({ type: 'LEAVE', id: challenge.id, now: Date.now() });
+        enqueue(async () => {
+          if (runIdRef.current) await api.leaveChallenge(runIdRef.current, challenge.id);
+        });
+      },
+
       revealHint: (challenge) => {
         dispatch({ type: 'REVEAL_HINT', id: challenge.id });
         enqueue(async () => {
@@ -129,6 +138,24 @@ export function GameProvider({ children }) {
     }),
     [enqueue, getRunId, dropRun],
   );
+
+  // The page is being closed or reloaded while a clock is running: pause it.
+  // The state is saved right here because effects may not run again.
+  useEffect(() => {
+    function onPageHide() {
+      const current = stateRef.current;
+      if (!isClockRunning(current)) return;
+      saveState(gameReducer(current, { type: 'PAUSE_ALL', now: Date.now() }));
+      dispatch({ type: 'PAUSE_ALL', now: Date.now() });
+      Object.entries(current.progress).forEach(([id, entry]) => {
+        if (entry.resumedAt && runIdRef.current) {
+          api.leaveChallenge(runIdRef.current, id).catch(() => null);
+        }
+      });
+    }
+    window.addEventListener('pagehide', onPageHide);
+    return () => window.removeEventListener('pagehide', onPageHide);
+  }, []);
 
   const value = useMemo(() => ({ state, submitAnswer, ...actions }), [state, submitAnswer, actions]);
 

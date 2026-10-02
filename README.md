@@ -135,10 +135,9 @@ The mission is worth 1000 points: 100 for the Briefing, 200 each for the Gallery
 | Hint | −25 |
 | Floor | A challenge never scores below zero |
 
-There are two kinds of time:
+Time only counts while the player is inside a challenge. Each challenge has its own clock, which runs while its page is open and pauses when the player goes to the map, the ranking or anywhere else. That active time alone decides the challenge speed bonus.
 
-- **Mission clock (visible).** It starts when the player begins the mission, after giving name and class, and stops when the last challenge is solved. It is derived from the persisted start time, so reloading, navigating or reopening the site cannot reset or pause it. This total time is shown on the result, stored with the run and breaks ties in the ranking.
-- **Challenge clocks (hidden).** Each challenge is timed from the first visit until it is solved, and that time alone decides its speed bonus. Time spent between challenges does not cost points.
+The mission clock shown at the top right is the sum of the challenge clocks, so it also stops outside challenges, and it freezes when the last challenge is solved. It is derived from the persisted game state rather than from a counter, so reloading or navigating cannot reset it. The total time is shown on the result, stored with the run and breaks ties in the ranking.
 
 The formula lives in [`src/game/scoring.js`](src/game/scoring.js) and is mirrored by `ctf_score` on the server.
 
@@ -151,7 +150,8 @@ The browser cannot read or write the tables: row level security is enabled with 
 | Function | Purpose |
 |----------|---------|
 | `ctf_start` | Opens a run for a name and class |
-| `ctf_enter` | Starts the clock of a challenge (only once) |
+| `ctf_enter` | Starts or resumes the clock of a challenge |
+| `ctf_leave` | Pauses the clock of a challenge |
 | `ctf_hint` | Records that the hint was used |
 | `ctf_submit` | Validates an answer; on success stores time and score |
 | `ctf_abandon` | Drops an unfinished run when the player leaves or restarts |

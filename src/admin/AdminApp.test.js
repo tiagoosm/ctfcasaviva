@@ -43,8 +43,8 @@ const detail = {
   hidden: false,
   totalSeconds: 1200,
   challenges: [
-    { id: 'briefing', maxPoints: 100, enteredAt: 'x', solvedAt: 'y', seconds: 40, wrong: 1, hintUsed: true, score: 65 },
-    { id: 'gallery', maxPoints: 200, enteredAt: null, solvedAt: null, seconds: null, wrong: 0, hintUsed: false, score: null },
+    { id: 'briefing', maxPoints: 100, started: true, solvedAt: 'y', seconds: 40, wrong: 1, hintUsed: true, score: 65 },
+    { id: 'gallery', maxPoints: 200, started: false, solvedAt: null, seconds: null, wrong: 0, hintUsed: false, score: null },
   ],
 };
 
