@@ -13,7 +13,7 @@ const ANSWERS = {
   gallery: 'gogh',
   sequence: 'w-q-r-t-m-k',
   interception: 'ultimato',
-  vault: 'conquista',
+  vault: '2054',
 };
 
 beforeEach(() => {
@@ -40,6 +40,10 @@ async function solveFlag(value, successTitle) {
   await submitFlag(value);
   return screen.findByRole('heading', { name: successTitle, level: 2 });
 }
+
+// Presses the vault keypad
+const typeCode = (code) =>
+  [...code].forEach((digit) => fireEvent.click(screen.getByRole('button', { name: digit })));
 
 const pageTitle = (name) => screen.findByRole('heading', { name, level: 1 });
 
@@ -184,11 +188,25 @@ describe('full CTF flow', () => {
     await solveFlag('ultimato', 'Transmissão decifrada');
     fireEvent.click(screen.getByRole('link', { name: /próximo: o cofre/i }));
 
-    // Final · The Vault
+    // Final · The Vault — a keypad instead of a text field
     await pageTitle('O Cofre');
-    await submitFlag('gogh');
-    expect(await screen.findByText(/essa é a chave!/i)).toBeInTheDocument();
-    await solveFlag('conquista', 'Cofre aberto');
+    expect(screen.queryByLabelText('Resposta')).not.toBeInTheDocument();
+    // The marks on the bolts, to be read in order
+    expect(screen.getByRole('img', { name: 'Parafuso I, gravação F' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Parafuso IV, gravação H' })).toBeInTheDocument();
+    const confirm = screen.getByRole('button', { name: 'Confirmar combinação' });
+    expect(confirm).toBeDisabled();
+
+    // Skipping the deciphering step gives a wrong combination, refused without detail
+    typeCode('5387');
+    fireEvent.click(confirm);
+    expect(await screen.findByText('Combinação incorreta')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Confirmar combinação' })).toBeDisabled();
+
+    typeCode('2054');
+    fireEvent.click(screen.getByRole('button', { name: 'Confirmar combinação' }));
+    await screen.findByRole('heading', { name: 'Cofre aberto', level: 2 });
+    expect(screen.queryByRole('button', { name: 'Confirmar combinação' })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('link', { name: /ver resultado da missão/i }));
 
     // Official result
@@ -272,6 +290,22 @@ describe('one official attempt per player', () => {
     expect(await screen.findByRole('heading', { name: 'Cofre aberto', level: 2 })).toBeInTheDocument();
     expect(screen.queryByLabelText('Resposta')).not.toBeInTheDocument();
     expect(server.__attempts().find((attempt) => attempt.id === runId).score).toBe(1000);
+  });
+
+  it('locks the vault after a wrong combination and refuses answers meanwhile', async () => {
+    await knownPlayer(['briefing', 'gallery', 'sequence', 'interception']);
+    renderApp('/missao');
+    fireEvent.click(await screen.findByRole('link', { name: /jogar o cofre/i }));
+    await pageTitle('O Cofre');
+
+    server.__setLock(15);
+    typeCode('2054');
+    fireEvent.click(screen.getByRole('button', { name: 'Confirmar combinação' }));
+    expect(await screen.findByText(/cofre bloqueado por 1\d s/i)).toBeInTheDocument();
+    // Even the right combination is not accepted while locked
+    expect(screen.queryByRole('heading', { name: 'Cofre aberto' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '2' })).toBeDisabled();
+    expect(server.__attempts()[0].finishedAt).toBeNull();
   });
 
   it('does not start anything when the server cannot be reached', async () => {

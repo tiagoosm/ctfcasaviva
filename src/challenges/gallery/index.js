@@ -32,7 +32,7 @@ const gallery = {
     title: 'Marcas identificadas',
     lesson:
       'Esconder informação em imagens é esteganografia: em vez de embaralhar a mensagem, ela disfarça que a mensagem existe.',
-    nextClue: 'Guarde a palavra que você encontrou. Ela abre uma porta mais adiante.',
+    nextClue: 'Marcas discretas voltam a aparecer mais adiante. Continue olhando de perto.',
   },
   Stage: GalleryStage,
 };

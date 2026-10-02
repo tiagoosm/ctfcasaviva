@@ -102,8 +102,10 @@ export function GameProvider({ children }) {
           }
           if (confirmed.status === 'incorrect') {
             dispatch({ type: 'WRONG', id: challenge.id });
-            return { status: 'incorrect', message: local.message };
+            return { status: 'incorrect', message: local.message, wait: confirmed.wait ?? 0 };
           }
+          // Refused without being checked: the stage is locked after a wrong answer
+          if (confirmed.status === 'locked') return { status: 'locked', wait: confirmed.wait };
           return { status: 'empty' };
         } catch (error) {
           if (error.gone) dispatch({ type: 'SIGN_OUT' });

@@ -1,6 +1,5 @@
 import { evaluateAnswer } from '../utils/answers';
 import { SCORING } from '../game/scoring';
-import { vigenere } from '../utils/cipher';
 import { challenges, getChallengeBySlug, TOTAL_POINTS } from '.';
 import transmission from './interception/transmission';
 
@@ -10,7 +9,6 @@ const SOLUTIONS = {
   gallery: 'gogh',
   sequence: 'w-q-r-t-m-k',
   interception: 'ultimato',
-  vault: 'conquista',
 };
 
 describe('challenge registry', () => {
@@ -21,7 +19,9 @@ describe('challenge registry', () => {
 
   it.each(challenges.map((c) => [c.id, c]))('%s is fully configured', (id, challenge) => {
     expect(challenge.Stage).toEqual(expect.any(Function));
-    expect(challenge.answerHash).toMatch(/^[0-9a-f]{64}$/);
+    // A challenge checked by the server alone must not ship a hash of its answer
+    if (challenge.serverOnly) expect(challenge.answerHash).toBeUndefined();
+    else expect(challenge.answerHash).toMatch(/^[0-9a-f]{64}$/);
     expect(['flag', 'interactive']).toContain(challenge.answerMode);
     // A single hint per challenge, which must never be worth the whole challenge
     expect(challenge.hints).toBeUndefined();
@@ -50,12 +50,13 @@ describe('challenge registry', () => {
     expect(TOTAL_POINTS).toBe(1000);
   });
 
-  it('has the vault hold the final flag encrypted with the Gallery key', () => {
+  it('never accepts a vault combination on the client', () => {
     const vault = challenges.find((c) => c.id === 'vault');
-    expect(vigenere(vault.ciphertext, SOLUTIONS.gallery.toUpperCase(), -1)).toBe(
-      SOLUTIONS.vault.toUpperCase(),
-    );
-    expect(vault.keyLength).toBe(SOLUTIONS.gallery.length);
+    expect(vault.serverOnly).toBe(true);
+    for (let code = 0; code < 10000; code += 1) {
+      const guess = String(code).padStart(vault.codeLength, '0');
+      if (evaluateAnswer(vault, guess).status === 'correct') throw new Error(`accepted ${guess}`);
+    }
   });
 
   it('has a transmission with exactly one encrypted word and no duplicated paragraph', () => {

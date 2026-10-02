@@ -35,7 +35,7 @@ An educational Capture The Flag (CTF) built for the students of **Inatel cas@viv
 | 01 | Galeria (Gallery) | Visual analysis | Steganography: information hidden inside images |
 | 02 | Sequência (Sequence) | Pattern recognition | Finding the rule behind apparently random data |
 | 03 | Interceptação (Interception) | Substitution cipher | Breaking a Caesar cipher |
-| Final | O Cofre (The Vault) | Vigenère cipher | Combining a key found earlier with a multi-shift cipher |
+| Final | O Cofre (The Vault) | Putting it all together | Combining observation, a cipher and letter positions to find a 4-digit combination |
 
 ## Features
 
@@ -118,6 +118,8 @@ Flags are never stored in plain text.
 1. The player types the answer word directly. It is normalized so that case, accents and spaces are ignored.
 2. The normalized answer is hashed with SHA-256, using the challenge id as salt, so the same word produces different hashes in different challenges.
 3. The result is compared with the hash stored in the challenge config. Near-miss answers are stored as hashes too.
+
+The Vault is the exception to the hash: a 4-digit combination has only 10,000 possibilities, so no hash of it ships with the site and it is checked by the server alone, which also locks the stage for a few seconds after each wrong combination (3 s, then 15 s from the fifth error and 60 s from the tenth).
 
 Solutions exist in readable form only in the test files, which are not part of the production bundle. SHA-256 is implemented in [`src/utils/sha256.js`](src/utils/sha256.js) rather than through Web Crypto, because `crypto.subtle` is only available in secure contexts and the game also needs to run over a local network.
 

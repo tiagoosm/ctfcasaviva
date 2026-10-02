@@ -20,8 +20,9 @@ export function evaluateAnswer(challenge, rawAnswer) {
   const answer = normalizeAnswer(rawAnswer);
   if (!answer) return { status: 'empty' };
 
+  // Challenges checked by the server alone ship no hash: nothing to compare here
   const hash = hashAnswer(challenge.id, answer);
-  if (hash === challenge.answerHash) return { status: 'correct' };
+  if (challenge.answerHash && hash === challenge.answerHash) return { status: 'correct' };
 
   // Near misses are hashed too, so answers from other stages do not leak
   const nearMiss = challenge.nearMisses?.find((rule) => rule.hashes.includes(hash));

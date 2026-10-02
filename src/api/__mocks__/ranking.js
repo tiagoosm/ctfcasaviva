@@ -7,18 +7,27 @@ import { evaluateAnswer } from '../../utils/answers';
 
 export const rankingEnabled = true;
 
+// Answers the real server checks without any hash on the client
+const SERVER_ONLY = { vault: '2054' };
+
 let attempts = new Map();
 let failing = false;
 let nextId = 1;
+let lockSeconds = 0;
 
 // Test helpers
 export function __reset() {
   attempts = new Map();
   failing = false;
   nextId = 1;
+  lockSeconds = 0;
 }
 export const __setFailing = (value) => {
   failing = value;
+};
+// Makes throttled stages answer "locked" for that many seconds
+export const __setLock = (seconds) => {
+  lockSeconds = seconds;
 };
 export const __attempts = () => [...attempts.values()];
 export const __remove = (id) => attempts.delete(id);
@@ -149,14 +158,18 @@ export async function submitAnswer(runId, challengeId, answer, actionId) {
   }
 
   const item = open(attempt, challengeId);
-  const result = evaluateAnswer(challenge, answer);
+  const expected = SERVER_ONLY[challengeId];
+  if (expected && lockSeconds > 0) return { status: 'locked', wait: lockSeconds };
+  const result = expected
+    ? { status: answer.trim() === expected ? 'correct' : answer.trim() ? 'incorrect' : 'empty' }
+    : evaluateAnswer(challenge, answer);
   if (result.status === 'empty') return { status: 'empty' };
   if (result.status !== 'correct') {
     if (!actionId || item.lastAction !== actionId) {
       item.wrong += 1;
       item.lastAction = actionId;
     }
-    return { status: 'incorrect' };
+    return { status: 'incorrect', wait: 0 };
   }
 
   item.solvedAt = Date.now();

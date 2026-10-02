@@ -93,7 +93,12 @@ export default function ChallengeDetailPage() {
 
   // The stage runs in preview mode: answers are checked but nothing is recorded
   function handlePreviewSubmit(answer) {
-    const result = evaluateAnswer(challenge, answer);
+    // Stages checked by the server alone are compared with the stored answer
+    const expected = server?.answer?.split(/\s/)[0];
+    const result =
+      challenge.serverOnly && expected
+        ? { status: answer.trim() === expected ? 'correct' : 'incorrect' }
+        : evaluateAnswer(challenge, answer);
     setLastSubmission(result.status);
     return result;
   }
@@ -141,6 +146,7 @@ export default function ChallengeDetailPage() {
             key={challenge.id}
             challenge={challenge}
             solved={false}
+            preview
             onSubmitAnswer={handlePreviewSubmit}
           />
         </section>
@@ -193,7 +199,14 @@ export default function ChallengeDetailPage() {
             </Row>
           </dl>
 
-          <AnswerTester key={challenge.id} challenge={challenge} />
+          {challenge.serverOnly ? (
+            <p className="panel p-4 text-sm text-fg-muted">
+              A resposta desta fase é conferida apenas pelo servidor. Teste-a no próprio teclado da
+              pré-visualização.
+            </p>
+          ) : (
+            <AnswerTester key={challenge.id} challenge={challenge} />
+          )}
         </aside>
       </div>
     </>
