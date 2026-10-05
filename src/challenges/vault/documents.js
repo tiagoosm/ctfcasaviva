@@ -20,7 +20,6 @@ export const DOCUMENTS = [
     code: 'DOC-01',
     label: 'Registro de operações',
     title: 'ARQUIVO CONFIDENCIAL — REGISTRO DE OPERAÇÕES',
-    tone: 'archive',
     paragraphs: [
       'Durante a investigação, diversos registros antigos foram recuperados de um arquivo parcialmente danificado.',
       'Alguns documentos continham informações sobre movimentações, horários, códigos de acesso e registros de operações.',
@@ -43,7 +42,6 @@ export const DOCUMENTS = [
     code: 'DOC-02',
     label: 'Registro linguístico',
     title: 'DOCUMENTO CONFIDENCIAL — REGISTRO LINGUÍSTICO',
-    tone: 'archive',
     paragraphs: [
       'Durante a análise dos arquivos recuperados, os investigadores encontraram diversas anotações escritas em um idioma desconhecido.',
       'Após uma análise inicial, foi identificado que parte dos registros estava escrita em galês, uma língua tradicionalmente falada no País de Gales.',
@@ -61,7 +59,6 @@ export const DOCUMENTS = [
     code: 'DOC-03',
     label: 'Registro de missão',
     title: 'DOCUMENTO CONFIDENCIAL — REGISTRO DE MISSÃO',
-    tone: 'mission',
     banner: 'REGISTRO PARCIALMENTE RECUPERADO',
     paragraphs: [
       'Um dos arquivos encontrados durante a investigação contém referências a uma missão que levou seres humanos para além da Terra.',

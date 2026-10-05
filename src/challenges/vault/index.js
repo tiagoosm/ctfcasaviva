@@ -4,7 +4,7 @@ const vault = {
   id: 'vault',
   slug: 'cofre',
   code: 'FINAL',
-  title: 'Sala de Investigação',
+  title: 'O Cofre',
   points: 300,
   // Speed bonus: full up to fastSeconds, gone at slowSeconds
   fastSeconds: 240,

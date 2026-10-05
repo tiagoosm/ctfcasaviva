@@ -12,14 +12,9 @@ function Corruption() {
 }
 
 function DocumentBody({ document }) {
-  const mission = document.tone === 'mission';
-
   return (
     <article
-      className={cn(
-        'relative overflow-hidden rounded-xl px-5 py-6 text-base leading-relaxed text-paper-ink shadow-paper sm:px-8 sm:py-8',
-        mission ? 'bg-[#E6ECF5]' : 'bg-paper',
-      )}
+      className="relative overflow-hidden rounded-xl bg-paper px-5 py-6 text-base leading-relaxed text-paper-ink shadow-paper sm:px-8 sm:py-8"
       aria-label={document.title}
     >
       <span
@@ -122,8 +117,6 @@ function DocumentBody({ document }) {
 
 // A folder on the table: opens its document in a viewer
 export default function CaseFile({ document, read, open, onOpen, onClose, tilt }) {
-  const mission = document.tone === 'mission';
-
   return (
     <>
       <button
@@ -132,19 +125,8 @@ export default function CaseFile({ document, read, open, onOpen, onClose, tilt }
         aria-label={`Abrir ${document.code}: ${document.label}`}
         className={cn('group relative block w-full pt-3 text-left transition-transform hover:-translate-y-1', tilt)}
       >
-        <span
-          className={cn(
-            'absolute left-4 top-0 h-4 w-20 rounded-t-md',
-            mission ? 'bg-[#C9D5E6]' : 'bg-[#E3D8BF]',
-          )}
-          aria-hidden="true"
-        />
-        <span
-          className={cn(
-            'relative block rounded-xl rounded-tl-none px-4 py-4 text-paper-ink shadow-paper transition-shadow group-hover:shadow-glow',
-            mission ? 'bg-[#DCE4F0]' : 'bg-[#EFE6D2]',
-          )}
-        >
+        <span className="absolute left-4 top-0 h-4 w-20 rounded-t-md bg-[#E3D8BF]" aria-hidden="true" />
+        <span className="relative block rounded-xl rounded-tl-none bg-[#EFE6D2] px-4 py-4 text-paper-ink shadow-paper transition-shadow group-hover:shadow-glow">
           <span className="flex items-center justify-between gap-3">
             <span className="flex items-center gap-2 font-mono text-xs font-semibold tracking-widest text-paper-ink/70">
               <LuFolderClosed className="h-4 w-4" aria-hidden="true" />

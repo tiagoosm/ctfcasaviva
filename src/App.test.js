@@ -188,10 +188,10 @@ describe('full CTF flow', () => {
     await submitFlag('xowlpdwr');
     expect(await screen.findByText(/agora ela precisa ser decifrada/i)).toBeInTheDocument();
     await solveFlag('ultimato', 'Transmissão decifrada');
-    fireEvent.click(screen.getByRole('link', { name: /próximo: sala de investigação/i }));
+    fireEvent.click(screen.getByRole('link', { name: /próximo: o cofre/i }));
 
-    // Final · Investigation room — a vault and three documents, no text field
-    await pageTitle('Sala de Investigação');
+    // Final · The Vault — a vault and three documents, no text field
+    await pageTitle('O Cofre');
     expect(screen.queryByLabelText('Resposta')).not.toBeInTheDocument();
     const confirm = screen.getByRole('button', { name: 'Confirmar combinação' });
     expect(confirm).toBeDisabled();
@@ -308,8 +308,8 @@ describe('one official attempt per player', () => {
     const runId = await knownPlayer(Object.keys(ANSWERS));
     renderApp('/missao');
     await pageTitle('Mapa da missão');
-    fireEvent.click(await screen.findByRole('link', { name: /revisar sala de investigação/i }));
-    await pageTitle('Sala de Investigação');
+    fireEvent.click(await screen.findByRole('link', { name: /revisar o cofre/i }));
+    await pageTitle('O Cofre');
     // A solved stage can be reviewed but not answered
     expect(await screen.findByRole('heading', { name: 'Acesso concedido', level: 2 })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Confirmar combinação' })).not.toBeInTheDocument();
@@ -320,8 +320,8 @@ describe('one official attempt per player', () => {
   it('locks the vault after a wrong combination and refuses answers meanwhile', async () => {
     await knownPlayer(['briefing', 'gallery', 'sequence', 'interception']);
     renderApp('/missao');
-    fireEvent.click(await screen.findByRole('link', { name: /jogar sala de investigação/i }));
-    await pageTitle('Sala de Investigação');
+    fireEvent.click(await screen.findByRole('link', { name: /jogar o cofre/i }));
+    await pageTitle('O Cofre');
 
     server.__setLock(15);
     typeCode('1969');
@@ -406,7 +406,7 @@ describe('flow protection', () => {
     await knownPlayer();
     renderApp('/missao/cofre');
     await pageTitle('Mapa da missão');
-    expect(screen.getByText('Sala de Investigação: etapa bloqueada')).toBeInTheDocument();
+    expect(screen.getByText('O Cofre ainda está bloqueado')).toBeInTheDocument();
   });
 
   it('does not unlock the certificate before the mission is complete', async () => {

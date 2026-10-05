@@ -20,7 +20,7 @@ export default function VaultStage({ challenge, solved, onSubmitAnswer, preview 
   return (
     <section
       className="relative overflow-hidden rounded-3xl border border-ink-600/60 bg-ink-950/70 p-4 sm:p-6"
-      aria-label="Sala de investigação"
+      aria-label="Cofre e documentos"
     >
       {/* Desk lamp glow over the table */}
       <span
