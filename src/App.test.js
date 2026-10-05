@@ -13,7 +13,7 @@ const ANSWERS = {
   gallery: 'gogh',
   sequence: 'w-q-r-t-m-k',
   interception: 'ultimato',
-  vault: '2054',
+  vault: '1969',
 };
 
 beforeEach(() => {
@@ -188,26 +188,47 @@ describe('full CTF flow', () => {
     await submitFlag('xowlpdwr');
     expect(await screen.findByText(/agora ela precisa ser decifrada/i)).toBeInTheDocument();
     await solveFlag('ultimato', 'Transmissão decifrada');
-    fireEvent.click(screen.getByRole('link', { name: /próximo: o cofre/i }));
+    fireEvent.click(screen.getByRole('link', { name: /próximo: sala de investigação/i }));
 
-    // Final · The Vault — a keypad instead of a text field
-    await pageTitle('O Cofre');
+    // Final · Investigation room — a vault and three documents, no text field
+    await pageTitle('Sala de Investigação');
     expect(screen.queryByLabelText('Resposta')).not.toBeInTheDocument();
-    // The marks on the bolts, to be read in order
-    expect(screen.getByRole('img', { name: 'Parafuso I, gravação F' })).toBeInTheDocument();
-    expect(screen.getByRole('img', { name: 'Parafuso IV, gravação H' })).toBeInTheDocument();
     const confirm = screen.getByRole('button', { name: 'Confirmar combinação' });
     expect(confirm).toBeDisabled();
 
-    // Skipping the deciphering step gives a wrong combination, refused without detail
-    typeCode('5387');
+    // Each document opens in a viewer and is marked as read
+    fireEvent.click(screen.getByRole('button', { name: /abrir doc-01/i }));
+    let viewer = screen.getByRole('dialog', { name: /doc-01/i });
+    expect(within(viewer).getByText(/27\/09\/1982/)).toBeInTheDocument();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.getByRole('button', { name: /abrir doc-01/i })).toHaveTextContent('LIDO');
+
+    fireEvent.click(screen.getByRole('button', { name: /abrir doc-02/i }));
+    viewer = screen.getByRole('dialog', { name: /doc-02/i });
+    expect(within(viewer).getByText('CARTREF')).toBeInTheDocument();
+    fireEvent.keyDown(document, { key: 'Escape' });
+
+    fireEvent.click(screen.getByRole('button', { name: /abrir doc-03/i }));
+    viewer = screen.getByRole('dialog', { name: /doc-03/i });
+    expect(within(viewer).getByText('01010111')).toBeInTheDocument();
+    expect(within(viewer).getByText('“UM PEQUENO PASSO...”')).toBeInTheDocument();
+    // While a document is open, the keyboard does not type on the vault
+    fireEvent.keyDown(document, { key: '7' });
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByText('0 de 4 dígitos inseridos')).toBeInTheDocument();
+
+    // A number taken from the distraction document is refused without detail
+    typeCode('1938');
     fireEvent.click(confirm);
     expect(await screen.findByText('Combinação incorreta')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Confirmar combinação' })).toBeDisabled();
 
-    typeCode('2054');
+    typeCode('1969');
     fireEvent.click(screen.getByRole('button', { name: 'Confirmar combinação' }));
-    await screen.findByRole('heading', { name: 'Cofre aberto', level: 2 });
+    await screen.findByRole('heading', { name: 'Acesso concedido', level: 2 });
+    expect(screen.getByText('ACESSO CONCEDIDO')).toBeInTheDocument();
+    expect(screen.getByText('MISSÃO CONCLUÍDA.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Confirmar combinação' })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('link', { name: /ver resultado da missão/i }));
 
@@ -287,10 +308,11 @@ describe('one official attempt per player', () => {
     const runId = await knownPlayer(Object.keys(ANSWERS));
     renderApp('/missao');
     await pageTitle('Mapa da missão');
-    fireEvent.click(await screen.findByRole('link', { name: /revisar o cofre/i }));
-    await pageTitle('O Cofre');
+    fireEvent.click(await screen.findByRole('link', { name: /revisar sala de investigação/i }));
+    await pageTitle('Sala de Investigação');
     // A solved stage can be reviewed but not answered
-    expect(await screen.findByRole('heading', { name: 'Cofre aberto', level: 2 })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Acesso concedido', level: 2 })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Confirmar combinação' })).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Resposta')).not.toBeInTheDocument();
     expect(server.__attempts().find((attempt) => attempt.id === runId).score).toBe(1000);
   });
@@ -298,15 +320,15 @@ describe('one official attempt per player', () => {
   it('locks the vault after a wrong combination and refuses answers meanwhile', async () => {
     await knownPlayer(['briefing', 'gallery', 'sequence', 'interception']);
     renderApp('/missao');
-    fireEvent.click(await screen.findByRole('link', { name: /jogar o cofre/i }));
-    await pageTitle('O Cofre');
+    fireEvent.click(await screen.findByRole('link', { name: /jogar sala de investigação/i }));
+    await pageTitle('Sala de Investigação');
 
     server.__setLock(15);
-    typeCode('2054');
+    typeCode('1969');
     fireEvent.click(screen.getByRole('button', { name: 'Confirmar combinação' }));
     expect(await screen.findByText(/cofre bloqueado por 1\d s/i)).toBeInTheDocument();
     // Even the right combination is not accepted while locked
-    expect(screen.queryByRole('heading', { name: 'Cofre aberto' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Acesso concedido' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '2' })).toBeDisabled();
     expect(server.__attempts()[0].finishedAt).toBeNull();
   });
@@ -384,7 +406,7 @@ describe('flow protection', () => {
     await knownPlayer();
     renderApp('/missao/cofre');
     await pageTitle('Mapa da missão');
-    expect(screen.getByText('O Cofre ainda está bloqueado')).toBeInTheDocument();
+    expect(screen.getByText('Sala de Investigação: etapa bloqueada')).toBeInTheDocument();
   });
 
   it('does not unlock the certificate before the mission is complete', async () => {

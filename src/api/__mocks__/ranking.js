@@ -9,7 +9,7 @@ import { evaluateAnswer } from '../../utils/answers';
 export const rankingEnabled = true;
 
 // Answers the real server checks without any hash on the client
-const SERVER_ONLY = { vault: '2054' };
+const SERVER_ONLY = { vault: '1969' };
 
 let attempts = new Map();
 let failing = false;

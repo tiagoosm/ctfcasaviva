@@ -64,7 +64,7 @@ export default function ChallengePage() {
         replace
         state={{
           notice: {
-            title: `${challenge.title} ainda está bloqueado`,
+            title: `${challenge.title}: etapa bloqueada`,
             message: `Conclua primeiro "${current.title}" para liberar as próximas etapas.`,
           },
         }}

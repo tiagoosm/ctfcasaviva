@@ -166,7 +166,7 @@ describe('admin area', () => {
   it('opens any challenge with its answer, without playing', async () => {
     signedIn();
     renderAdmin('/admin/fases');
-    expect(await screen.findByRole('link', { name: /o cofre/i })).toBeInTheDocument();
+    expect(await screen.findByRole('link', { name: /sala de investigação/i })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('link', { name: /briefing/i }));
 
     expect(await screen.findByRole('heading', { name: 'Briefing', level: 1 })).toBeInTheDocument();

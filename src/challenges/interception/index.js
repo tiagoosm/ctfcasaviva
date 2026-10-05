@@ -37,7 +37,7 @@ const interception = {
     title: 'Transmissão decifrada',
     lesson:
       'Você quebrou uma Cifra de César: cada letra avança um número fixo de posições (aqui, 3).',
-    nextClue: 'Guarde o que aprendeu até aqui: o cofre vai pedir tudo de uma vez.',
+    nextClue: 'A última sala guarda o arquivo final. Nem tudo o que você encontrar lá será útil.',
   },
   Stage: InterceptionStage,
 };

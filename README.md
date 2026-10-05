@@ -35,7 +35,7 @@ An educational Capture The Flag (CTF) built for the students of **Inatel cas@viv
 | 01 | Galeria (Gallery) | Visual analysis | Steganography: information hidden inside images |
 | 02 | Sequência (Sequence) | Pattern recognition | Finding the rule behind apparently random data |
 | 03 | Interceptação (Interception) | Substitution cipher | Breaking a Caesar cipher |
-| Final | O Cofre (The Vault) | Putting it all together | Combining observation, a cipher and letter positions to find a 4-digit combination |
+| Final | Sala de Investigação (Investigation room) | Telling signal from noise | Picking the one relevant document out of three, decoding binary to ASCII and connecting the clues to open a 4-digit vault |
 
 ## Features
 
