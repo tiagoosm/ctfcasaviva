@@ -242,7 +242,9 @@ describe('full CTF flow', () => {
     expect(certificate).toHaveTextContent('915 / 1000 pts');
     expect(within(certificate).getByText('Erros').nextSibling).toHaveTextContent('6');
     expect(within(certificate).getByText('Dicas').nextSibling).toHaveTextContent('1');
-    expect(await within(certificate).findByText('1º no ranking')).toBeInTheDocument();
+    expect(within(certificate).getByText('CTF CONCLUÍDO')).toBeInTheDocument();
+    // The certificate is about completing the CTF: no ranking place on it
+    expect(certificate).not.toHaveTextContent(/ranking|lugar|º/i);
     expect(screen.getByRole('link', { name: /ver ranking/i })).toBeInTheDocument();
     // The result page shows the final time itself: no running clock there
     expect(screen.queryByRole('timer')).not.toBeInTheDocument();
@@ -293,7 +295,7 @@ describe('one official attempt per player', () => {
     expect(server.__attempts()).toHaveLength(1);
     const certificate = screen.getByRole('article', { name: 'MARIA SOUZA' });
     expect(certificate).toHaveTextContent('1000 / 1000 pts');
-    expect(within(certificate).getByText('1º no ranking')).toBeInTheDocument();
+    expect(certificate).not.toHaveTextContent(/ranking|º/i);
     expect(screen.queryByRole('button', { name: /jogar novamente/i })).not.toBeInTheDocument();
 
     // Back on the start page there is no form, only the notice
@@ -369,7 +371,7 @@ describe('one official attempt per player', () => {
         runId,
         startedAt: 1,
         finishedAt: 10,
-        result: { place: 1, score: 99999, totalSeconds: 1, errors: 0, hints: 0 },
+        result: { score: 99999, totalSeconds: 1, errors: 0, hints: 0 },
         progress: { briefing: fake, gallery: fake, sequence: fake, interception: fake, vault: fake },
       }),
     );
@@ -462,13 +464,39 @@ describe('flow protection', () => {
     expect(screen.queryByRole('timer')).not.toBeInTheDocument();
   });
 
-  it('lists only completed attempts in the ranking', async () => {
+  it('ranks every player who started by current score, finished or not', async () => {
     await playOnServer('Maria Souza', 'B1', Object.keys(ANSWERS));
     await playOnServer('João Silva', 'A2', ['briefing', 'gallery']);
+    // Started, nothing solved yet: still listed, with 0 points
+    await playOnServer('Carlos Oliveira', 'B1', []);
     renderApp('/ranking');
     await pageTitle('Ranking');
-    expect(await screen.findByText('MARIA SOUZA')).toBeInTheDocument();
-    expect(screen.queryByText('JOÃO SILVA')).not.toBeInTheDocument();
+
+    const rows = (await screen.findAllByRole('row')).slice(1);
+    expect(rows.map((row) => within(row).getByText(/^[A-ZÀ-Ü ]+$/).textContent)).toEqual([
+      'MARIA SOUZA',
+      'JOÃO SILVA',
+      'CARLOS OLIVEIRA',
+    ]);
+    expect(rows[0]).toHaveTextContent('1000');
+    expect(rows[0]).toHaveTextContent(/concluído/i);
+    expect(rows[1]).toHaveTextContent('300');
+    expect(rows[1]).toHaveTextContent(/em andamento/i);
+    expect(rows[2]).toHaveTextContent('0');
+  });
+
+  it('shows at most 20 players, picked among all who started', async () => {
+    for (let i = 1; i <= 24; i += 1) {
+      await playOnServer(`Jogador ${String(i).padStart(2, '0')}`, 'A1', i <= 6 ? ['briefing'] : []);
+    }
+    await playOnServer('Maria Souza', 'B1', Object.keys(ANSWERS));
+    renderApp('/ranking');
+    await pageTitle('Ranking');
+    const rows = (await screen.findAllByRole('row')).slice(1);
+    expect(rows).toHaveLength(20);
+    expect(rows[0]).toHaveTextContent('MARIA SOUZA');
+    // The six players in progress with points come right after the finished one
+    expect(rows.slice(1, 7).every((row) => row.textContent.includes('100'))).toBe(true);
   });
 
   it('shows a friendly page for unknown routes', async () => {

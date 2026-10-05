@@ -12,7 +12,6 @@ const isDuration = (value) => (Number.isFinite(value) && value > 0 ? value : 0);
 function parseResult(result) {
   if (!result || typeof result !== 'object') return null;
   return {
-    place: isCountOrNull(result.place),
     score: isCount(result.score),
     totalSeconds: isCount(result.totalSeconds),
     errors: isCount(result.errors),

@@ -76,7 +76,6 @@ function toAttempt(data) {
     totalSeconds: data.total_seconds,
     errors: data.errors,
     hints: data.hints,
-    place: data.place,
     challenges: data.challenges.map((item) => ({
       id: item.id,
       solvedAt: toTime(item.solved_at),
@@ -125,5 +124,7 @@ export async function fetchRanking(limit = 20) {
     group: row.class_name,
     score: row.score,
     totalSeconds: row.total_seconds,
+    // The ranking lists players in progress too
+    completed: row.completed,
   }));
 }

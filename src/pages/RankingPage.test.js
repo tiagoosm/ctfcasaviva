@@ -39,10 +39,10 @@ describe('RankingPage', () => {
     expect(fetchRanking).toHaveBeenCalledWith(20);
   });
 
-  it('shows an invitation when nobody has finished yet', async () => {
+  it('shows an invitation when nobody has started yet', async () => {
     fetchRanking.mockResolvedValue([]);
     renderRanking();
-    expect(await screen.findByText(/ninguém concluiu a missão ainda/i)).toBeInTheDocument();
+    expect(await screen.findByText(/ninguém começou a missão ainda/i)).toBeInTheDocument();
   });
 
   it('degrades gracefully when the ranking cannot be loaded', async () => {

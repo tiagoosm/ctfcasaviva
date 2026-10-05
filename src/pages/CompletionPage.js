@@ -25,7 +25,7 @@ export default function CompletionPage() {
   const summary = getSummary(state);
   const hasResult = Boolean(state.result);
 
-  // The official numbers and the ranking place come from the server
+  // The official numbers come from the server
   useEffect(() => {
     if (summary.isComplete && !hasResult) refreshState();
   }, [summary.isComplete, hasResult, refreshState]);
@@ -71,11 +71,9 @@ export default function CompletionPage() {
         <div className="px-6 py-8 sm:px-12 sm:py-10">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <img src={LOGO_SRC} alt="Inatel cas@viva" width="150" height="50" className="h-11 w-auto" />
-            {result?.place && (
-              <p className="rounded-full bg-brand-blue px-4 py-1.5 font-mono text-sm font-semibold text-white">
-                {result.place}º no ranking
-              </p>
-            )}
+            <p className="rounded-full bg-success/15 px-4 py-1.5 font-mono text-sm font-semibold text-[#1E7A4C]">
+              CTF CONCLUÍDO
+            </p>
           </div>
 
           <h2 id="certificado-titulo" className="mt-8 break-words text-3xl font-bold sm:text-4xl">

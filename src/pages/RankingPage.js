@@ -52,7 +52,8 @@ export default function RankingPage() {
       <p className="eyebrow">Top {LIMIT}</p>
       <h1 className="mt-2 text-4xl font-bold">Ranking</h1>
       <p className="mt-2 text-fg-muted">
-        Resolver rápido e errar pouco rende mais pontos. Empates são decididos pelo menor tempo.
+        Pontuação atual de todos os jogadores, atualizada durante a missão. Empates são decididos
+        pelo menor tempo.
       </p>
 
       <div className="mt-8">
@@ -68,13 +69,14 @@ export default function RankingPage() {
 
         {rows?.length === 0 && (
           <p className="panel p-5 text-fg-muted">
-            Ninguém concluiu a missão ainda. O primeiro lugar está vago.
+            Ninguém começou a missão ainda. O primeiro lugar está vago.
           </p>
         )}
 
         {rows?.length > 0 && (
           <div className="panel overflow-hidden">
-            <table className="w-full border-collapse text-left">
+            {/* Fixed layout: the name takes all the width the other columns leave */}
+            <table className="w-full table-fixed border-collapse text-left">
               <thead>
                 <tr className="border-b border-ink-600/60 font-mono text-xs uppercase tracking-wider text-fg-subtle">
                   <th scope="col" className="w-14 px-3 py-3 text-center sm:px-4">
@@ -83,13 +85,13 @@ export default function RankingPage() {
                   <th scope="col" className="px-2 py-3">
                     Nome
                   </th>
-                  <th scope="col" className="hidden px-2 py-3 sm:table-cell">
+                  <th scope="col" className="hidden w-20 px-2 py-3 sm:table-cell">
                     Turma
                   </th>
-                  <th scope="col" className="hidden px-2 py-3 text-right sm:table-cell">
+                  <th scope="col" className="hidden w-32 px-2 py-3 text-right sm:table-cell">
                     Tempo
                   </th>
-                  <th scope="col" className="px-3 py-3 text-right sm:px-4">
+                  <th scope="col" className="w-20 px-3 py-3 text-right sm:w-24 sm:px-4">
                     Pontos
                   </th>
                 </tr>
@@ -118,11 +120,18 @@ export default function RankingPage() {
                         </span>
                       </td>
                       <td className="max-w-0 px-2 py-3">
-                        <p className={cn('truncate', row.place <= 3 && 'font-semibold')}>
+                        {/* Full names wrap instead of being cut, so nobody is unrecognizable */}
+                        <p className={cn('break-words', row.place <= 3 && 'font-semibold')}>
                           {row.name}
                           {mine && <span className="ml-2 text-sm font-normal text-brand-orange-light">você</span>}
                         </p>
-                        <p className="truncate text-sm text-fg-subtle sm:hidden">{row.group}</p>
+                        <p className="truncate text-sm text-fg-subtle">
+                          <span className="sm:hidden">{row.group} · </span>
+                          {/* Discreet: the ranking includes players who have not finished yet */}
+                          <span className="font-mono text-[0.65rem] uppercase tracking-wider">
+                            {row.completed ? 'Concluído' : 'Em andamento'}
+                          </span>
+                        </p>
                       </td>
                       <td className="hidden max-w-[10rem] truncate px-2 py-3 text-fg-muted sm:table-cell">
                         {row.group}

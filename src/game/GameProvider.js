@@ -94,7 +94,7 @@ export function GameProvider({ children }) {
               now: Date.now(),
             });
             if (confirmed.finished) {
-              // Official result and ranking place
+              // Official result
               const attempt = await api.fetchState(runId).catch(() => null);
               if (attempt) hydrate(attempt);
             }

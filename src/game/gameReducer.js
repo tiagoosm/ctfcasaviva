@@ -89,7 +89,6 @@ function hydrate(state, attempt, now) {
     result:
       attempt.status === 'completed'
         ? {
-            place: attempt.place,
             score: attempt.score,
             totalSeconds: attempt.totalSeconds,
             errors: attempt.errors,

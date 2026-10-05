@@ -1,6 +1,7 @@
 // In-memory stand-in for the backend, used by the tests. It follows the same
 // rules as the server functions in supabase/migrations: one attempt per
-// name + class, answers and scores decided here, completed attempts frozen.
+// name + class, answers and scores decided here, completed attempts frozen,
+// and a ranking of every player who started.
 import { challenges } from '../../challenges';
 import { formatPlayerName, playerNameKey } from '../../game/names';
 import { computeScore } from '../../game/scoring';
@@ -63,10 +64,17 @@ function open(attempt, challengeId) {
   return stage(attempt, challengeId);
 }
 
+// Points so far, or the official score once completed
+const currentScore = (attempt) =>
+  attempt.finishedAt
+    ? attempt.score
+    : Object.values(attempt.stages).reduce((sum, item) => sum + (item.score ?? 0), 0);
+
+// Every player who started, by current score, then name (time is always 0 here)
 const ranked = () =>
-  [...attempts.values()]
-    .filter((attempt) => attempt.finishedAt)
-    .sort((a, b) => b.score - a.score || a.finishedAt - b.finishedAt);
+  [...attempts.values()].sort(
+    (a, b) => currentScore(b) - currentScore(a) || a.name.localeCompare(b.name),
+  );
 
 function snapshot(attempt) {
   const stages = challenges.map((challenge) => ({ id: challenge.id, ...stage(attempt, challenge.id) }));
@@ -82,7 +90,6 @@ function snapshot(attempt) {
     totalSeconds: 0,
     errors: stages.reduce((sum, item) => sum + item.wrong, 0),
     hints: stages.filter((item) => item.hintUsed).length,
-    place: completed ? ranked().indexOf(attempt) + 1 : null,
     challenges: stages.map((item) => ({
       id: item.id,
       solvedAt: item.solvedAt,
@@ -185,7 +192,8 @@ export async function fetchRanking(limit = 20) {
       place: index + 1,
       name: attempt.name,
       group: attempt.group,
-      score: attempt.score,
+      score: currentScore(attempt),
       totalSeconds: 0,
+      completed: Boolean(attempt.finishedAt),
     }));
 }

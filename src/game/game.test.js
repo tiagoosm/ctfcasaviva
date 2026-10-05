@@ -29,7 +29,6 @@ function attempt(stages = {}, extra = {}) {
     totalSeconds: 0,
     errors: 0,
     hints: 0,
-    place: null,
     ...extra,
     challenges: challenges.map((challenge) => ({
       id: challenge.id,
@@ -88,7 +87,7 @@ describe('attempt state', () => {
     state = {
       ...state,
       finishedAt: 10,
-      result: { place: 1, score: 99999, totalSeconds: 1, errors: 0, hints: 0 },
+      result: { score: 99999, totalSeconds: 1, errors: 0, hints: 0 },
       progress: { ...state.progress, [second.id]: { ...state.progress[first.id], score: 9999 } },
     };
 
@@ -110,11 +109,10 @@ describe('attempt state', () => {
       totalSeconds: 100,
       errors: 0,
       hints: 0,
-      place: 3,
     });
 
     expect(getSummary(state).isComplete).toBe(true);
-    expect(state.result).toEqual({ place: 3, score: 1000, totalSeconds: 100, errors: 0, hints: 0 });
+    expect(state.result).toEqual({ score: 1000, totalSeconds: 100, errors: 0, hints: 0 });
     expect(getMissionSeconds(state, 99999999)).toBe(100);
     expect(isClockRunning(state)).toBe(false);
   });
@@ -240,7 +238,7 @@ describe('parseState', () => {
         group: 'Turma inventada',
         startedAt: 'ontem',
         runId: 'not-a-uuid',
-        result: { place: -1, score: 'muito' },
+        result: { score: 'muito' },
         progress: {
           briefing: { activeMs: -50, solvedAt: 10, wrong: -3, hintUsed: 'sim', seconds: 1.5, score: 80 },
           lixo: null,
@@ -252,7 +250,7 @@ describe('parseState', () => {
     expect(parsed.startedAt).toBeNull();
     expect(parsed.runId).toBeNull();
     expect(isRegistered(parsed)).toBe(false);
-    expect(parsed.result).toEqual({ place: null, score: 0, totalSeconds: 0, errors: 0, hints: 0 });
+    expect(parsed.result).toEqual({ score: 0, totalSeconds: 0, errors: 0, hints: 0 });
     expect(parsed.progress).toEqual({
       briefing: {
         activeMs: 0,

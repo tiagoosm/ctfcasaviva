@@ -46,7 +46,7 @@ An educational Capture The Flag (CTF) built for the students of **Inatel cas@viv
 - Name and class are required before the mission starts; the class is picked from a fixed list.
 - One optional hint per challenge, which guides without giving the answer away.
 - Scoring that rewards speed and accuracy, and a mission clock pinned to the corner of each challenge.
-- A shared Top 20 ranking, computed by the server.
+- A shared Top 20 ranking of every player who started, updated as they play and computed by the server.
 - Contextual feedback for near misses, such as submitting the key instead of the message.
 - Printable completion certificate.
 
@@ -156,7 +156,7 @@ The browser cannot read or write the tables: row level security is enabled with 
 | `ctf_leave` | Pauses the clock of a challenge |
 | `ctf_hint` | Records that the hint was used |
 | `ctf_submit` | Validates an answer; on success stores time and score, and freezes the result on the last one |
-| `ctf_ranking` | Returns the top players: completed attempts only |
+| `ctf_ranking` | Returns the top players by current score: everyone who started, finished or not (ties: shortest time, then name) |
 
 ### One player, one attempt
 

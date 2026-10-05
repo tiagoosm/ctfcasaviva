@@ -81,7 +81,7 @@ function Concluded({ state, summary }) {
       <div className="panel border-success/40 p-5">
         <h2 className="text-2xl font-bold text-success">CTF concluído</h2>
         <p className="mt-1 text-fg-muted">Você já realizou sua tentativa oficial.</p>
-        <dl className="mt-4 grid grid-cols-3 gap-3">
+        <dl className="mt-4 grid grid-cols-2 gap-3">
           <div>
             <dt className="text-xs text-fg-subtle">Pontos</dt>
             <dd className="font-mono text-lg font-semibold">{score}</dd>
@@ -89,10 +89,6 @@ function Concluded({ state, summary }) {
           <div>
             <dt className="text-xs text-fg-subtle">Tempo</dt>
             <dd className="font-mono text-lg font-semibold">{formatDuration(seconds * 1000)}</dd>
-          </div>
-          <div>
-            <dt className="text-xs text-fg-subtle">Ranking</dt>
-            <dd className="font-mono text-lg font-semibold">{result?.place ? `${result.place}º` : '—'}</dd>
           </div>
         </dl>
       </div>
