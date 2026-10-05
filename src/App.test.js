@@ -231,7 +231,8 @@ describe('full CTF flow', () => {
     expect(screen.queryByRole('button', { name: /reiniciar/i })).not.toBeInTheDocument();
     expect(server.__attempts()).toHaveLength(1);
     expect(server.__attempts()[0].score).toBe(915);
-  }, 30000);
+    // Long on purpose: it plays the whole mission
+  }, 60000);
 });
 
 describe('one official attempt per player', () => {

@@ -53,7 +53,7 @@ An educational Capture The Flag (CTF) built for the students of **Inatel cas@viv
 **Tools**
 
 - Image viewer that opens each piece of evidence at a fixed size. It has no zoom, by design.
-- Interactive shift-cipher tool for the cryptography stages.
+- Numeric keypad for the vault combination.
 
 **Quality**
 
@@ -94,15 +94,14 @@ src/
 │   ├── challenge/       # ProgressTrack, ChallengeHeader, FlagForm, HintPanel, SuccessPanel
 │   ├── layout/          # AppLayout, Header, Footer, BrandMark
 │   ├── ui/              # Button, Badge, Modal, ConfirmDialog, FeedbackMessage…
-│   ├── ImageViewer.js
-│   └── CipherTool.js
+│   └── ImageViewer.js
 ├── admin/               # admin area (lazy-loaded): login, players, stages
 ├── api/                 # ranking backend client
 ├── game/                # reducer, scoring, selectors, persistence, provider
 ├── hooks/
 ├── pages/               # Landing, Mission map, Challenge, Completion, Ranking, 404
 ├── styles/              # Tailwind base layer and global styles
-└── utils/               # sha256, answer normalization/validation, ciphers, formatting
+└── utils/               # sha256, answer normalization/validation, formatting
 scripts/
 └── hash-flag.mjs        # answer hash generator
 supabase/

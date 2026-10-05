@@ -1,6 +1,5 @@
 import { createHash } from 'crypto';
 import { evaluateAnswer, hashAnswer, normalizeAnswer } from './answers';
-import { caesar, vigenere } from './cipher';
 import { formatClock, formatDuration } from './format';
 import { sha256 } from './sha256';
 
@@ -47,18 +46,6 @@ describe('evaluateAnswer', () => {
 
   it('uses the challenge id as salt', () => {
     expect(hashAnswer('a', 'x')).not.toBe(hashAnswer('b', 'x'));
-  });
-});
-
-describe('ciphers', () => {
-  it('Caesar with shift 3 is reversible and preserves uppercase', () => {
-    expect(caesar('Ultimato', 3)).toBe('Xowlpdwr');
-    expect(caesar('xowlpdwr', -3)).toBe('ultimato');
-  });
-
-  it('Vigenère encrypts and decrypts with the same key', () => {
-    const encrypted = vigenere('CONQUISTA', 'GOGH');
-    expect(vigenere(encrypted, 'GOGH', -1)).toBe('CONQUISTA');
   });
 });
 
