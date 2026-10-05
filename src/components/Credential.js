@@ -1,5 +1,6 @@
 import { challenges } from '../challenges';
 import { useGame } from '../game/GameProvider';
+import { formatPlayerName } from '../game/names';
 import { getRank, getStatus, getSummary } from '../game/selectors';
 import { cn } from '../utils/format';
 import { LOGO_SRC } from './layout/BrandMark';
@@ -29,22 +30,22 @@ export default function Credential({ codename, group }) {
             Credencial de investigação
           </p>
           <div>
-            <p className="text-xs text-paper-ink/70">Nome</p>
+            <p className="text-xs text-paper-ink/70">NOME COMPLETO</p>
             <p className="truncate font-display text-2xl font-bold">
-              {codename?.trim() || '—'}
+              {formatPlayerName(codename) || '—'}
             </p>
           </div>
           <div className="grid grid-cols-3 gap-3 text-sm">
             <div className="min-w-0">
-              <p className="text-xs text-paper-ink/70">Turma</p>
+              <p className="text-xs text-paper-ink/70">TURMA</p>
               <p className="truncate font-semibold">{group?.trim() || '—'}</p>
             </div>
             <div>
-              <p className="text-xs text-paper-ink/70">Nível</p>
+              <p className="text-xs text-paper-ink/70">NÍVEL</p>
               <p className="font-semibold">{level}</p>
             </div>
             <div>
-              <p className="text-xs text-paper-ink/70">Pontuação</p>
+              <p className="text-xs text-paper-ink/70">PONTUAÇÃO</p>
               <p className="font-mono font-semibold">{summary.score} pts</p>
             </div>
           </div>

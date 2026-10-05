@@ -4,6 +4,8 @@
 // score or create a second attempt.
 // The publishable key is meant to be public; it only grants access to the
 // ctf_* functions exposed in supabase/migrations.
+import { formatPlayerName } from '../game/names';
+
 export const API_URL = process.env.REACT_APP_SUPABASE_URL || 'https://zssdxfbsnsjcqqoxgckp.supabase.co';
 export const API_KEY =
   process.env.REACT_APP_SUPABASE_KEY || 'sb_publishable_6uzYyeNkU7l7ZSWrECcV8g_dkdnoVtg';
@@ -65,7 +67,7 @@ function toAttempt(data) {
   if (!data) return null;
   return {
     id: data.id,
-    name: data.name,
+    name: formatPlayerName(data.name),
     group: data.class_name,
     status: data.status,
     startedAt: toTime(data.started_at),
@@ -119,7 +121,7 @@ export async function fetchRanking(limit = 20) {
   const rows = await rpc('ctf_ranking', { p_limit: limit });
   return (rows ?? []).map((row) => ({
     place: row.place,
-    name: row.name,
+    name: formatPlayerName(row.name),
     group: row.class_name,
     score: row.score,
     totalSeconds: row.total_seconds,

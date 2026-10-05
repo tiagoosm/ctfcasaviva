@@ -134,10 +134,12 @@ describe('admin area', () => {
     expect(within(dialog).getByText('00:40')).toBeInTheDocument();
     expect(within(dialog).getByText('Não iniciada')).toBeInTheDocument();
 
-    fireEvent.change(within(dialog).getByLabelText('Nome'), { target: { value: ' João  Silva ' } });
-    fireEvent.change(within(dialog).getByLabelText('Turma'), { target: { value: 'B4' } });
+    fireEvent.change(within(dialog).getByLabelText('NOME COMPLETO'), { target: { value: ' João  silva ' } });
+    // Names are always turned into capital letters, already while typing
+    expect(within(dialog).getByLabelText('NOME COMPLETO')).toHaveValue(' JOÃO  SILVA ');
+    fireEvent.change(within(dialog).getByLabelText('TURMA'), { target: { value: 'B4' } });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Salvar' }));
-    await waitFor(() => expect(api.updatePlayer).toHaveBeenCalledWith('run-1', 'João Silva', 'B4'));
+    await waitFor(() => expect(api.updatePlayer).toHaveBeenCalledWith('run-1', 'JOÃO SILVA', 'B4'));
     expect(await within(dialog).findByText('Dados atualizados.')).toBeInTheDocument();
   });
 

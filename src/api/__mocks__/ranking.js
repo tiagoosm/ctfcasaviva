@@ -2,6 +2,7 @@
 // rules as the server functions in supabase/migrations: one attempt per
 // name + class, answers and scores decided here, completed attempts frozen.
 import { challenges } from '../../challenges';
+import { formatPlayerName, playerNameKey } from '../../game/names';
 import { computeScore } from '../../game/scoring';
 import { evaluateAnswer } from '../../utils/answers';
 
@@ -32,15 +33,7 @@ export const __setLock = (seconds) => {
 export const __attempts = () => [...attempts.values()];
 export const __remove = (id) => attempts.delete(id);
 
-const nameKey = (name) =>
-  name
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-const playerKey = (name, group) => `${nameKey(name)}|${group.trim().toUpperCase()}`;
+const playerKey = (name, group) => `${playerNameKey(name)}|${group.trim().toUpperCase()}`;
 
 const makeId = () => `00000000-0000-4000-8000-${String(nextId++).padStart(12, '0')}`;
 
@@ -109,7 +102,8 @@ export async function startRun(name, group) {
     attempt = {
       id: makeId(),
       key,
-      name: name.replace(/\s+/g, ' ').trim(),
+      // Stored in capital letters, as on the server
+      name: formatPlayerName(name),
       group: group.trim().toUpperCase(),
       startedAt: Date.now(),
       finishedAt: null,

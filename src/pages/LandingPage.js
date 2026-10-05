@@ -8,6 +8,7 @@ import Select from '../components/ui/Select';
 import { useGame } from '../game/GameProvider';
 import { CODENAME_MAX_LENGTH } from '../game/gameReducer';
 import { GROUPS, isValidGroup } from '../game/groups';
+import { toUpperName } from '../game/names';
 import { getCurrentChallenge, getMissionSeconds, getSummary, isRegistered } from '../game/selectors';
 import useDocumentTitle from '../hooks/useDocumentTitle';
 import { cn, formatDuration } from '../utils/format';
@@ -33,7 +34,7 @@ function Field({ label, error, fieldRef, options, placeholder, ...fieldProps }) 
     'aria-invalid': error ? true : undefined,
     'aria-describedby': error ? errorId : undefined,
     className: cn(
-      'mt-1.5 h-12 w-full rounded-xl border-2 bg-ink-950/70 px-4 text-base focus:outline-none',
+      'mt-1.5 h-12 w-full rounded-xl border-2 bg-ink-950/70 px-4 text-base placeholder:text-fg-subtle/70 focus:outline-none',
       error
         ? 'border-danger/70 focus:border-danger'
         : 'border-ink-600 hover:border-fg-subtle focus:border-brand-orange',
@@ -58,7 +59,7 @@ function Field({ label, error, fieldRef, options, placeholder, ...fieldProps }) 
           describedBy={error ? errorId : undefined}
         />
       ) : (
-        <input type="text" {...shared} />
+        <input type="text" placeholder={placeholder} {...shared} />
       )}
       {error && (
         <p id={errorId} role="alert" className="mt-1.5 text-sm text-danger">
@@ -125,7 +126,7 @@ export default function LandingPage() {
     event.preventDefault();
     if (busy) return;
     const nextErrors = {
-      name: name.trim() ? undefined : 'Informe seu nome.',
+      name: name.trim() ? undefined : 'Informe seu nome completo.',
       group: isValidGroup(group) ? undefined : 'Selecione sua turma.',
     };
     setErrors(nextErrors);
@@ -160,11 +161,13 @@ export default function LandingPage() {
         {!registered && (
           <form onSubmit={handleStart} noValidate className="mt-8 max-w-md space-y-4">
             <Field
-              label="Nome"
+              label="NOME COMPLETO"
               fieldRef={nameRef}
+              placeholder="DIGITE SEU NOME COMPLETO"
               value={name}
               onChange={(event) => {
-                setName(event.target.value);
+                // Names are always in capital letters, already while typing
+                setName(toUpperName(event.target.value));
                 setErrors((current) => ({ ...current, name: undefined }));
               }}
               maxLength={CODENAME_MAX_LENGTH}
@@ -172,10 +175,10 @@ export default function LandingPage() {
               error={errors.name}
             />
             <Field
-              label="Turma"
+              label="TURMA"
               fieldRef={groupRef}
               options={GROUPS}
-              placeholder="Selecione sua turma"
+              placeholder="SELECIONE SUA TURMA"
               value={group}
               onChange={(value) => {
                 setGroup(value);

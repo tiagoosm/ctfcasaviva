@@ -2,6 +2,7 @@ import { useId, useMemo, useState } from 'react';
 import { LuEyeOff, LuLoaderCircle, LuRefreshCw, LuSearch } from 'react-icons/lu';
 import { challenges } from '../challenges';
 import Button from '../components/ui/Button';
+import { playerNameKey, toUpperName } from '../game/names';
 import useDocumentTitle from '../hooks/useDocumentTitle';
 import { cn, formatClock, formatDateTime } from '../utils/format';
 import { useAdminData } from './context';
@@ -27,11 +28,6 @@ const titles = Object.fromEntries(challenges.map((challenge) => [challenge.id, c
 const fieldClasses =
   'h-11 rounded-xl border border-ink-600 bg-ink-950/70 px-3 text-base focus:border-brand-orange focus:outline-none';
 
-const normalize = (text) =>
-  text
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '');
 
 export default function PlayersPage() {
   useDocumentTitle('Jogadores · Administração');
@@ -53,9 +49,10 @@ export default function PlayersPage() {
   );
 
   const visible = useMemo(() => {
-    const term = normalize(search.trim());
+    // Same comparison as player identification: case, accents and spaces ignored
+    const term = playerNameKey(search);
     return players
-      .filter((player) => !term || normalize(player.name).includes(term))
+      .filter((player) => !term || playerNameKey(player.name).includes(term))
       .filter((player) => !group || player.group === group)
       .filter(
         (player) =>
@@ -97,8 +94,8 @@ export default function PlayersPage() {
             id={searchId}
             type="search"
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Pesquisar por nome"
+            onChange={(event) => setSearch(toUpperName(event.target.value))}
+            placeholder="PESQUISAR POR NOME"
             className={cn(fieldClasses, 'w-full pl-9 placeholder:text-fg-subtle/70')}
           />
         </div>

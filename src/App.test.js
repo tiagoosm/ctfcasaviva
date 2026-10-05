@@ -49,8 +49,8 @@ const pageTitle = (name) => screen.findByRole('heading', { name, level: 1 });
 
 // Fills in the start form the way a player does
 function identify(name, group) {
-  fireEvent.change(screen.getByLabelText('Nome'), { target: { value: name } });
-  fireEvent.click(screen.getByRole('combobox', { name: 'Turma' }));
+  fireEvent.change(screen.getByLabelText('NOME COMPLETO'), { target: { value: name } });
+  fireEvent.click(screen.getByRole('combobox', { name: 'TURMA' }));
   fireEvent.click(screen.getByRole('option', { name: group }));
   fireEvent.click(screen.getByRole('button', { name: /iniciar missão/i }));
 }
@@ -87,18 +87,20 @@ describe('full CTF flow', () => {
 
     // Name and class are both required before the mission starts
     fireEvent.click(screen.getByRole('button', { name: /iniciar missão/i }));
-    expect(screen.getByText('Informe seu nome.')).toBeInTheDocument();
+    expect(screen.getByText('Informe seu nome completo.')).toBeInTheDocument();
     expect(screen.getByText('Selecione sua turma.')).toBeInTheDocument();
     expect(server.__attempts()).toHaveLength(0);
 
-    fireEvent.change(screen.getByLabelText('Nome'), { target: { value: 'Agente Teste' } });
+    fireEvent.change(screen.getByLabelText('NOME COMPLETO'), { target: { value: 'Agente Teste' } });
+    // Names are always in capital letters, already while typing
+    expect(screen.getByLabelText('NOME COMPLETO')).toHaveValue('AGENTE TESTE');
     fireEvent.click(screen.getByRole('button', { name: /iniciar missão/i }));
-    expect(screen.queryByText('Informe seu nome.')).not.toBeInTheDocument();
+    expect(screen.queryByText('Informe seu nome completo.')).not.toBeInTheDocument();
     expect(screen.getByText('Selecione sua turma.')).toBeInTheDocument();
 
     // The class is chosen from a fixed list
-    const groupField = screen.getByRole('combobox', { name: 'Turma' });
-    expect(groupField).toHaveTextContent('Selecione sua turma');
+    const groupField = screen.getByRole('combobox', { name: 'TURMA' });
+    expect(groupField).toHaveTextContent('SELECIONE SUA TURMA');
     fireEvent.click(groupField);
     expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
       'A1',
@@ -212,9 +214,9 @@ describe('full CTF flow', () => {
     // Official result
     await pageTitle('Missão cumprida');
     expect(screen.getByText('Sua tentativa oficial está registrada.')).toBeInTheDocument();
-    const certificate = screen.getByRole('article', { name: 'Agente Teste' });
+    const certificate = screen.getByRole('article', { name: 'AGENTE TESTE' });
     expect(within(certificate).getByText('Mestre do CTF')).toBeInTheDocument();
-    expect(certificate).toHaveTextContent('Turma B2');
+    expect(certificate).toHaveTextContent('TURMA B2');
     // 1000 − 6 wrong answers (10 each) − 1 hint (25)
     expect(certificate).toHaveTextContent('915 / 1000 pts');
     expect(within(certificate).getByText('Erros').nextSibling).toHaveTextContent('6');
@@ -267,7 +269,7 @@ describe('one official attempt per player', () => {
     // No new attempt: the official result is shown instead
     await pageTitle('Missão cumprida');
     expect(server.__attempts()).toHaveLength(1);
-    const certificate = screen.getByRole('article', { name: 'Maria Souza' });
+    const certificate = screen.getByRole('article', { name: 'MARIA SOUZA' });
     expect(certificate).toHaveTextContent('1000 / 1000 pts');
     expect(within(certificate).getByText('1º no ranking')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /jogar novamente/i })).not.toBeInTheDocument();
@@ -276,7 +278,7 @@ describe('one official attempt per player', () => {
     fireEvent.click(screen.getByRole('link', { name: /página inicial/i }));
     expect(await screen.findByRole('heading', { name: 'CTF concluído' })).toBeInTheDocument();
     expect(screen.getByText('Você já realizou sua tentativa oficial.')).toBeInTheDocument();
-    expect(screen.queryByLabelText('Nome')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('NOME COMPLETO')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /iniciar/i })).not.toBeInTheDocument();
   });
 
@@ -313,7 +315,7 @@ describe('one official attempt per player', () => {
     renderApp('/');
     identify('Agente Teste', 'A1');
     expect(await screen.findByText(/não foi possível iniciar agora/i)).toBeInTheDocument();
-    expect(screen.getByLabelText('Nome')).toBeInTheDocument();
+    expect(screen.getByLabelText('NOME COMPLETO')).toBeInTheDocument();
     expect(server.__attempts()).toHaveLength(0);
   });
 
@@ -361,7 +363,7 @@ describe('one official attempt per player', () => {
     server.__remove(runId);
 
     renderApp('/');
-    expect(await screen.findByLabelText('Nome')).toBeInTheDocument();
+    expect(await screen.findByLabelText('NOME COMPLETO')).toBeInTheDocument();
     // Identifying again starts a brand new attempt
     identify('Coruja', 'A1');
     await pageTitle('Briefing');
@@ -373,8 +375,8 @@ describe('one official attempt per player', () => {
 describe('flow protection', () => {
   it('does not open a challenge before name and class are given', async () => {
     renderApp('/missao/briefing');
-    expect(await screen.findByLabelText('Nome')).toBeInTheDocument();
-    expect(screen.getByLabelText('Turma')).toBeInTheDocument();
+    expect(await screen.findByLabelText('NOME COMPLETO')).toBeInTheDocument();
+    expect(screen.getByLabelText('TURMA')).toBeInTheDocument();
   });
 
   it('does not allow skipping stages through the URL', async () => {
@@ -416,8 +418,8 @@ describe('flow protection', () => {
     dialog = screen.getByRole('dialog', { name: 'Sair do CTF?' });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Sair' }));
 
-    expect(await screen.findByLabelText('Nome')).toHaveValue('');
-    expect(screen.getByLabelText('Turma')).toHaveTextContent('Selecione sua turma');
+    expect(await screen.findByLabelText('NOME COMPLETO')).toHaveValue('');
+    expect(screen.getByLabelText('TURMA')).toHaveTextContent('SELECIONE SUA TURMA');
     expect(screen.queryByRole('button', { name: 'Sair' })).not.toBeInTheDocument();
     const saved = JSON.parse(window.localStorage.getItem(STORAGE_KEY));
     expect(saved.codename).toBe('');
@@ -442,8 +444,8 @@ describe('flow protection', () => {
     await playOnServer('João Silva', 'A2', ['briefing', 'gallery']);
     renderApp('/ranking');
     await pageTitle('Ranking');
-    expect(await screen.findByText('Maria Souza')).toBeInTheDocument();
-    expect(screen.queryByText('João Silva')).not.toBeInTheDocument();
+    expect(await screen.findByText('MARIA SOUZA')).toBeInTheDocument();
+    expect(screen.queryByText('JOÃO SILVA')).not.toBeInTheDocument();
   });
 
   it('shows a friendly page for unknown routes', async () => {

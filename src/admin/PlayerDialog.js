@@ -3,6 +3,7 @@ import { LuCheck, LuEye, LuEyeOff, LuLoaderCircle, LuTrash2 } from 'react-icons/
 import { challenges } from '../challenges';
 import { CODENAME_MAX_LENGTH } from '../game/gameReducer';
 import { GROUPS, isValidGroup } from '../game/groups';
+import { formatPlayerName, toUpperName } from '../game/names';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import { cn, formatClock, formatDateTime } from '../utils/format';
@@ -80,7 +81,7 @@ export default function PlayerDialog({ playerId, onClose, onChanged }) {
 
   function handleSave(event) {
     event.preventDefault();
-    const nextName = name.replace(/\s+/g, ' ').trim();
+    const nextName = formatPlayerName(name);
     const nextGroup = group.replace(/\s+/g, ' ').trim();
     if (!nextName || !isValidGroup(nextGroup)) {
       setMessage({ tone: 'error', text: 'Informe o nome e escolha uma turma válida.' });
@@ -178,20 +179,20 @@ export default function PlayerDialog({ playerId, onClose, onChanged }) {
           <form onSubmit={handleSave} className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_12rem_auto] sm:items-end">
             <div>
               <label htmlFor={nameId} className="text-sm font-medium text-fg-muted">
-                Nome
+                NOME COMPLETO
               </label>
               <input
                 id={nameId}
                 type="text"
                 value={name}
-                onChange={(event) => setName(event.target.value)}
+                onChange={(event) => setName(toUpperName(event.target.value))}
                 maxLength={CODENAME_MAX_LENGTH}
                 className={inputClasses}
               />
             </div>
             <div>
               <label htmlFor={groupId} className="text-sm font-medium text-fg-muted">
-                Turma
+                TURMA
               </label>
               <select
                 id={groupId}

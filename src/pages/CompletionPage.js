@@ -81,7 +81,7 @@ export default function CompletionPage() {
           <h2 id="certificado-titulo" className="mt-8 break-words text-3xl font-bold sm:text-4xl">
             {state.codename}
           </h2>
-          <p className="mt-1 font-mono text-sm text-paper-ink/70">Turma {state.group}</p>
+          <p className="mt-1 font-mono text-sm text-paper-ink/70">TURMA {state.group}</p>
 
           <div className="mt-8 flex flex-col gap-6 border-t-2 border-dashed border-paper-line pt-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">

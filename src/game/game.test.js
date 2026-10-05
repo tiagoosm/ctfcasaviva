@@ -64,7 +64,8 @@ describe('attempt state', () => {
     });
 
     expect(isRegistered(state)).toBe(true);
-    expect(state.codename).toBe('João da Silva');
+    // Names are always shown in capital letters
+    expect(state.codename).toBe('JOÃO DA SILVA');
     expect(state.group).toBe('A2');
     expect(state.runId).toBe(RUN);
     expect(getStatus(state, first)).toBe('solved');

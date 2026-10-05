@@ -1,7 +1,8 @@
 import { isValidGroup } from './groups';
+import { formatPlayerName, NAME_MAX_LENGTH } from './names';
 
 export const STATE_VERSION = 5;
-export const CODENAME_MAX_LENGTH = 40;
+export const CODENAME_MAX_LENGTH = NAME_MAX_LENGTH;
 
 // What this browser remembers about the player's attempt. It is a cache: the
 // attempt itself (identity, progress, score, completion) lives on the server,
@@ -47,12 +48,8 @@ export function activeTime(progress, now) {
 
 const paused = (progress, now) => ({ activeMs: activeTime(progress, now), resumedAt: null });
 
-export function sanitizeCodename(value) {
-  return String(value ?? '')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, CODENAME_MAX_LENGTH);
-}
+// Player names are always kept in capital letters (see names.js)
+export const sanitizeCodename = formatPlayerName;
 
 // The class must be one of the known classes; anything else counts as not informed
 export function sanitizeGroup(value) {
@@ -84,7 +81,7 @@ function hydrate(state, attempt, now) {
 
   return {
     version: STATE_VERSION,
-    codename: attempt.name,
+    codename: formatPlayerName(attempt.name),
     group: attempt.group,
     runId: attempt.id,
     startedAt: attempt.startedAt,

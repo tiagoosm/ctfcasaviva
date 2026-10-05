@@ -2,6 +2,7 @@
 // session token is then sent with every call, and each ctf_admin_* function
 // checks on the server that the caller is a listed administrator.
 import { API_KEY, API_URL } from '../api/ranking';
+import { formatPlayerName } from '../game/names';
 
 // Kept for the browser tab only: closing it signs the administrator out
 const SESSION_KEY = 'casaviva-ctf/admin-session';
@@ -108,7 +109,7 @@ export async function signOut() {
 
 const toPlayer = (row) => ({
   id: row.id,
-  name: row.name,
+  name: formatPlayerName(row.name),
   group: row.class_name,
   status: row.status,
   currentChallenge: row.current_challenge,
@@ -131,7 +132,7 @@ export async function getPlayer(id) {
   if (!data) return null;
   return {
     id: data.id,
-    name: data.name,
+    name: formatPlayerName(data.name),
     group: data.class_name,
     startedAt: data.started_at,
     finishedAt: data.finished_at,
