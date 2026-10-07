@@ -1,10 +1,12 @@
 import { useEffect, useRef } from 'react';
-import { LuArrowRight, LuTrophy } from 'react-icons/lu';
+import { LuArrowRight, LuMap, LuTrophy } from 'react-icons/lu';
 import { challengePath } from '../../challenges';
 import useReducedMotion from '../../hooks/useReducedMotion';
 import Button from '../ui/Button';
 
-export default function SuccessPanel({ challenge, earned, nextChallenge, justSolved }) {
+// nextChallenge: a stage that just opened (the final one); otherwise the player
+// goes back to the map to choose, or to the result once everything is solved
+export default function SuccessPanel({ challenge, earned, nextChallenge, complete, justSolved }) {
   const sectionRef = useRef(null);
   const headingRef = useRef(null);
   const reducedMotion = useReducedMotion();
@@ -47,15 +49,20 @@ export default function SuccessPanel({ challenge, earned, nextChallenge, justSol
       )}
 
       <div className="mt-5">
-        {nextChallenge ? (
-          <Button to={challengePath(nextChallenge)} size="lg">
-            Próximo: {nextChallenge.title}
-            <LuArrowRight className="h-5 w-5" aria-hidden="true" />
-          </Button>
-        ) : (
+        {complete ? (
           <Button to="/conclusao" size="lg">
             <LuTrophy className="h-5 w-5" aria-hidden="true" />
             Ver resultado da missão
+          </Button>
+        ) : nextChallenge ? (
+          <Button to={challengePath(nextChallenge)} size="lg">
+            Liberado: {nextChallenge.title}
+            <LuArrowRight className="h-5 w-5" aria-hidden="true" />
+          </Button>
+        ) : (
+          <Button to="/missao" size="lg">
+            <LuMap className="h-5 w-5" aria-hidden="true" />
+            Escolher próxima investigação
           </Button>
         )}
       </div>

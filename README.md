@@ -29,9 +29,12 @@ An educational Capture The Flag (CTF) built for the students of **Inatel cas@viv
 
 ## The mission
 
+The mission opens with **Origem**. Solving it unlocks the three investigations (Gallery, Sequence and Interception) at once, to be played in any order. The Vault opens only when all three are solved.
+
+
 | # | Challenge | Skill | What the player learns |
 |---|-----------|-------|------------------------|
-| 00 | Briefing | Careful reading | A black bar hides data, it does not erase it |
+| 00 | Origem (Origin) | Careful reading | A black bar hides data, it does not erase it |
 | 01 | Galeria (Gallery) | Visual analysis | Steganography: information hidden inside images |
 | 02 | Sequência (Sequence) | Pattern recognition | Finding the rule behind apparently random data |
 | 03 | Interceptação (Interception) | Substitution cipher | Breaking a Caesar cipher |
@@ -41,7 +44,7 @@ An educational Capture The Flag (CTF) built for the students of **Inatel cas@viv
 
 **Gameplay**
 
-- Progressive unlocking: stages cannot be skipped through the URL.
+- Free-order investigations between a required opening stage and the final vault. Locked stages cannot be opened through the URL or the API: the server enforces the same rule.
 - One official attempt per player, stored on the server from the moment it starts: it survives reloads, closed browsers and a change of device, and cannot be replayed once completed.
 - Name and class are required before the mission starts; the class is picked from a fixed list.
 - One optional hint per challenge, which guides without giving the answer away.
@@ -89,7 +92,7 @@ The development server runs at <http://localhost:3000>.
 ```
 src/
 ├── challenges/          # one folder per challenge: config (index.js) + Stage component
-│   └── index.js         # mission order / registry
+│   └── index.js         # challenge registry and unlock tiers
 ├── components/
 │   ├── challenge/       # ProgressTrack, ChallengeHeader, FlagForm, HintPanel, SuccessPanel
 │   ├── layout/          # AppLayout, Header, Footer, BrandMark
@@ -126,7 +129,7 @@ As with any client-side CTF, this raises the effort needed to read answers from 
 
 ## Scoring
 
-The mission is worth 1000 points: 100 for the Briefing, 200 each for the Gallery, Sequence and Interception, and 300 for the Vault. For each challenge:
+The mission is worth 1000 points: 100 for Origem, 200 each for the Gallery, Sequence and Interception, and 300 for the Vault. For each challenge:
 
 | Component | Rule |
 |-----------|------|

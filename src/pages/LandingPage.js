@@ -9,7 +9,7 @@ import { useGame } from '../game/GameProvider';
 import { CODENAME_MAX_LENGTH } from '../game/gameReducer';
 import { GROUPS, isValidGroup } from '../game/groups';
 import { toUpperName } from '../game/names';
-import { getCurrentChallenge, getMissionSeconds, getSummary, isRegistered } from '../game/selectors';
+import { getMissionSeconds, getSummary, isRegistered, isSolved } from '../game/selectors';
 import useDocumentTitle from '../hooks/useDocumentTitle';
 import { cn, formatDuration } from '../utils/format';
 
@@ -108,7 +108,10 @@ export default function LandingPage() {
   useDocumentTitle('');
   const { state, startMission } = useGame();
   const summary = getSummary(state);
-  const current = getCurrentChallenge(state);
+  // Until the opening stage is solved it is the only way in; after that the
+  // player picks the next investigation on the map
+  const opening = challenges[0];
+  const openingSolved = isSolved(state, opening.id);
   const registered = isRegistered(state);
   const [name, setName] = useState('');
   const [group, setGroup] = useState('');
@@ -135,8 +138,8 @@ export default function LandingPage() {
       // already has: there is only ever one per name and class
       const attempt = await startMission(name, group);
       if (attempt.status === 'completed') return navigate('/conclusao');
-      const solved = new Set(attempt.challenges.filter((item) => item.solvedAt).map((item) => item.id));
-      navigate(challengePath(challenges.find((challenge) => !solved.has(challenge.id))));
+      const openingDone = attempt.challenges.some((item) => item.id === opening.id && item.solvedAt);
+      navigate(openingDone ? '/missao' : challengePath(opening));
     } catch {
       setBusy(false);
       setErrors({ form: 'Não foi possível iniciar agora. Verifique a conexão e tente de novo.' });
@@ -205,12 +208,20 @@ export default function LandingPage() {
 
         {registered && !summary.isComplete && (
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Button to={challengePath(current)} size="lg">
-              Continuar: {current.title} <LuArrowRight className="h-5 w-5" aria-hidden="true" />
-            </Button>
-            <Button to="/missao" variant="secondary" size="lg">
-              <LuMap className="h-5 w-5" aria-hidden="true" /> Mapa da missão
-            </Button>
+            {openingSolved ? (
+              <Button to="/missao" size="lg">
+                <LuMap className="h-5 w-5" aria-hidden="true" /> Continuar investigação
+              </Button>
+            ) : (
+              <>
+                <Button to={challengePath(opening)} size="lg">
+                  Continuar: {opening.title} <LuArrowRight className="h-5 w-5" aria-hidden="true" />
+                </Button>
+                <Button to="/missao" variant="secondary" size="lg">
+                  <LuMap className="h-5 w-5" aria-hidden="true" /> Mapa da missão
+                </Button>
+              </>
+            )}
           </div>
         )}
       </div>

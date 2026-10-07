@@ -2,7 +2,7 @@
 // rules as the server functions in supabase/migrations: one attempt per
 // name + class, answers and scores decided here, completed attempts frozen,
 // and a ranking of every player who started.
-import { challenges } from '../../challenges';
+import { challenges, getRequirements } from '../../challenges';
 import { formatPlayerName, playerNameKey } from '../../game/names';
 import { computeScore } from '../../game/scoring';
 import { evaluateAnswer } from '../../utils/answers';
@@ -57,8 +57,9 @@ function stage(attempt, id) {
 
 function open(attempt, challengeId) {
   if (attempt.finishedAt) throw Object.assign(new Error('run finished'), { rejected: true });
-  const index = challenges.findIndex((challenge) => challenge.id === challengeId);
-  if (challenges.slice(0, index).some((challenge) => !attempt.stages[challenge.id]?.solvedAt)) {
+  // Same rule as the server: every challenge of an earlier tier must be solved
+  const challenge = challenges.find((item) => item.id === challengeId);
+  if (getRequirements(challenge).some((item) => !attempt.stages[item.id]?.solvedAt)) {
     throw Object.assign(new Error('challenge locked'), { rejected: true });
   }
   return stage(attempt, challengeId);

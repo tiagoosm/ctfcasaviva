@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
-import { challenges, getChallengeBySlug, getNextChallenge } from '../challenges';
+import { LuLoaderCircle } from 'react-icons/lu';
+import { getChallengeBySlug, tiers } from '../challenges';
 import ChallengeHeader, { challengeLabel } from '../components/challenge/ChallengeHeader';
 import FlagForm from '../components/challenge/FlagForm';
 import HintPanel from '../components/challenge/HintPanel';
@@ -10,9 +11,10 @@ import SuccessPanel from '../components/challenge/SuccessPanel';
 import { useGame } from '../game/GameProvider';
 import {
   getChallengeScore,
-  getCurrentChallenge,
+  getMissingRequirements,
   getProgress,
   getStatus,
+  getSummary,
   isRegistered,
 } from '../game/selectors';
 import useDocumentTitle from '../hooks/useDocumentTitle';
@@ -20,10 +22,27 @@ import NotFoundPage from './NotFoundPage';
 
 const HEARTBEAT_INTERVAL = 30000;
 
+// Why a locked challenge cannot be opened yet, in a few words
+function lockedNotice(state, challenge) {
+  const [opening, investigations] = tiers;
+  const missing = getMissingRequirements(state, challenge);
+  const message = missing.some((item) => opening.includes(item))
+    ? `Conclua primeiro "${opening[0].title}" para liberar as investigações.`
+    : `Conclua as ${investigations.length} investigações para liberar ${challenge.title.toLowerCase()}.`;
+  return { title: `Fase bloqueada: ${challenge.title}`, message };
+}
+
+// Where to go after solving: straight to the final stage once it opens,
+// otherwise back to the map to pick the next investigation
+function nextStep(state) {
+  const finalStage = tiers[tiers.length - 1][0];
+  return getStatus(state, finalStage) === 'available' ? finalStage : null;
+}
+
 export default function ChallengePage() {
   const { slug } = useParams();
   const challenge = getChallengeBySlug(slug);
-  const { state, submitAnswer, revealHint, enterChallenge, leaveChallenge, keepAlive } = useGame();
+  const { state, synced, submitAnswer, revealHint, enterChallenge, leaveChallenge, keepAlive } = useGame();
   const [justSolved, setJustSolved] = useState(false);
 
   useDocumentTitle(challenge ? `${challengeLabel(challenge)}: ${challenge.title}` : 'Página não encontrada');
@@ -55,21 +74,19 @@ export default function ChallengePage() {
   // The mission cannot be played before the participant gives name and class
   if (!registered) return <Navigate to="/" replace />;
 
-  // Stages cannot be skipped by typing the URL: we go back to the map with the reason
+  // Stages cannot be skipped by typing the URL: we go back to the map with the
+  // reason. The server refuses them as well.
   if (status === 'locked') {
-    const current = getCurrentChallenge(state) ?? challenges[0];
-    return (
-      <Navigate
-        to="/missao"
-        replace
-        state={{
-          notice: {
-            title: `${challenge.title} ainda está bloqueado`,
-            message: `Conclua primeiro "${current.title}" para liberar as próximas etapas.`,
-          },
-        }}
-      />
-    );
+    // This browser's copy may be behind (progress made on another device):
+    // decide once the server has answered
+    if (!synced) {
+      return (
+        <p className="flex items-center justify-center gap-2 px-4 py-16 text-fg-muted">
+          <LuLoaderCircle className="h-5 w-5 animate-spin" aria-hidden="true" /> Carregando…
+        </p>
+      );
+    }
+    return <Navigate to="/missao" replace state={{ notice: lockedNotice(state, challenge) }} />;
   }
 
   const solved = status === 'solved';
@@ -96,7 +113,8 @@ export default function ChallengePage() {
           <SuccessPanel
             challenge={challenge}
             earned={getChallengeScore(state, challenge)}
-            nextChallenge={getNextChallenge(challenge.id)}
+            nextChallenge={nextStep(state)}
+            complete={getSummary(state).isComplete}
             justSolved={justSolved}
           />
         </div>

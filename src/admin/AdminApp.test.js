@@ -128,7 +128,7 @@ describe('admin area', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'João' }));
 
     const dialog = await screen.findByRole('dialog', { name: 'João' });
-    expect(await within(dialog).findByText('Briefing')).toBeInTheDocument();
+    expect(await within(dialog).findByText('Origem')).toBeInTheDocument();
     // Total mission time, and the (hidden to players) time inside the solved stage
     expect(within(dialog).getByText('20:00')).toBeInTheDocument();
     expect(within(dialog).getByText('00:40')).toBeInTheDocument();
@@ -167,9 +167,9 @@ describe('admin area', () => {
     signedIn();
     renderAdmin('/admin/fases');
     expect(await screen.findByRole('link', { name: /o cofre/i })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('link', { name: /briefing/i }));
+    fireEvent.click(screen.getByRole('link', { name: /origem/i }));
 
-    expect(await screen.findByRole('heading', { name: 'Briefing', level: 1 })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Origem', level: 1 })).toBeInTheDocument();
     expect(await screen.findByText('resposta-secreta')).toBeInTheDocument();
     expect(screen.getByText(/uma tarja preta nem sempre apaga/i)).toBeInTheDocument();
 

@@ -8,6 +8,9 @@ import { STORAGE_KEY } from './game/storage';
 // The in-memory backend in src/api/__mocks__ follows the same rules as the server
 jest.mock('./api/ranking');
 
+// Each test renders the whole app; the default 5 s is tight when every suite runs in parallel
+jest.setTimeout(20000);
+
 const ANSWERS = {
   briefing: 'começar',
   gallery: 'gogh',
@@ -47,6 +50,13 @@ const typeCode = (code) =>
 
 const pageTitle = (name) => screen.findByRole('heading', { name, level: 1 });
 
+// Status shown on the map for each stage, in display order
+const mapStatuses = () =>
+  screen
+    .getAllByRole('listitem')
+    .filter((item) => within(item).queryByRole('heading', { level: 3 }))
+    .map((item) => item.textContent.match(/Concluída|Liberada|Bloqueada/)[0]);
+
 // Fills in the start form the way a player does
 function identify(name, group) {
   fireEvent.change(screen.getByLabelText('NOME COMPLETO'), { target: { value: name } });
@@ -82,7 +92,7 @@ async function knownPlayer(stages = []) {
 }
 
 describe('full CTF flow', () => {
-  it('can be played from the briefing to the official result', async () => {
+  it('can be played from the opening stage to the official result', async () => {
     renderApp('/');
 
     // Name and class are both required before the mission starts
@@ -117,8 +127,8 @@ describe('full CTF flow', () => {
     expect(groupField).toHaveTextContent('B2');
     fireEvent.click(screen.getByRole('button', { name: /iniciar missão/i }));
 
-    // 00 · Briefing — wrong answer, near miss, hint and correct answer
-    await pageTitle('Briefing');
+    // 00 · Origem — wrong answer, near miss, hint and correct answer
+    await pageTitle('Origem');
     // The attempt exists on the server from the very start
     expect(server.__attempts()).toHaveLength(1);
 
@@ -144,9 +154,23 @@ describe('full CTF flow', () => {
     const [saved] = server.__attempts();
     expect(saved.stages.briefing).toMatchObject({ wrong: 2, hintUsed: true, score: 55 });
     expect(saved.finishedAt).toBeNull();
-    fireEvent.click(screen.getByRole('link', { name: /próximo: galeria/i }));
+    // No "next stage": the player chooses on the map
+    expect(screen.queryByRole('link', { name: /próximo/i })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('link', { name: /escolher próxima investigação/i }));
+    await pageTitle('Mapa da missão');
+    expect(mapStatuses()).toEqual(['Concluída', 'Liberada', 'Liberada', 'Liberada', 'Bloqueada']);
 
-    // 01 · Gallery — the viewer opens, has no zoom and closes with Esc
+    // The investigations are played out of order: Interception first
+    fireEvent.click(screen.getByRole('link', { name: /jogar interceptação/i }));
+    await pageTitle('Interceptação');
+    await submitFlag('xowlpdwr');
+    expect(await screen.findByText(/agora ela precisa ser decifrada/i)).toBeInTheDocument();
+    await solveFlag('ultimato', 'Transmissão decifrada');
+    fireEvent.click(screen.getByRole('link', { name: /escolher próxima investigação/i }));
+    await pageTitle('Mapa da missão');
+    fireEvent.click(screen.getByRole('link', { name: /jogar galeria/i }));
+
+    // Gallery — the viewer opens, has no zoom and closes with Esc
     await pageTitle('Galeria');
     fireEvent.click(screen.getByRole('button', { name: /abrir evidência 01/i }));
     const dialog = screen.getByRole('dialog', { name: /evidência 01 de 04/i });
@@ -159,9 +183,12 @@ describe('full CTF flow', () => {
     await submitFlag('Van Gogh');
     expect(await screen.findByText(/você reconheceu o artista/i)).toBeInTheDocument();
     await solveFlag('GOGH', 'Marcas identificadas');
-    fireEvent.click(screen.getByRole('link', { name: /próximo: sequência/i }));
+    fireEvent.click(screen.getByRole('link', { name: /escolher próxima investigação/i }));
+    await pageTitle('Mapa da missão');
+    expect(mapStatuses()).toEqual(['Concluída', 'Concluída', 'Liberada', 'Concluída', 'Bloqueada']);
+    fireEvent.click(screen.getByRole('link', { name: /jogar sequência/i }));
 
-    // 02 · Sequence — the wrong order is rejected, the right one is accepted
+    // Sequence — the wrong order is rejected, the right one is accepted
     await pageTitle('Sequência');
     // No letter is shown to the player, neither on the images nor on the panel
     expect(screen.queryByText(/^[A-F]$/)).not.toBeInTheDocument();
@@ -181,15 +208,8 @@ describe('full CTF flow', () => {
     order.forEach(pick);
     fireEvent.click(screen.getByRole('button', { name: /enviar sequência/i }));
     await screen.findByRole('heading', { name: 'Sequência aceita', level: 2 });
-    fireEvent.click(screen.getByRole('link', { name: /próximo: interceptação/i }));
-
-    // 03 · Interception
-    await pageTitle('Interceptação');
-    await submitFlag('xowlpdwr');
-    expect(await screen.findByText(/agora ela precisa ser decifrada/i)).toBeInTheDocument();
-    await solveFlag('ultimato', 'Transmissão decifrada');
-    fireEvent.click(screen.getByRole('link', { name: /próximo: o cofre/i }));
-
+    // The third investigation opens the vault right away
+    fireEvent.click(screen.getByRole('link', { name: /liberado: o cofre/i }));
     // Final · The Vault — a vault and three documents, no text field
     await pageTitle('O Cofre');
     expect(screen.queryByLabelText('Resposta')).not.toBeInTheDocument();
@@ -266,21 +286,18 @@ describe('one official attempt per player', () => {
     renderApp('/');
     identify('  joao   da SILVA ', 'A2');
 
-    // Straight to the stage where the player stopped
-    await pageTitle('Galeria');
-    expect(server.__attempts()).toHaveLength(1);
-
-    fireEvent.click(screen.getByRole('link', { name: 'Mapa' }));
+    // Origem is done: straight to the map to choose the next investigation
     await pageTitle('Mapa da missão');
-    expect(screen.getByText('1/5 etapas · 100 pts')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /revisar briefing/i })).toBeInTheDocument();
+    expect(server.__attempts()).toHaveLength(1);
+    expect(screen.getByText('1/5 fases · 100 pts')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /revisar origem/i })).toBeInTheDocument();
   });
 
   it('treats another class as another player', async () => {
     await playOnServer('João da Silva', 'A2', ['briefing']);
     renderApp('/');
     identify('João da Silva', 'B1');
-    await pageTitle('Briefing');
+    await pageTitle('Origem');
     expect(server.__attempts()).toHaveLength(2);
   });
 
@@ -346,8 +363,8 @@ describe('one official attempt per player', () => {
 
   it('does not accept an answer the server did not confirm', async () => {
     await knownPlayer();
-    renderApp('/missao/briefing');
-    await pageTitle('Briefing');
+    renderApp('/missao/origem');
+    await pageTitle('Origem');
 
     server.__setFailing(true);
     await submitFlag('começar');
@@ -378,7 +395,7 @@ describe('one official attempt per player', () => {
 
     renderApp('/missao');
     await pageTitle('Mapa da missão');
-    expect(await screen.findByText('2/5 etapas · 300 pts')).toBeInTheDocument();
+    expect(await screen.findByText('2/5 fases · 300 pts')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /jogar sequência/i })).toBeInTheDocument();
     expect(server.__attempts()[0].finishedAt).toBeNull();
   });
@@ -391,24 +408,114 @@ describe('one official attempt per player', () => {
     expect(await screen.findByLabelText('NOME COMPLETO')).toBeInTheDocument();
     // Identifying again starts a brand new attempt
     identify('Coruja', 'A1');
-    await pageTitle('Briefing');
+    await pageTitle('Origem');
     expect(server.__attempts()).toHaveLength(1);
     expect(server.__attempts()[0].id).not.toBe(runId);
   });
 });
 
+describe('free order between the investigations', () => {
+  const VAULT_NOTICE = 'Conclua as 3 investigações para liberar o cofre';
+
+  async function openMap(stages) {
+    await knownPlayer(stages);
+    renderApp('/missao');
+    await pageTitle('Mapa da missão');
+    // Wait for the state from the server
+    await screen.findByText(stages.length + '/5 fases', { exact: false });
+  }
+
+  it('new player: only Origem is open', async () => {
+    await openMap([]);
+    expect(mapStatuses()).toEqual(['Liberada', 'Bloqueada', 'Bloqueada', 'Bloqueada', 'Bloqueada']);
+    expect(screen.getByRole('link', { name: /jogar origem/i })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /jogar galeria/i })).not.toBeInTheDocument();
+  });
+
+  it('after Origem the three investigations open together', async () => {
+    await openMap(['briefing']);
+    expect(mapStatuses()).toEqual(['Concluída', 'Liberada', 'Liberada', 'Liberada', 'Bloqueada']);
+    expect(screen.getByText(VAULT_NOTICE)).toBeInTheDocument();
+  });
+
+  it('only Gallery solved: the other two stay open, the vault locked', async () => {
+    await openMap(['briefing', 'gallery']);
+    expect(mapStatuses()).toEqual(['Concluída', 'Concluída', 'Liberada', 'Liberada', 'Bloqueada']);
+    expect(screen.getByText('1/3 concluídas')).toBeInTheDocument();
+  });
+
+  it('Gallery and Sequence solved: the vault is still locked', async () => {
+    await openMap(['briefing', 'gallery', 'sequence']);
+    expect(mapStatuses()).toEqual(['Concluída', 'Concluída', 'Concluída', 'Liberada', 'Bloqueada']);
+    expect(screen.getByText(VAULT_NOTICE)).toBeInTheDocument();
+  });
+
+  it('any order works: Interception first, then Gallery', async () => {
+    await openMap(['briefing', 'interception', 'gallery']);
+    expect(mapStatuses()).toEqual(['Concluída', 'Concluída', 'Liberada', 'Concluída', 'Bloqueada']);
+  });
+
+  it('the three investigations solved open the vault', async () => {
+    await openMap(['briefing', 'sequence', 'interception', 'gallery']);
+    expect(mapStatuses()).toEqual(['Concluída', 'Concluída', 'Concluída', 'Concluída', 'Liberada']);
+    expect(screen.queryByText(VAULT_NOTICE)).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /jogar o cofre/i })).toBeInTheDocument();
+  });
+
+  it('comes back exactly where the player left off, from another browser', async () => {
+    await playOnServer('Ana Lima', 'B3', ['briefing', 'gallery', 'interception']);
+    renderApp('/');
+    identify('ana lima', 'B3');
+    await pageTitle('Mapa da missão');
+    expect(mapStatuses()).toEqual(['Concluída', 'Concluída', 'Liberada', 'Concluída', 'Bloqueada']);
+    expect(screen.getByText('3/5 fases · 500 pts')).toBeInTheDocument();
+  });
+
+  it('a solved investigation can be reviewed but gives no extra points', async () => {
+    const runId = await knownPlayer(['briefing', 'gallery']);
+    const before = server.__attempts()[0].stages.gallery.score;
+    // Answering again, right or wrong, changes nothing
+    await server.submitAnswer(runId, 'gallery', ANSWERS.gallery);
+    await server.submitAnswer(runId, 'gallery', 'errado');
+    expect(server.__attempts()[0].stages.gallery).toMatchObject({ score: before, wrong: 0 });
+
+    renderApp('/missao');
+    fireEvent.click(await screen.findByRole('link', { name: /revisar galeria/i }));
+    await pageTitle('Galeria');
+    expect(await screen.findByRole('heading', { name: 'Marcas identificadas', level: 2 })).toBeInTheDocument();
+    expect(screen.queryByLabelText('Resposta')).not.toBeInTheDocument();
+    expect(screen.getByText('+' + before + ' pts')).toBeInTheDocument();
+  });
+});
+
 describe('flow protection', () => {
   it('does not open a challenge before name and class are given', async () => {
-    renderApp('/missao/briefing');
+    renderApp('/missao/origem');
     expect(await screen.findByLabelText('NOME COMPLETO')).toBeInTheDocument();
     expect(screen.getByLabelText('TURMA')).toBeInTheDocument();
   });
 
-  it('does not allow skipping stages through the URL', async () => {
-    await knownPlayer();
+  it('does not open an investigation through the URL before Origem', async () => {
+    const runId = await knownPlayer();
+    renderApp('/missao/galeria');
+    await pageTitle('Mapa da missão');
+    expect(screen.getByText('Fase bloqueada: Galeria')).toBeInTheDocument();
+    expect(screen.getByText('Conclua primeiro "Origem" para liberar as investigações.')).toBeInTheDocument();
+    // The server refuses it too, whatever the interface does
+    await expect(server.enterChallenge(runId, 'sequence')).rejects.toThrow('challenge locked');
+    await expect(server.submitAnswer(runId, 'interception', ANSWERS.interception)).rejects.toThrow(
+      'challenge locked',
+    );
+  });
+
+  it('does not open the vault through the URL before the three investigations', async () => {
+    const runId = await knownPlayer(['briefing', 'gallery', 'sequence']);
     renderApp('/missao/cofre');
     await pageTitle('Mapa da missão');
-    expect(screen.getByText('O Cofre ainda está bloqueado')).toBeInTheDocument();
+    expect(screen.getByText('Fase bloqueada: O Cofre')).toBeInTheDocument();
+    expect(screen.getByText('Conclua as 3 investigações para liberar o cofre.')).toBeInTheDocument();
+    await expect(server.submitAnswer(runId, 'vault', ANSWERS.vault)).rejects.toThrow('challenge locked');
+    expect(server.__attempts()[0].finishedAt).toBeNull();
   });
 
   it('does not unlock the certificate before the mission is complete', async () => {
@@ -453,7 +560,8 @@ describe('flow protection', () => {
     // The attempt is still there, with its progress
     expect(server.__attempts()).toHaveLength(1);
     identify('coruja', 'A1');
-    await pageTitle('Galeria');
+    await pageTitle('Mapa da missão');
+    expect(mapStatuses()).toEqual(['Concluída', 'Liberada', 'Liberada', 'Liberada', 'Bloqueada']);
     expect(server.__attempts()).toHaveLength(1);
   });
 

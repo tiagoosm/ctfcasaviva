@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import * as api from '../api/ranking';
 import { evaluateAnswer } from '../utils/answers';
 import { gameReducer } from './gameReducer';
@@ -18,6 +18,8 @@ export function GameProvider({ children }) {
   const stateRef = useRef(state);
   stateRef.current = state;
   const queueRef = useRef(Promise.resolve());
+  // False until the saved state was checked with the server once (or could not be)
+  const [synced, setSynced] = useState(() => !state.runId);
 
   useEffect(() => {
     saveState(state);
@@ -53,7 +55,7 @@ export function GameProvider({ children }) {
 
   // What this browser has saved is only a cache: sync it when the app opens
   useEffect(() => {
-    refreshState();
+    refreshState().finally(() => setSynced(true));
   }, [refreshState]);
 
   // Starts the attempt of this player. If one already exists for the same name
@@ -172,8 +174,8 @@ export function GameProvider({ children }) {
   }, []);
 
   const value = useMemo(
-    () => ({ state, startMission, submitAnswer, refreshState, ...actions }),
-    [state, startMission, submitAnswer, refreshState, actions],
+    () => ({ state, synced, startMission, submitAnswer, refreshState, ...actions }),
+    [state, synced, startMission, submitAnswer, refreshState, actions],
   );
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

@@ -1,4 +1,4 @@
-import { challenges, TOTAL_POINTS } from '../challenges';
+import { challenges, getRequirements, TOTAL_POINTS } from '../challenges';
 import { activeTime, emptyProgress } from './gameReducer';
 
 export const getProgress = (state, id) => state.progress[id] ?? emptyProgress;
@@ -8,16 +8,23 @@ export const isSolved = (state, id) => Boolean(getProgress(state, id).solvedAt);
 // The player is identified once the server has confirmed their attempt
 export const isRegistered = (state) => Boolean(state.runId && state.codename && state.group);
 
-// A challenge only unlocks once all the previous ones are solved
+// Requirements of a challenge that are still unsolved
+export const getMissingRequirements = (state, challenge) =>
+  getRequirements(challenge).filter((other) => !isSolved(state, other.id));
+
+// A challenge unlocks once every challenge of the earlier tiers is solved (see
+// challenges/index.js); within a tier the order is up to the player
 export function getStatus(state, challenge) {
   if (isSolved(state, challenge.id)) return 'solved';
-  const index = challenges.indexOf(challenge);
-  const previousSolved = challenges.slice(0, index).every((c) => isSolved(state, c.id));
-  return previousSolved ? 'available' : 'locked';
+  return getMissingRequirements(state, challenge).length === 0 ? 'available' : 'locked';
 }
 
-export const getCurrentChallenge = (state) =>
-  challenges.find((challenge) => !isSolved(state, challenge.id)) ?? null;
+// Status of every challenge, by id: { briefing: 'solved', gallery: 'available', … }
+export const getProgressMap = (state) =>
+  Object.fromEntries(challenges.map((challenge) => [challenge.id, getStatus(state, challenge)]));
+
+export const getAvailableChallenges = (state) =>
+  challenges.filter((challenge) => getStatus(state, challenge) === 'available');
 
 export const getChallengeScore = (state, challenge) =>
   isSolved(state, challenge.id) ? getProgress(state, challenge.id).score ?? 0 : 0;

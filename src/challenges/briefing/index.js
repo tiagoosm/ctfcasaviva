@@ -2,9 +2,9 @@ import BriefingStage from './BriefingStage';
 
 const briefing = {
   id: 'briefing',
-  slug: 'briefing',
+  slug: 'origem',
   code: '00',
-  title: 'Briefing',
+  title: 'Origem',
   points: 100,
   // Speed bonus: full up to fastSeconds, gone at slowSeconds
   fastSeconds: 60,
@@ -29,7 +29,7 @@ const briefing = {
     title: 'Acesso liberado',
     lesson:
       'Uma tarja visual não apaga um dado, só o esconde. Vazamentos reais já aconteceram assim.',
-    nextClue: 'Na próxima fase, os segredos estão nas imagens.',
+    nextClue: 'Três investigações foram liberadas. Escolha por onde começar.',
   },
   Stage: BriefingStage,
 };

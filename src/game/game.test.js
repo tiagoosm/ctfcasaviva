@@ -2,7 +2,7 @@ import { challenges } from '../challenges';
 import { CODENAME_MAX_LENGTH, createInitialState, gameReducer } from './gameReducer';
 import {
   getChallengeScore,
-  getCurrentChallenge,
+  getProgressMap,
   getMissionSeconds,
   getProgress,
   getRank,
@@ -49,6 +49,35 @@ const leave = (state, challenge, now) => gameReducer(state, { type: 'LEAVE', id:
 const solved = (state, challenge, values) =>
   gameReducer(state, { type: 'SOLVED', id: challenge.id, score: 100, seconds: 10, now: 9000, ...values });
 
+describe('progression', () => {
+  const done = { solvedAt: 2000, seconds: 10, score: 100 };
+  const map = (...ids) => getProgressMap(started(Object.fromEntries(ids.map((id) => [id, done]))));
+
+  it('opens only Origem for a new player', () => {
+    expect(map()).toEqual({
+      briefing: 'available',
+      gallery: 'locked',
+      sequence: 'locked',
+      interception: 'locked',
+      vault: 'locked',
+    });
+  });
+
+  it('lets the investigations be solved in any order', () => {
+    expect(map('briefing', 'interception')).toMatchObject({
+      gallery: 'available',
+      sequence: 'available',
+      interception: 'solved',
+      vault: 'locked',
+    });
+    expect(map('briefing', 'sequence', 'gallery').vault).toBe('locked');
+  });
+
+  it('opens the vault only when the three investigations are solved', () => {
+    expect(map('briefing', 'gallery', 'sequence', 'interception').vault).toBe('available');
+  });
+});
+
 describe('attempt state', () => {
   it('is empty until the server confirms an attempt', () => {
     const state = createInitialState();
@@ -69,7 +98,14 @@ describe('attempt state', () => {
     expect(state.runId).toBe(RUN);
     expect(getStatus(state, first)).toBe('solved');
     expect(getStatus(state, second)).toBe('available');
-    expect(getCurrentChallenge(state)).toBe(second);
+    // Origem solved: the three investigations open together, the vault stays locked
+    expect(getProgressMap(state)).toEqual({
+      briefing: 'solved',
+      gallery: 'available',
+      sequence: 'available',
+      interception: 'available',
+      vault: 'locked',
+    });
     expect(getChallengeScore(state, first)).toBe(55);
 
     const summary = getSummary(state);
