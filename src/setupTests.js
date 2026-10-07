@@ -12,6 +12,8 @@ global.TextDecoder = TextDecoder;
 // Layout APIs that jsdom does not implement
 window.scrollTo = () => {};
 Element.prototype.scrollIntoView = function scrollIntoView() {};
+// No canvas drawing in jsdom (getContext would only log 'not implemented')
+HTMLCanvasElement.prototype.getContext = () => null;
 
 beforeEach(() => {
   window.localStorage.clear();

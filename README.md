@@ -73,6 +73,7 @@ An educational Capture The Flag (CTF) built for the students of **Inatel cas@viv
 
 - Image viewer that opens each piece of evidence at a fixed size. It has no zoom, by design.
 - Case files that open as documents in the final stage.
+- The intercepted report of the Interception stage is drawn on a canvas, so it can be read but not selected, copied or pasted into an online Caesar decoder; copy, cut, the context menu and dragging are blocked on it.
 - Numeric keypad for the vault combination, also usable from the keyboard.
 
 **Quality**

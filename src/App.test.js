@@ -163,6 +163,18 @@ describe('full CTF flow', () => {
     // The investigations are played out of order: Interception first
     fireEvent.click(screen.getByRole('link', { name: /jogar interceptação/i }));
     await pageTitle('Interceptação');
+    // The report is drawn on a canvas: no text of it in the page to copy
+    const report = screen.getByRole('img', { name: /relato interceptado/i });
+    expect(report.tagName).toBe('CANVAS');
+    expect(screen.queryByText(/espionagem/i)).not.toBeInTheDocument();
+    expect(document.body.textContent).not.toMatch(/xowlpdwr|era das Guerras/i);
+    // Copy, cut, the context menu and dragging are refused on it
+    expect(fireEvent.copy(report)).toBe(false);
+    expect(fireEvent.cut(report)).toBe(false);
+    expect(fireEvent.contextMenu(report)).toBe(false);
+    expect(fireEvent.dragStart(report)).toBe(false);
+    // …but not on the answer field
+    expect(fireEvent.contextMenu(screen.getByLabelText('Resposta'))).toBe(true);
     await submitFlag('xowlpdwr');
     expect(await screen.findByText(/agora ela precisa ser decifrada/i)).toBeInTheDocument();
     await solveFlag('ultimato', 'Transmissão decifrada');

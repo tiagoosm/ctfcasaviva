@@ -1,3 +1,4 @@
+import CanvasText from './CanvasText';
 import transmission from './transmission';
 
 export default function InterceptionStage() {
@@ -7,11 +8,12 @@ export default function InterceptionStage() {
       <h2 id="transmissao-titulo" className="mt-2 text-2xl font-bold">
         Mensagens de guerra
       </h2>
-      <div className="mt-5 max-w-prose space-y-5 text-[1.0625rem] leading-relaxed text-fg/90">
-        {transmission.map((paragraph, index) => (
-          <p key={index}>{paragraph}</p>
-        ))}
-      </div>
+      {/* Drawn, not written: the report can be read but not copied into a decoder */}
+      <CanvasText
+        paragraphs={transmission}
+        label="Relato interceptado, exibido como imagem"
+        className="mt-5 max-w-prose text-[1.0625rem] leading-relaxed text-fg/90"
+      />
     </article>
   );
 }
