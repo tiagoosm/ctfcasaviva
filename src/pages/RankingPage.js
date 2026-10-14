@@ -10,9 +10,9 @@ const REFRESH_INTERVAL = 30000;
 
 // Subtle medal tones for the podium; everyone else gets a neutral marker
 const PLACE_STYLES = {
-  1: 'bg-brand-orange text-ink-950',
-  2: 'bg-fg-muted text-ink-950',
-  3: 'bg-[#B8773A] text-ink-950',
+  1: 'bg-brand-orange text-night',
+  2: 'bg-[#C9D3E0] text-night',
+  3: 'bg-[#E9B98A] text-night',
 };
 
 const sameText = (a, b) => String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
@@ -49,8 +49,8 @@ export default function RankingPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
-      <p className="eyebrow">Top {LIMIT}</p>
-      <h1 className="mt-2 text-4xl font-bold">Ranking</h1>
+      <h1 className="tape-title -rotate-1">Ranking</h1>
+      <p className="eyebrow ml-3 rotate-2 align-top">Top {LIMIT}</p>
       <p className="mt-2 text-fg-muted">
         Pontuação atual de todos os jogadores, atualizada durante a missão. Empates são decididos
         pelo menor tempo.
@@ -74,7 +74,7 @@ export default function RankingPage() {
         )}
 
         {rows?.length > 0 && (
-          <div className="panel overflow-hidden">
+          <div className="panel pin">
             {/* Fixed layout: the name takes all the width the other columns leave */}
             <table className="w-full table-fixed border-collapse text-left">
               <thead>

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { LuArrowRight, LuMap, LuTrophy } from 'react-icons/lu';
 import { challengePath } from '../../challenges';
 import useReducedMotion from '../../hooks/useReducedMotion';
+import { cn } from '../../utils/format';
 import Button from '../ui/Button';
 
 // nextChallenge: a stage that just opened (the final one); otherwise the player
@@ -27,14 +28,24 @@ export default function SuccessPanel({ challenge, earned, nextChallenge, complet
     <section
       ref={sectionRef}
       aria-labelledby={`sucesso-${challenge.id}`}
-      className="panel scroll-mt-24 border-success/40 p-5 animate-fade-up sm:p-7"
+      className="panel scroll-mt-24 overflow-hidden border-l-[6px] border-success p-5 animate-fade-up sm:p-7"
     >
-      <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+      {/* Stamped on the sheet: hit when the stage is solved, already there when reviewed */}
+      <span
+        className={cn(
+          'stamp pointer-events-none absolute right-4 top-4 text-lg text-brand-orange-light sm:right-6 sm:top-6 sm:text-2xl',
+          justSolved && 'animate-stamp',
+        )}
+        aria-hidden="true"
+      >
+        Concluída
+      </span>
+      <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 pr-28 sm:pr-48">
         <h2
           id={`sucesso-${challenge.id}`}
           ref={headingRef}
           tabIndex={-1}
-          className="text-2xl font-bold text-success sm:text-3xl"
+          className="text-2xl font-extrabold text-success sm:text-3xl"
         >
           {success.title}
         </h2>

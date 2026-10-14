@@ -91,7 +91,7 @@ export default function Select({
         onClick={() => (open ? setOpen(false) : openList())}
         onKeyDown={onKeyDown}
         className={cn(
-          'flex h-12 w-full items-center justify-between gap-3 rounded-xl border-2 bg-ink-950/70 px-4 text-left text-base transition-colors focus:outline-none focus-visible:outline-none',
+          'flex h-12 w-full items-center justify-between gap-3 rounded-sm border-2 bg-ink-950 px-4 text-left text-base transition-colors focus:outline-none focus-visible:outline-none',
           invalid
             ? 'border-danger/70 focus:border-danger'
             : open
@@ -99,7 +99,7 @@ export default function Select({
               : 'border-ink-600 hover:border-fg-subtle focus:border-brand-orange',
         )}
       >
-        <span className={value ? 'font-semibold' : 'text-fg-subtle'}>{value || placeholder}</span>
+        <span className={value ? 'font-mono font-semibold' : 'text-fg-subtle'}>{value || placeholder}</span>
         <LuChevronDown
           className={cn('h-5 w-5 shrink-0 text-fg-subtle transition-transform', open && 'rotate-180')}
           aria-hidden="true"
@@ -123,9 +123,9 @@ export default function Select({
                 onClick={() => choose(index)}
                 onPointerMove={() => setActiveIndex(index)}
                 className={cn(
-                  'flex h-11 cursor-pointer items-center justify-center rounded-lg font-mono text-sm font-semibold transition-colors',
-                  selected ? 'bg-brand-orange text-ink-950' : 'text-fg',
-                  !selected && index === activeIndex && 'bg-ink-700',
+                  'flex h-11 cursor-pointer items-center justify-center rounded-sm border-2 font-mono text-sm font-semibold transition-colors',
+                  selected ? 'border-brand-orange bg-brand-orange text-night' : 'border-ink-700 text-fg',
+                  !selected && index === activeIndex && 'border-brand-blue bg-ink-800',
                   selected && index === activeIndex && 'ring-2 ring-brand-orange-light ring-offset-2 ring-offset-ink-850',
                 )}
               >

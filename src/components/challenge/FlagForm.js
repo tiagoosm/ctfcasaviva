@@ -58,7 +58,7 @@ export default function FlagForm({ onSubmit }) {
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-3">
-      <label htmlFor={inputId} className="block font-display text-lg font-semibold">
+      <label htmlFor={inputId} className="display-wide block font-display text-lg font-extrabold uppercase text-brand-blue">
         Resposta
       </label>
 

@@ -19,18 +19,11 @@ export default function VaultStage({ challenge, solved, onSubmitAnswer, preview 
 
   return (
     <section
-      className="relative overflow-hidden rounded-3xl border border-ink-600/60 bg-ink-950/70 p-4 sm:p-6"
+      className="relative overflow-hidden rounded-sm border-2 border-dashed border-[#5478AA]/50 bg-board-deep/60 p-4 sm:p-6"
       aria-label="Cofre e documentos"
     >
-      {/* Desk lamp glow over the table */}
-      <span
-        className="pointer-events-none absolute -top-24 left-1/2 h-64 w-[36rem] -translate-x-1/2 rounded-full bg-brand-orange/10 blur-3xl"
-        aria-hidden="true"
-      />
-
-      <p className="relative font-mono text-xs uppercase tracking-[0.25em] text-fg-subtle">
-        Arquivo final · acesso restrito
-      </p>
+      {/* The corner of the board marked off with tape for the last stage */}
+      <p className="eyebrow relative -rotate-1">Arquivo final · acesso restrito</p>
 
       <div className="relative mt-5 grid items-start gap-6 md:grid-cols-[minmax(0,19rem)_minmax(0,1fr)]">
         <VaultPanel

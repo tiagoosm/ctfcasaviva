@@ -77,7 +77,7 @@ export default function SequenceStage({ onSubmitAnswer, solved }) {
                 aria-pressed={selected}
                 aria-label={`Arquivo: ${file.alt}${selected ? ` — posição ${SLOTS[position]}` : ''}`}
                 className={cn(
-                  'relative block w-full overflow-hidden rounded-xl border-2 bg-ink-950 transition-[border-color,transform,opacity]',
+                  'relative block w-full overflow-hidden rounded-sm border-2 bg-ink-950 transition-[border-color,transform,opacity]',
                   selected
                     ? 'border-brand-orange shadow-glow'
                     : 'border-ink-600 hover:-translate-y-0.5 hover:border-fg-subtle',
@@ -101,7 +101,7 @@ export default function SequenceStage({ onSubmitAnswer, solved }) {
                     className="absolute inset-0 flex items-center justify-center animate-pop"
                     aria-hidden="true"
                   >
-                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-orange font-mono text-xl font-bold text-ink-950">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-orange font-mono text-xl font-bold text-night">
                       {SLOTS[position]}
                     </span>
                   </span>
@@ -112,9 +112,9 @@ export default function SequenceStage({ onSubmitAnswer, solved }) {
         })}
       </ul>
 
-      <div className="mt-6 rounded-xl border border-ink-600 bg-ink-950/60 p-4">
+      <div className="mt-6 rounded-sm border-2 border-dashed border-ink-600 bg-ink-900 p-4">
         <div className="flex items-baseline justify-between gap-2">
-          <h3 className="font-mono text-xs font-medium uppercase tracking-[0.18em] text-fg-subtle">
+          <h3 className="eyebrow">
             Painel de ativação
           </h3>
           <p className="font-mono text-xs text-fg-subtle" aria-live="polite">

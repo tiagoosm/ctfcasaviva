@@ -19,13 +19,14 @@ function Node({ challenge, status, isCurrent }) {
     challenge.title
   } — ${isCurrent ? 'você está aqui' : STATUS_LABEL[status]}`;
 
+  // Each stage is a pin on the board: orange once solved, a paper tag while
+  // open, a dull grey pin while locked
   const nodeClasses = cn(
-    'relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 font-mono text-sm font-semibold transition-colors',
-    status === 'solved' && 'border-success bg-success/15 text-success',
-    status === 'available' && 'border-brand-orange bg-brand-orange/15 text-brand-orange-light',
-    status === 'locked' && 'border-ink-600 bg-ink-850 text-fg-subtle',
-    isCurrent && 'ring-4 ring-brand-orange/25',
-    isCurrent && status === 'available' && 'animate-pulse-ring',
+    'relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-mono text-sm font-semibold shadow-[0_3px_4px_rgba(0,0,0,0.45)] transition-transform',
+    status === 'solved' && 'bg-[radial-gradient(circle_at_35%_30%,#FFC28A_0_15%,#E87000_50%,#8F4300_100%)] text-night',
+    status === 'available' && 'bg-white text-brand-blue',
+    status === 'locked' && 'bg-[#3A5A86] text-[#C9D6E8]',
+    isCurrent && 'outline outline-[3px] outline-offset-[3px] outline-white',
   );
 
   return (
@@ -47,7 +48,7 @@ function Node({ challenge, status, isCurrent }) {
       <span
         className={cn(
           'mt-2 hidden whitespace-nowrap text-center font-display text-xs md:block',
-          isCurrent ? 'font-semibold text-fg' : 'text-fg-subtle',
+          isCurrent ? 'font-extrabold text-fg' : 'font-semibold text-fg-subtle',
         )}
         aria-hidden="true"
       >
@@ -88,17 +89,15 @@ export default function ProgressTrack({ currentId }) {
                 ))}
               </ul>
               {!isLast && (
+                // The thread between two groups: taut and orange once the
+                // earlier group is solved, a dashed slack line before
                 <span
-                  className="mx-1 mt-[19px] h-0.5 flex-1 overflow-hidden rounded bg-ink-600 sm:mx-2 md:mx-6"
+                  className={cn(
+                    'mx-1 mt-[19px] flex-1 sm:mx-2 md:mx-6',
+                    tierDone ? 'h-[3px] bg-board-thread' : 'h-0 border-t-2 border-dashed border-[#8FA9CC]/60',
+                  )}
                   aria-hidden="true"
-                >
-                  <span
-                    className={cn(
-                      'block h-full origin-left bg-success transition-transform duration-700',
-                      tierDone ? 'scale-x-100' : 'scale-x-0',
-                    )}
-                  />
-                </span>
+                />
               )}
             </li>
           );

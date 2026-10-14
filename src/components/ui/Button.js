@@ -2,14 +2,14 @@ import { Link } from 'react-router-dom';
 import { cn } from '../../utils/format';
 
 const base =
-  'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl font-display font-semibold transition-[background-color,border-color,color,box-shadow,transform] duration-150 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-45 select-none';
+  'inline-flex min-h-11 items-center justify-center gap-2 rounded-sm font-display font-bold transition-[background-color,border-color,color,box-shadow,transform] duration-150 active:translate-y-px disabled:pointer-events-none disabled:opacity-45 select-none';
 
 const variants = {
-  // Dark blue text on orange: 6:1 contrast (white on orange fails AA)
-  primary: 'bg-brand-orange text-ink-950 hover:bg-brand-orange-light hover:shadow-glow',
-  secondary: 'border border-ink-600 bg-ink-800/70 text-fg hover:border-fg-subtle hover:bg-ink-700',
+  // Navy text on orange: 6:1 contrast (white on orange fails AA)
+  primary: 'bg-brand-orange text-night shadow-tape hover:bg-[#FF8A1F]',
+  secondary: 'border-2 border-ink-600 bg-transparent text-fg hover:border-fg-muted hover:bg-ink-800/60',
   ghost: 'text-fg-muted hover:bg-ink-800 hover:text-fg',
-  danger: 'border border-danger/50 bg-danger/10 text-danger hover:bg-danger/20',
+  danger: 'border-2 border-danger/60 bg-danger/10 text-danger hover:bg-danger/20',
 };
 
 const sizes = {

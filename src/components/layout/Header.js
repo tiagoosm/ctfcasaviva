@@ -8,7 +8,7 @@ import ConfirmDialog from '../ui/ConfirmDialog';
 import BrandMark from './BrandMark';
 
 const itemClasses =
-  'inline-flex h-10 items-center gap-2 rounded-lg px-2.5 font-display text-sm font-semibold transition-colors md:px-3';
+  'relative inline-flex h-11 items-center gap-2 px-2.5 font-display text-sm font-bold transition-colors md:px-3';
 
 function NavItem({ to, icon: Icon, children }) {
   return (
@@ -16,7 +16,13 @@ function NavItem({ to, icon: Icon, children }) {
       to={to}
       end
       className={({ isActive }) =>
-        cn(itemClasses, isActive ? 'text-brand-orange-light' : 'text-fg-muted hover:text-fg')
+        cn(
+          itemClasses,
+          // The current page is underlined with a strip of orange tape
+          isActive
+            ? 'text-brand-blue after:absolute after:inset-x-2 after:bottom-0.5 after:h-1 after:bg-brand-orange'
+            : 'text-fg-muted hover:text-brand-blue',
+        )
       }
     >
       <Icon className="h-5 w-5" aria-hidden="true" />
@@ -33,9 +39,9 @@ export default function Header() {
   const [confirmLeave, setConfirmLeave] = useState(false);
 
   return (
-    <header className="no-print sticky top-0 z-30 border-b border-ink-600/40 bg-ink-900/85 backdrop-blur-md">
+    <header className="no-print surface-paper sticky top-0 z-30 bg-white shadow-card">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-        <Link to="/" className="rounded-lg" aria-label="CTF Inatel cas@viva — página inicial">
+        <Link to="/" aria-label="CTF Inatel cas@viva — página inicial">
           <BrandMark compact={summary.hasStarted} />
         </Link>
 
@@ -53,7 +59,7 @@ export default function Header() {
 
           {/* Leaving is kept apart from navigation so it is not hit by accident */}
           {registered && (
-            <div className="ml-4 border-l border-ink-600/60 pl-4 sm:ml-6 sm:pl-6">
+            <div className="ml-3 border-l-2 border-ink-700 pl-3 sm:ml-6 sm:pl-6">
               <button
                 type="button"
                 onClick={() => setConfirmLeave(true)}

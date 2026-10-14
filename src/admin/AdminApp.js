@@ -113,10 +113,10 @@ export default function AdminApp() {
   return (
     <AdminContext.Provider value={{ onExpired }}>
       <div className="flex min-h-[100dvh] flex-col">
-        <header className="sticky top-0 z-30 border-b border-ink-600/50 bg-ink-900/85 backdrop-blur-md">
+        <header className="surface-paper sticky top-0 z-30 bg-white shadow-card">
           <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
             <div className="flex items-center gap-3">
-              <Link to="/admin" className="rounded-lg" aria-label="Administração — jogadores">
+              <Link to="/admin" aria-label="Administração — jogadores">
                 <BrandMark compact />
               </Link>
               <span className="eyebrow hidden md:inline">Administração</span>

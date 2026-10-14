@@ -21,10 +21,9 @@ export default function MissionTimer() {
         <p
           title={label}
           className={cn(
-            'pointer-events-auto flex h-10 items-center gap-1.5 rounded-full border px-3.5 font-mono text-base font-bold tabular-nums shadow-card backdrop-blur-md transition-colors',
-            running
-              ? 'border-brand-orange/60 bg-ink-900/90 text-brand-orange-light'
-              : 'border-ink-600 bg-ink-900/90 text-fg-muted',
+            // A label-maker tag stuck to the corner of the board
+            'pointer-events-auto flex h-10 -rotate-1 items-center gap-1.5 rounded-sm px-3 font-mono text-base font-bold tabular-nums shadow-tape transition-colors',
+            running ? 'bg-white text-brand-blue' : 'bg-[#D5DDE8] text-[#485364]',
           )}
         >
           <Icon className="h-[1.125rem] w-[1.125rem]" aria-hidden="true" />

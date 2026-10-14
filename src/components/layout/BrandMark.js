@@ -6,38 +6,19 @@ export const LOGO_SRC = `${process.env.PUBLIC_URL}/assets/brand/logo-casaviva.pn
 // "cas@viva" with the @ in the brand orange, as in the official logo
 export function Wordmark({ className }) {
   return (
-    <span className={cn('font-display font-bold tracking-tight', className)}>
+    <span className={cn('font-display font-bold', className)}>
       cas<span className="text-brand-orange">@</span>viva
     </span>
   );
 }
 
+// The official logo, as it is printed: on a white strip. A strip of label-maker
+// tape marks this as the CTF. Always used on paper (header, admin sign-in).
 export default function BrandMark({ compact = false }) {
   return (
     <span className="flex items-center gap-3">
-      <img
-        src={MARK_SRC}
-        alt=""
-        width="40"
-        height="40"
-        className="h-10 w-10 rounded-lg shadow-glow"
-      />
-      <span className={cn('flex-col leading-none', compact ? 'hidden sm:flex' : 'flex')}>
-        <span className="font-display text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-fg-subtle">
-          Inatel
-        </span>
-        <span className="flex items-baseline gap-2">
-          <Wordmark className="text-lg text-fg" />
-          <span
-            className={cn(
-              'rounded bg-brand-orange/15 px-1.5 py-0.5 font-mono text-[0.7rem] font-semibold text-brand-orange-light',
-              compact && 'hidden sm:inline',
-            )}
-          >
-            CTF
-          </span>
-        </span>
-      </span>
+      <img src={LOGO_SRC} alt="" width="132" height="44" className="h-9 w-auto sm:h-10" />
+      <span className={cn('eyebrow -rotate-2', compact && 'hidden sm:inline-block')}>CTF</span>
     </span>
   );
 }

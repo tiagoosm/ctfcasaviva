@@ -130,7 +130,7 @@ supabase/
 └── migrations/          # database schema and server-side functions, in order
 ```
 
-Design tokens (cas@viva orange `#E87000`, blue `#004898`, surfaces, fonts and animations) live in [`tailwind.config.js`](tailwind.config.js).
+The look is an investigation board: blue felt with paper sheets, photos, sticky notes and label-maker tape pinned to it, and an orange thread linking the stages on the mission map. Design tokens (cas@viva orange `#E87000`, blue `#004898`, the felt and paper surfaces, fonts and animations) live in [`tailwind.config.js`](tailwind.config.js) and [`src/styles/index.css`](src/styles/index.css). Surface colors are CSS variables, so the same component reads correctly on the board and on paper.
 
 ## Progression
 

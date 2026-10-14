@@ -116,13 +116,14 @@ export default function VaultPanel({ codeLength, solved, onSubmitAnswer, preview
   }, [opened, press, erase, confirm]);
 
   const keyClasses =
-    'flex h-12 items-center justify-center rounded-xl border border-ink-600 bg-ink-800 font-mono text-xl font-semibold transition-colors hover:bg-ink-700 active:scale-95 disabled:pointer-events-none disabled:opacity-40';
+    'flex h-12 items-center justify-center rounded-sm border border-[#5A6574] bg-[#2C3542] font-mono text-xl font-semibold shadow-[0_2px_0_#131920] transition-colors hover:bg-[#3A4656] active:translate-y-px active:shadow-none disabled:pointer-events-none disabled:opacity-40';
 
   return (
     <section
       className={cn(
-        'relative w-full rounded-3xl border-2 bg-ink-850 p-6 shadow-card transition-[border-color,box-shadow] duration-700',
-        opened ? 'border-success/70 shadow-[0_0_48px_-8px_rgba(61,214,140,0.55)]' : 'border-ink-600',
+        // A steel safe standing against the board
+        'relative w-full rounded-md border-4 bg-[linear-gradient(160deg,#3A4553,#1E2630)] p-6 shadow-paper transition-colors duration-700',
+        opened ? 'border-success' : 'border-[#56616F]',
       )}
       aria-label="Cofre"
     >
@@ -130,7 +131,7 @@ export default function VaultPanel({ codeLength, solved, onSubmitAnswer, preview
       {['left-3 top-3', 'right-3 top-3', 'bottom-3 left-3', 'bottom-3 right-3'].map((position) => (
         <span
           key={position}
-          className={cn('absolute h-2.5 w-2.5 rounded-full border border-ink-600 bg-ink-700', position)}
+          className={cn('absolute h-2.5 w-2.5 rounded-full bg-[radial-gradient(circle_at_35%_30%,#C5CDD8,#6B7685)]', position)}
           aria-hidden="true"
         />
       ))}
@@ -140,7 +141,7 @@ export default function VaultPanel({ codeLength, solved, onSubmitAnswer, preview
           'mx-auto flex h-16 w-16 items-center justify-center rounded-full border-2 transition-all duration-1000',
           opened
             ? 'rotate-[360deg] border-success bg-success/15 text-success'
-            : 'border-ink-600 bg-ink-800 text-brand-orange-light',
+            : 'border-[#5A6574] bg-[#2C3542] text-brand-orange-light',
         )}
         aria-hidden="true"
       >
@@ -153,8 +154,8 @@ export default function VaultPanel({ codeLength, solved, onSubmitAnswer, preview
         </p>
         <div
           className={cn(
-            'flex h-16 items-center justify-center gap-3 rounded-xl border bg-ink-950 font-mono text-3xl font-bold tracking-widest',
-            opened ? 'border-success/60 text-success' : 'border-ink-600 text-brand-orange-light',
+            'flex h-16 items-center justify-center gap-3 rounded-sm border-2 bg-[#0F1419] font-mono text-3xl font-bold tracking-widest',
+            opened ? 'border-success/60 text-success' : 'border-[#56616F] text-brand-orange-light',
           )}
           aria-hidden="true"
         >
@@ -199,7 +200,7 @@ export default function VaultPanel({ codeLength, solved, onSubmitAnswer, preview
           </button>
           <button
             type="button"
-            className={cn(keyClasses, 'border-brand-orange bg-brand-orange text-ink-950 hover:bg-brand-orange-light')}
+            className={cn(keyClasses, 'border-brand-orange bg-brand-orange text-night hover:bg-brand-orange-light')}
             disabled={disabled || !complete}
             onClick={confirm}
             aria-label="Confirmar combinação"

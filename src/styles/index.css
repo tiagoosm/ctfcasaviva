@@ -2,7 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * The site is an investigation board: blue felt with sheets of paper, notes and
+ * label-maker tape pinned to it. Surface colors are variables (RGB triplets),
+ * so a component reads correctly on the board and on any paper it sits on.
+ */
 @layer base {
+  :root {
+    /* Board (felt) */
+    --ink-950: 6 26 54;
+    --ink-900: 11 47 94;
+    --ink-850: 14 54 104;
+    --ink-800: 18 62 116;
+    --ink-700: 27 76 138;
+    --ink-600: 84 120 170;
+    --fg: 255 255 255;
+    --fg-muted: 214 228 246;
+    --fg-subtle: 168 190 220;
+    --accent: 255 160 77;
+    --link: 150 194 255;
+    --success: 108 222 164;
+    --danger: 255 150 140;
+    --warning: 255 200 112;
+    --tape-bg: #f4f6f8;
+    --tape-fg: #004898;
+  }
+
   html {
     color-scheme: dark;
     -webkit-text-size-adjust: 100%;
@@ -10,22 +35,19 @@
   }
 
   body {
-    @apply bg-ink-900 font-sans text-fg antialiased;
+    @apply bg-board font-sans text-fg antialiased;
     min-height: 100dvh;
-    /* Subtle "blueprint" grid + glow in the brand blue */
+    /* Felt: fine fibers, no glow */
     background-image:
-      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0, 72, 152, 0.55), transparent 70%),
-      radial-gradient(ellipse 50% 40% at 100% 0%, rgba(232, 112, 0, 0.1), transparent 70%),
-      linear-gradient(rgba(174, 187, 216, 0.045) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(174, 187, 216, 0.045) 1px, transparent 1px);
-    background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
-    background-attachment: fixed;
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E"),
+      radial-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1.2px);
+    background-size: 160px 160px, 5px 5px;
   }
 
   h1,
   h2,
   h3 {
-    @apply font-display tracking-tight;
+    @apply font-display;
     text-wrap: balance;
   }
 
@@ -34,14 +56,13 @@
   }
 
   ::selection {
-    @apply bg-brand-orange text-ink-950;
+    @apply bg-brand-orange text-night;
   }
 
-  /* Always-visible keyboard focus, in the brand accent color */
+  /* Always-visible keyboard focus, in the brand orange */
   :focus-visible {
-    outline: 3px solid theme('colors.brand.orange-light');
+    outline: 3px solid #e87000;
     outline-offset: 3px;
-    border-radius: 6px;
   }
 
   [tabindex='-1']:focus {
@@ -50,28 +71,124 @@
 }
 
 @layer components {
-  .panel {
-    @apply rounded-2xl border border-ink-600/60 bg-ink-850/85 shadow-card backdrop-blur-sm;
+  /* Paper: white sheets and the white header strip */
+  .surface-paper {
+    --ink-950: 255 255 255;
+    --ink-900: 246 248 250;
+    --ink-850: 255 255 255;
+    --ink-800: 238 241 245;
+    --ink-700: 226 231 238;
+    --ink-600: 178 191 208;
+    --fg: 31 38 48;
+    --fg-muted: 72 83 100;
+    --fg-subtle: 92 103 120;
+    --accent: 168 78 0;
+    --link: 0 72 152;
+    --success: 26 117 70;
+    --danger: 179 38 30;
+    --warning: 132 84 0;
+    --tape-bg: #004898;
+    --tape-fg: #fff;
+    color: rgb(var(--fg));
+    color-scheme: light;
   }
 
+  /* Sticky note: the hint */
+  .surface-note {
+    --ink-950: 255 236 212;
+    --ink-900: 255 229 196;
+    --ink-850: 255 217 168;
+    --ink-800: 255 230 200;
+    --ink-700: 255 222 182;
+    --ink-600: 196 150 92;
+    --fg: 59 42 16;
+    --fg-muted: 92 66 28;
+    --fg-subtle: 110 80 36;
+    --accent: 150 70 0;
+    --link: 0 72 152;
+    --success: 26 117 70;
+    --danger: 170 36 28;
+    --warning: 132 70 0;
+    color: rgb(var(--fg));
+  }
+
+  /* A sheet of paper pinned to the board */
+  .panel {
+    @apply surface-paper relative rounded-sm bg-white shadow-card;
+  }
+
+  .note {
+    @apply surface-note relative rounded-sm bg-note shadow-card;
+  }
+
+  /* Push pin: add to a positioned element; sits on its top edge */
+  .pin::before {
+    content: '';
+    position: absolute;
+    top: -7px;
+    left: 50%;
+    z-index: 2;
+    width: 15px;
+    height: 15px;
+    margin-left: -7.5px;
+    border-radius: 9999px;
+    background: radial-gradient(circle at 35% 30%, #ffc28a 0 18%, #e87000 45%, #8f4300 100%);
+    box-shadow: 0 3px 3px rgba(0, 0, 0, 0.45);
+  }
+
+  /*
+   * Label-maker (Dymo) tape: embossed capitals on a strip of plastic.
+   * White tape on the board, blue tape on paper.
+   */
   .eyebrow {
-    @apply font-mono text-xs font-medium uppercase tracking-[0.18em] text-brand-orange-light;
+    @apply inline-block rounded-sm px-2 py-1 font-display text-xs font-extrabold uppercase leading-none shadow-tape;
+    font-stretch: 125%;
+    letter-spacing: 0.16em;
+    background: var(--tape-bg);
+    color: var(--tape-fg);
+    text-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.35),
+      0 -1px 0 rgba(0, 0, 0, 0.25);
+  }
+
+  /* Big tape for page titles: orange tape, large white capitals (AA large text) */
+  .tape-title {
+    @apply inline-block rounded-sm bg-brand-orange px-3 pb-1.5 pt-2 font-display text-3xl font-extrabold uppercase leading-none text-white shadow-tape sm:text-4xl;
+    font-stretch: 125%;
+    letter-spacing: 0.08em;
+    text-shadow:
+      0 1px 0 rgba(0, 0, 0, 0.3),
+      0 -1px 0 rgba(255, 255, 255, 0.35);
+  }
+
+  /* Wide display type for big headlines */
+  .display-wide {
+    font-stretch: 125%;
   }
 
   /* Redacted passage: the text is there, but only shows when selected */
   .redacted {
-    @apply rounded-[3px] bg-paper-ink px-1 text-paper-ink;
+    @apply rounded-[2px] bg-paper-ink px-1 text-paper-ink;
     -webkit-box-decoration-break: clone;
     box-decoration-break: clone;
   }
 
   .redacted::selection {
-    @apply bg-brand-orange text-ink-950;
+    @apply bg-brand-orange text-night;
+  }
+
+  /* Rubber stamp */
+  .stamp {
+    @apply inline-block rounded-sm border-[3px] border-current px-2 py-0.5 font-display font-extrabold uppercase leading-none;
+    font-stretch: 125%;
+    letter-spacing: 0.08em;
+    transform: rotate(-8deg);
+    mix-blend-mode: multiply;
   }
 
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: theme('colors.ink.600') transparent;
+    scrollbar-color: rgb(var(--ink-600)) transparent;
   }
 }
 

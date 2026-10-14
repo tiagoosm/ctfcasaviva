@@ -127,7 +127,7 @@ export default function ChallengePage() {
 
         <aside className="space-y-6" aria-label="Resposta e dica">
           {challenge.answerMode === 'flag' && !solved && (
-            <section className="panel p-5">
+            <section className="panel pin p-5">
               <FlagForm onSubmit={handleSubmit} />
             </section>
           )}

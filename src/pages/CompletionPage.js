@@ -57,26 +57,26 @@ export default function CompletionPage() {
       <Confetti />
 
       <header className="text-center">
-        <h1 className="text-4xl font-bold sm:text-6xl">
+        <h1 className="display-wide text-4xl font-black uppercase sm:text-6xl">
           Missão <span className="text-brand-orange">cumprida</span>
         </h1>
         <p className="mt-3 text-lg text-fg-muted">Sua tentativa oficial está registrada.</p>
       </header>
 
       <article
-        className="relative mx-auto mt-10 max-w-3xl overflow-hidden rounded-2xl bg-paper text-paper-ink shadow-paper animate-fade-up"
+        className="pin relative mx-auto mt-12 max-w-3xl rounded-sm bg-white text-paper-ink shadow-paper animate-fade-up"
         aria-labelledby="certificado-titulo"
       >
-        <div className="h-2 bg-gradient-to-r from-brand-orange via-brand-orange-light to-brand-blue" />
+        <div className="h-2 bg-brand-blue" />
         <div className="px-6 py-8 sm:px-12 sm:py-10">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <img src={LOGO_SRC} alt="Inatel cas@viva" width="150" height="50" className="h-11 w-auto" />
-            <p className="rounded-full bg-success/15 px-4 py-1.5 font-mono text-sm font-semibold text-[#1E7A4C]">
+            <p className="stamp mr-2 text-lg text-[#B35500]">
               CTF CONCLUÍDO
             </p>
           </div>
 
-          <h2 id="certificado-titulo" className="mt-8 break-words text-3xl font-bold sm:text-4xl">
+          <h2 id="certificado-titulo" className="display-wide mt-8 break-words text-3xl font-extrabold sm:text-4xl">
             {state.codename}
           </h2>
           <p className="mt-1 font-mono text-sm text-paper-ink/70">TURMA {state.group}</p>

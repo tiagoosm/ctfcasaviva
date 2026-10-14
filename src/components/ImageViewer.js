@@ -69,7 +69,7 @@ export default function ImageViewer({ images, index, onIndexChange, onClose }) {
                 <p>Não foi possível carregar esta imagem.</p>
                 <button
                   type="button"
-                  className="min-h-11 rounded-xl bg-brand-orange px-5 font-display font-semibold text-ink-950"
+                  className="min-h-11 rounded-xl bg-brand-orange px-5 font-display font-semibold text-night"
                   onClick={() => {
                     setRetry((count) => count + 1);
                     setLoadState('loading');

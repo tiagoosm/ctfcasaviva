@@ -21,10 +21,11 @@ export default function AppLayout() {
   }, [pathname]);
 
   return (
-    <div className="flex min-h-[100dvh] flex-col">
+    // overflow-x-clip: tilted sheets never cause sideways scrolling
+    <div className="flex min-h-[100dvh] flex-col overflow-x-clip">
       <a
         href="#conteudo"
-        className="sr-only z-50 rounded-lg bg-brand-orange px-4 py-3 font-semibold text-ink-950 focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+        className="sr-only z-50 rounded-lg bg-brand-orange px-4 py-3 font-semibold text-night focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
       >
         Pular para o conteúdo
       </a>

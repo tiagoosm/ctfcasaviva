@@ -13,25 +13,24 @@ export default function Credential({ codename, group }) {
 
   return (
     <div className="relative mx-auto w-full max-w-sm">
+      {/* Badge clipped to the board: a strip of orange tape holds it at the top */}
       <span
-        className="pointer-events-none absolute -right-6 -top-16 select-none font-display text-[12rem] font-bold leading-none text-brand-orange/10 sm:text-[14rem]"
+        className="absolute -top-3 left-1/2 z-10 h-7 w-28 -translate-x-1/2 -rotate-3 bg-brand-orange/90 shadow-tape"
         aria-hidden="true"
-      >
-        @
-      </span>
-      <div className="relative rotate-[1.5deg] overflow-hidden rounded-2xl bg-paper text-paper-ink shadow-paper transition-transform duration-500 hover:rotate-0">
-        <div className="flex items-center justify-between bg-white px-5 py-4">
+      />
+      <div className="relative rotate-[1.5deg] overflow-hidden rounded-sm bg-white text-paper-ink shadow-paper">
+        <div className="flex items-center justify-between px-5 pb-3 pt-6">
           <img src={LOGO_SRC} alt="Inatel cas@viva" width="132" height="44" className="h-10 w-auto" />
           <span className="h-3 w-12 rounded-full bg-paper-line" aria-hidden="true" />
         </div>
-        <div className="h-1.5 bg-gradient-to-r from-brand-orange to-brand-blue" aria-hidden="true" />
+        <div className="h-2 bg-brand-blue" aria-hidden="true" />
         <div className="space-y-4 px-5 py-5">
           <p className="font-mono text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-brand-blue">
             Credencial de investigação
           </p>
           <div>
             <p className="text-xs text-paper-ink/70">NOME COMPLETO</p>
-            <p className="truncate font-display text-2xl font-bold">
+            <p className="truncate font-mono text-xl font-semibold uppercase">
               {formatPlayerName(codename) || '—'}
             </p>
           </div>

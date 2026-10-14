@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { LuLightbulb } from 'react-icons/lu';
 import { SCORING } from '../../game/scoring';
 import Button from '../ui/Button';
 
@@ -19,9 +18,13 @@ export default function HintPanel({ challenge, revealed, solved, onReveal }) {
   if (solved && !revealed) return null;
 
   return (
-    <section className="panel p-5" aria-labelledby={`dica-${challenge.id}`}>
-      <h2 id={`dica-${challenge.id}`} className="flex items-center gap-2 text-lg font-semibold">
-        <LuLightbulb className="h-5 w-5 text-warning" aria-hidden="true" />
+    // A sticky note: the hint is the investigator's own scribble
+    <section className="note rotate-[0.8deg] p-5" aria-labelledby={`dica-${challenge.id}`}>
+      <span
+        className="absolute -top-2.5 left-1/2 h-5 w-16 -translate-x-1/2 -rotate-2 bg-white/60 shadow-sm"
+        aria-hidden="true"
+      />
+      <h2 id={`dica-${challenge.id}`} className="font-hand text-2xl font-bold leading-none">
         Dica
       </h2>
 
@@ -29,7 +32,7 @@ export default function HintPanel({ challenge, revealed, solved, onReveal }) {
         <p
           ref={hintRef}
           tabIndex={-1}
-          className="mt-4 animate-fade-up rounded-xl border border-warning/30 bg-warning/5 p-3.5 text-sm leading-relaxed"
+          className="mt-3 animate-fade-in leading-relaxed"
         >
           {hint.text}
         </p>

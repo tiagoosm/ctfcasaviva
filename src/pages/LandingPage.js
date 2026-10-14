@@ -16,7 +16,7 @@ import { cn, formatDuration } from '../utils/format';
 function Title() {
   const initial = (letter) => <span className="text-brand-orange">{letter}</span>;
   return (
-    <h1 className="text-5xl font-bold leading-[1.02] sm:text-6xl lg:text-7xl">
+    <h1 className="display-wide text-5xl font-black uppercase leading-[0.92] sm:text-6xl lg:text-7xl">
       {initial('C')}apture <br className="hidden sm:block" />
       {initial('T')}he {initial('F')}lag
     </h1>
@@ -34,7 +34,7 @@ function Field({ label, error, fieldRef, options, placeholder, ...fieldProps }) 
     'aria-invalid': error ? true : undefined,
     'aria-describedby': error ? errorId : undefined,
     className: cn(
-      'mt-1.5 h-12 w-full rounded-xl border-2 bg-ink-950/70 px-4 text-base placeholder:text-fg-subtle/70 focus:outline-none',
+      'mt-1.5 h-12 w-full rounded-sm border-2 bg-ink-950 px-4 font-mono text-base uppercase placeholder:font-sans placeholder:normal-case placeholder:text-fg-subtle focus:outline-none',
       error
         ? 'border-danger/70 focus:border-danger'
         : 'border-ink-600 hover:border-fg-subtle focus:border-brand-orange',
@@ -44,7 +44,7 @@ function Field({ label, error, fieldRef, options, placeholder, ...fieldProps }) 
 
   return (
     <div>
-      <label htmlFor={id} className="block font-display font-semibold">
+      <label htmlFor={id} className="display-wide block font-display text-sm font-extrabold tracking-wide text-brand-blue">
         {label}
       </label>
       {options ? (
@@ -78,8 +78,11 @@ function Concluded({ state, summary }) {
 
   return (
     <div className="mt-8 max-w-md">
-      <div className="panel border-success/40 p-5">
-        <h2 className="text-2xl font-bold text-success">CTF concluído</h2>
+      <div className="panel pin overflow-hidden p-5">
+        <span className="stamp pointer-events-none absolute right-4 top-5 text-sm text-brand-orange" aria-hidden="true">
+          Arquivado
+        </span>
+        <h2 className="text-2xl font-extrabold text-success">CTF concluído</h2>
         <p className="mt-1 text-fg-muted">Você já realizou sua tentativa oficial.</p>
         <dl className="mt-4 grid grid-cols-2 gap-3">
           <div>
@@ -149,8 +152,8 @@ export default function LandingPage() {
   return (
     <section className="mx-auto grid max-w-6xl items-center gap-12 px-4 pb-16 pt-10 sm:px-6 sm:pt-16 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16 lg:pb-24">
       <div>
-        <p className="eyebrow">Operação cas@viva</p>
-        <div className="mt-4">
+        <p className="eyebrow -rotate-2">Operação cas@viva</p>
+        <div className="mt-5">
           <Title />
         </div>
         <p className="mt-6 max-w-xl text-lg leading-relaxed text-fg-muted sm:text-xl">
@@ -158,7 +161,8 @@ export default function LandingPage() {
         </p>
 
         {!registered && (
-          <form onSubmit={handleStart} noValidate className="mt-8 max-w-md space-y-4">
+          // The sign-in sheet, pinned to the board
+          <form onSubmit={handleStart} noValidate className="panel pin mt-10 max-w-md space-y-4 p-5 sm:p-6">
             <Field
               label="NOME COMPLETO"
               fieldRef={nameRef}

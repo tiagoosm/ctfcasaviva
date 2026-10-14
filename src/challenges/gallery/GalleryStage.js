@@ -24,7 +24,10 @@ const EVIDENCE = [
   thumb: `${base}/evidencia-${index + 1}-thumb.webp`,
 }));
 
-function EvidenceCard({ evidence, onOpen }) {
+// Photos pinned to the board, each one a little crooked
+const TILT = ['-rotate-[1.5deg]', 'rotate-1', 'rotate-[0.6deg]', '-rotate-1'];
+
+function EvidenceCard({ evidence, tilt, onOpen }) {
   const [failed, setFailed] = useState(false);
 
   return (
@@ -32,13 +35,13 @@ function EvidenceCard({ evidence, onOpen }) {
       <button
         type="button"
         onClick={onOpen}
-        className="block w-full overflow-hidden rounded-xl border border-ink-600 bg-ink-950 text-left transition-colors hover:border-brand-orange/70"
+        className={`pin relative block w-full bg-white p-2.5 pb-1 text-left shadow-card transition-transform duration-200 hover:z-10 hover:rotate-0 hover:scale-[1.02] ${tilt}`}
         aria-label={`Abrir ${evidence.label}: ${evidence.alt}`}
       >
-        <span className="relative block aspect-[4/3] overflow-hidden bg-ink-800">
+        <span className="relative block aspect-[4/3] overflow-hidden bg-[#DDE3EA]">
           {failed ? (
-            <span className="flex h-full items-center justify-center text-fg-muted">
-              <LuImageOff className="h-6 w-6 text-warning" aria-hidden="true" />
+            <span className="flex h-full items-center justify-center text-[#5C6778]">
+              <LuImageOff className="h-6 w-6" aria-hidden="true" />
             </span>
           ) : (
             <img
@@ -53,7 +56,7 @@ function EvidenceCard({ evidence, onOpen }) {
             />
           )}
         </span>
-        <span className="block px-3.5 py-2.5 font-mono text-sm font-medium">{evidence.label}</span>
+        <span className="block px-1 pt-1.5 font-hand text-lg text-paper-ink">{evidence.label}</span>
       </button>
     </li>
   );
@@ -64,9 +67,14 @@ export default function GalleryStage() {
 
   return (
     <section aria-label="Evidências">
-      <ul className="grid grid-cols-2 gap-3 sm:gap-4">
+      <ul className="grid grid-cols-2 gap-x-4 gap-y-6 pt-2 sm:gap-x-6 sm:gap-y-8">
         {EVIDENCE.map((evidence, index) => (
-          <EvidenceCard key={evidence.src} evidence={evidence} onOpen={() => setOpenIndex(index)} />
+          <EvidenceCard
+            key={evidence.src}
+            evidence={evidence}
+            tilt={TILT[index % TILT.length]}
+            onOpen={() => setOpenIndex(index)}
+          />
         ))}
       </ul>
 
