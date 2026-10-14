@@ -80,21 +80,16 @@ function EvidenceCard({ challenge, status, earned, tilt, cardRef, children }) {
         status !== 'locked' && 'hover:rotate-0',
       )}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="font-mono text-xs font-semibold text-fg-subtle">
-            {challenge.code === 'FINAL' ? 'FINAL' : `EVIDÊNCIA ${challenge.code}`}
-          </p>
-          <h3 className="display-wide mt-0.5 text-xl font-extrabold leading-tight text-fg">{challenge.title}</h3>
-        </div>
-        {status === 'solved' && (
-          <span className="shrink-0 pt-1">
-            <StatusMark status={status} />
-          </span>
-        )}
+      <div className="min-w-0">
+        <p className="font-mono text-xs font-semibold text-fg-subtle">
+          {challenge.code === 'FINAL' ? 'FINAL' : `EVIDÊNCIA ${challenge.code}`}
+        </p>
+        <h3 className="display-wide mt-0.5 break-words text-xl font-extrabold leading-tight text-fg">
+          {challenge.title}
+        </h3>
       </div>
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        {status !== 'solved' && <StatusMark status={status} />}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <StatusMark status={status} />
         <span className={cn('font-mono text-xs', status === 'solved' ? 'font-semibold text-success' : 'text-fg-subtle')}>
           {status === 'solved' ? `+${earned} pts` : `até ${challenge.points} pts`}
         </span>

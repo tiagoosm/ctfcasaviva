@@ -28,7 +28,7 @@ export default function SuccessPanel({ challenge, earned, nextChallenge, complet
     <section
       ref={sectionRef}
       aria-labelledby={`sucesso-${challenge.id}`}
-      className="panel scroll-mt-24 overflow-hidden border-l-[6px] border-success p-5 animate-fade-up sm:p-7"
+      className="panel scroll-mt-36 overflow-hidden border-l-[6px] border-success p-5 animate-fade-up sm:p-7"
     >
       {/* Stamped on the sheet: hit when the stage is solved, already there when reviewed */}
       <span

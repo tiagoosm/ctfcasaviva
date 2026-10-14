@@ -24,7 +24,7 @@ export default function Confetti() {
   if (reducedMotion) return null;
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-40 overflow-hidden" aria-hidden="true">
+    <div className="no-print pointer-events-none fixed inset-0 z-40 overflow-hidden" aria-hidden="true">
       {pieces.map((piece, i) => (
         <span
           key={i}

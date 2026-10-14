@@ -227,6 +227,14 @@
 }
 
 @media print {
+  /* Printed on white paper: the board colors (white text) become ink */
+  :root {
+    --fg: 31 38 48;
+    --fg-muted: 72 83 100;
+    --fg-subtle: 92 103 120;
+    --accent: 168 78 0;
+  }
+
   body {
     background: #fff !important;
   }
