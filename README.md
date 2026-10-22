@@ -258,7 +258,9 @@ To set up an administrator:
 
 ## Deployment
 
-The app is a static single-page application hosted on [Vercel](https://vercel.com/), deployed automatically from `main`. [`vercel.json`](vercel.json) rewrites every route to `index.html` so client-side routing works on direct access and reload. Any static host with an equivalent rewrite rule can serve the contents of `build/`.
+The app is a static single-page application hosted on [Vercel](https://vercel.com/), deployed automatically from `main`. [`vercel.json`](vercel.json) rewrites every route except `/api/` to `index.html` so client-side routing works on direct access and reload.
+
+On the free plan Supabase pauses a project after several days without requests, and the CTF is only used now and then. A Vercel Cron Job defined in [`vercel.json`](vercel.json) calls [`api/keepalive.js`](api/keepalive.js) once a day; it reads the top of the ranking (nothing is written), which keeps the project active. A project that was already paused still has to be restored once in the Supabase dashboard. Any static host with an equivalent rewrite rule can serve the contents of `build/`.
 
 ## Tech stack
 
