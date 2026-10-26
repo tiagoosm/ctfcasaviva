@@ -1,0 +1,41 @@
+name: Keep database awake
+
+# Supabase pauses a free project that gets too little database activity in a
+# week ("a few requests each day" is enough). This reads from the database
+# every 6 hours, independently of the Vercel cron in vercel.json. Read-only:
+# it calls the same public functions the site uses and writes nothing.
+#
+# GitHub disables scheduled workflows after 60 days without commits; it sends
+# an e-mail first, and the workflow can be enabled again in the Actions tab.
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      API_URL: https://zssdxfbsnsjcqqoxgckp.supabase.co
+      API_KEY: sb_publishable_6uzYyeNkU7l7ZSWrECcV8g_dkdnoVtg
+    steps:
+      - name: Read from the database
+        run: |
+          set -euo pipefail
+          read_rpc() {
+            curl --silent --show-error --fail-with-body --max-time 30 \
+              -X POST "$API_URL/rest/v1/rpc/$1" \
+              -H "apikey: $API_KEY" -H "Authorization: Bearer $API_KEY" \
+              -H "Content-Type: application/json" -d "$2" > /dev/null
+            echo "$1 OK"
+          }
+          read_rpc ctf_ranking '{"p_limit":1}'
+          read_rpc ctf_ranking '{"p_limit":20}'
+          read_rpc ctf_state '{"p_run":"00000000-0000-4000-8000-000000000000"}'
+
+      - name: Call the site's keep-alive function
+        run: curl --silent --show-error --fail-with-body --max-time 60 https://ctfcasaviva-theta.vercel.app/api/keepalive
