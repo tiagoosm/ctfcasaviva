@@ -260,10 +260,7 @@ To set up an administrator:
 
 The app is a static single-page application hosted on [Vercel](https://vercel.com/), deployed automatically from `main`. [`vercel.json`](vercel.json) rewrites every route except `/api/` to `index.html` so client-side routing works on direct access and reload.
 
-On the free plan Supabase pauses a project that gets too little database activity in a week (its docs suggest a few requests each day), and the CTF is only used now and then. Two schedules keep it awake, both read-only (nothing is written):
-
-- a GitHub Actions workflow, [`.github/workflows/keepalive.yml`](.github/workflows/keepalive.yml), reads from the database every 6 hours; its run history in the Actions tab shows whether it is working. GitHub disables scheduled workflows after 60 days without commits (it sends an e-mail first); re-enable it in the Actions tab;
-- a Vercel Cron Job in [`vercel.json`](vercel.json) calls [`api/keepalive.js`](api/keepalive.js) once a day, which makes a few reads.
+On the free plan Supabase pauses a project that gets too little database activity in a week (its docs suggest a few requests each day), and the CTF is only used now and then. Four Vercel Cron Jobs in [`vercel.json`](vercel.json) call [`api/keepalive.js`](api/keepalive.js) every 6 hours (03:00, 09:00, 15:00 and 21:00 UTC; on the Hobby plan each job runs once a day, within the hour). Each call makes a few read-only requests; nothing is written.
 
 A project that is already paused is not woken up by these reads: it has to be restored once in the Supabase dashboard. Any static host with an equivalent rewrite rule can serve the contents of `build/`.
 

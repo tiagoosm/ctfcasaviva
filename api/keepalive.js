@@ -1,9 +1,8 @@
 // Keeps the Supabase project awake. On the free plan a project is paused when
 // it does not get enough database activity over a week; Supabase suggests "a
-// few requests each day". The CTF is used only now and then, so this function
-// is called on a schedule (a Vercel Cron Job in vercel.json, plus the GitHub
-// workflow in .github/workflows/keepalive.yml) and makes a few small reads.
-// Nothing is written.
+// few requests each day". The CTF is used only now and then, so four Vercel
+// Cron Jobs (vercel.json) call this function every 6 hours, and each call makes
+// a few small reads. Nothing is written.
 //
 // The URL and the publishable key are the same public values the site uses.
 const API_URL = process.env.REACT_APP_SUPABASE_URL || 'https://zssdxfbsnsjcqqoxgckp.supabase.co';
@@ -38,7 +37,7 @@ module.exports = async function keepalive(req, res) {
     for (const call of READS) statuses.push(await read(call));
     const ok = statuses.every((status) => status === 200);
     // A failure is reported as an error so it shows up in the Vercel logs
-    res.status(ok ? 200 : 502).json({ ok, statuses, ms: Date.now() - startedAt });
+    res.status(ok ? 200 : 502).json({ ok, slot: req.query?.slot ?? null, statuses, ms: Date.now() - startedAt });
   } catch (error) {
     res.status(502).json({ ok: false, error: error.message, ms: Date.now() - startedAt });
   }
